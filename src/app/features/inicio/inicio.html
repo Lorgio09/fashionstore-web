@@ -1,0 +1,137 @@
+<div class="min-h-screen bg-white">
+  
+  <!-- 1. BARRA DE NAVEGACIÓN (Navbar) -->
+  <nav class="border-b border-gray-100 bg-white relative z-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-20 items-center">
+        <!-- Logo -->
+        <div class="flex-shrink-0 flex items-center cursor-pointer" routerLink="/">
+          <h1 class="text-2xl font-extrabold tracking-tight text-gray-900">
+            FASHION<span class="text-gray-400">STORE</span>
+          </h1>
+        </div>
+        
+        <!-- Menú Dinámico -->
+        <div class="flex items-center space-x-6">
+          @if (nombreUsuario) {
+            <span class="text-sm font-medium text-gray-900">
+              Hola, <span class="font-bold">{{ nombreUsuario }}</span>
+            </span>
+            <button (click)="probarCandado()" class="bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 transition-colors rounded shadow-sm">
+              Probar zona privada
+            </button>
+            <button (click)="cerrarSesion()" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors">
+              Cerrar sesión
+            </button>
+          } @else {
+            <a routerLink="/login" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">
+              Iniciar sesión
+            </a>
+            <a routerLink="/registro" class="bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors rounded-none">
+              Crear cuenta
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 2. HERO SECTION (La alfombra roja) -->
+  <div class="relative bg-black text-white overflow-hidden">
+    <div class="absolute inset-0 z-0">
+      <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2070&auto=format&fit=crop" alt="Fashion Background" class="w-full h-full object-cover opacity-40">
+    </div>
+    
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 flex flex-col items-center text-center" @fadeSlideIn>
+      <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 drop-shadow-lg">
+        Descubre tu Estilo Ideal
+      </h1>
+      <p class="text-lg md:text-xl max-w-2xl font-light text-gray-200 mb-10 drop-shadow-md">
+        Explora las últimas tendencias de temporada y pruébate todo desde casa con nuestro nuevo Vestidor Virtual.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+        <a href="#catalogo" class="bg-white text-black px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 ease-out hover:scale-[1.03] active:scale-[0.98] shadow-lg flex items-center justify-center">
+          Explorar Colección
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. SECCIÓN DE BENEFICIOS -->
+<div class="bg-white py-12 border-b border-gray-100 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+      <div class="p-4 group" appScrollReveal>
+        <div class="bg-gray-50 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+          <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+          </svg>
+        </div>
+        <h3 class="font-bold text-lg text-gray-900">Vestidor Virtual AR</h3>
+        <p class="text-gray-500 text-sm mt-2">Usa realidad aumentada para ver cómo te luce cada prenda desde tu celular.</p>
+      </div>
+      <div class="p-4 group" appScrollReveal>
+        <div class="bg-gray-50 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+          <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21" />
+          </svg>
+        </div>
+        <h3 class="font-bold text-lg text-gray-900">Reserva en Sucursal</h3>
+        <p class="text-gray-500 text-sm mt-2">Selecciona lo que te gusta y pasa por la tienda física solo a probártelo y recogerlo.</p>
+      </div>
+      <div class="p-4 group" appScrollReveal>
+        <div class="bg-gray-50 w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+          <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+          </svg>
+        </div>
+        <h3 class="font-bold text-lg text-gray-900">Compra Flexible</h3>
+        <p class="text-gray-500 text-sm mt-2">Paga online de forma segura o directamente en la caja de nuestra sucursal.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- 4. SECCIÓN DEL CATÁLOGO -->
+  <div id="catalogo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-gray-50">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Tendencias de la Temporada</h2>
+      <div class="w-24 h-1 bg-black mx-auto mt-4 mb-6"></div>
+      <p class="text-gray-500 max-w-2xl mx-auto">Seleccionado especialmente para ti. Encuentra tu próximo outfit favorito.</p>
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" @staggerCards>
+      @for (prenda of prendas; track prenda.id) {
+        <div class="border border-gray-100 rounded-xl shadow-sm overflow-hidden hover:shadow-2xl transition-all duration-300 bg-white group cursor-pointer">
+          <div class="h-80 bg-gray-100 overflow-hidden relative">
+            <img 
+              [src]="prenda.imagen_url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop'" 
+              alt="{{ prenda.nombre }}" 
+              class="w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ease-out opacity-0"
+              (load)="onImgLoad($event)"
+            >
+            <span class="absolute top-4 left-4 bg-black text-white text-xs font-bold px-3 py-1 uppercase tracking-wider rounded-sm">Nuevo</span>
+          </div>
+          <div class="p-6">
+            <h3 class="font-bold text-lg text-gray-900 truncate">{{ prenda.nombre }}</h3>
+            <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ prenda.descripcion }}</p>
+            <div class="mt-6 flex justify-between items-center">
+              <span class="text-2xl font-black text-gray-900">Bs. {{ prenda.precio }}</span>
+              <button class="bg-white text-black border-2 border-black px-4 py-2 text-sm font-bold hover:bg-black hover:text-white transition-all duration-300 ease-out rounded-full">
+                Ver detalles
+              </button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="col-span-full text-center py-20 text-gray-500 bg-white rounded-xl shadow-sm border border-gray-100">
+          <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+          <p class="text-xl font-medium text-gray-900">Preparando la nueva temporada</p>
+          <p class="mt-2">El catálogo se está actualizando. Vuelve pronto.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

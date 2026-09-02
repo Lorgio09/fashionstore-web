@@ -1,0 +1,66 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full bg-white p-10 rounded-none shadow-sm border border-gray-100 space-y-8">
+    
+    <!-- Encabezado -->
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900 tracking-tight">
+        NUEVA <span class="text-gray-400">CUENTA</span>
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Únete a FashionStore para gestionar tus compras
+      </p>
+    </div>
+
+    <!-- Formulario conectado a Angular -->
+    <form class="mt-8 space-y-6" (ngSubmit)="crearCuenta()">
+      <div class="rounded-md shadow-sm space-y-4">
+        
+        <!-- Campo Nombre -->
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700">Nombre completo</label>
+          <input id="name" name="name" type="text" required 
+            [(ngModel)]="datosRegistro.nombre_completo"
+            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm mt-1" 
+            placeholder="Juan Pérez">
+        </div>
+
+        <!-- Campo Correo -->
+        <div>
+          <label for="email-address" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
+          <input id="email-address" name="email" type="email" autocomplete="email" required 
+            [(ngModel)]="datosRegistro.email"
+            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm mt-1" 
+            placeholder="ejemplo@correo.com">
+        </div>
+
+        <!-- Campo Contraseña -->
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+          <input id="password" name="password" type="password" required 
+            [(ngModel)]="datosRegistro.password"
+            class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-black focus:border-black focus:z-10 sm:text-sm mt-1" 
+            placeholder="••••••••">
+        </div>
+      </div>
+
+      <!-- Botón de registro -->
+      <div>
+        <button type="submit" 
+          class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-none text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors">
+          Crear cuenta
+        </button>
+      </div>
+    </form>
+
+    <!-- Enlace a login -->
+    <div class="text-center mt-4">
+      <p class="text-sm text-gray-600">
+        ¿Ya tienes una cuenta? 
+        <a routerLink="/login" class="font-medium text-black hover:underline">
+          Inicia sesión
+        </a>
+      </p>
+    </div>
+
+  </div>
+</div>
