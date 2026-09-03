@@ -1,0 +1,67 @@
+<div class="max-w-3xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white shadow-md rounded-lg p-8 border border-gray-100">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Registrar Nueva Prenda</h2>
+    
+    <form (ngSubmit)="guardarPrenda()" #prendaForm="ngForm" class="space-y-6">
+      
+      <!-- Nombre de la prenda -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Nombre de la Prenda</label>
+        <input type="text" [(ngModel)]="nuevaPrenda.nombre" name="nombre" required
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black">
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Descripción</label>
+        <textarea [(ngModel)]="nuevaPrenda.descripcion" name="descripcion" rows="3"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black"></textarea>
+      </div>
+
+      <!-- Subida de Imagen -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Foto de la Prenda</label>
+        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors bg-gray-50">
+          <div class="space-y-1 text-center">
+            
+            <!-- Vista Previa de la Imagen -->
+            @if (imagenPreview) {
+              <img [src]="imagenPreview" class="mx-auto h-40 w-auto rounded-md mb-4 object-cover shadow-sm border border-gray-200">
+            } @else {
+              <!-- Ícono por defecto si no hay imagen -->
+              <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            }
+
+            <div class="flex text-sm text-gray-600 justify-center">
+              <label class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 px-3 py-2 shadow-sm border border-gray-200">
+                <span>Seleccionar archivo</span>
+                <!-- El input real está oculto (sr-only), usamos el label como botón -->
+                <input type="file" (change)="onFileSelected($event)" accept="image/*" class="sr-only">
+              </label>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Formatos aceptados: PNG, JPG, WEBP</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Precio Base -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Precio Base (Bs.)</label>
+        <input type="number" [(ngModel)]="nuevaPrenda.precio_base" name="precio_base" required min="0" step="0.1"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black">
+      </div>
+
+      <!-- Botón de Guardar -->
+      <div class="pt-4">
+        <!-- El botón se desactiva si el formulario no es válido o si no hay imagen seleccionada -->
+        <button type="submit" [disabled]="!prendaForm.form.valid || !imagenSeleccionada"
+          class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 disabled:bg-gray-400 transition-colors">
+          Guardar Prenda en el Catálogo
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
