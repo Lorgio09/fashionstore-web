@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
@@ -8,27 +8,47 @@ import { FormsModule } from '@angular/forms';
   imports: [FormsModule],
   templateUrl: './crear-prenda.html'
 })
-export class CrearPrendaComponent {
+export class CrearPrendaComponent implements OnInit {
   nuevaPrenda = {
     nombre: '',
     descripcion: '',
     precio_base: 0,
-    categoria_id: 1, 
-    proveedor_id: 1  
+    categoria_id: null as number | null,
+    proveedor_id: null as number | null
   };
 
   imagenSeleccionada: File | null = null;
   imagenPreview: string | ArrayBuffer | null = null;
 
+  categorias: any[] = [];
+  proveedores: any[] = [];
+
   constructor(private http: HttpClient) {}
 
-  // Esta función se ejecuta cuando el administrador elige una foto
+  // Esto se ejecuta automáticamente apenas abres la pantalla
+  ngOnInit() {
+    this.cargarCategorias();
+    this.cargarProveedores();
+  }
+
+  cargarCategorias() {
+    this.http.get('http://localhost:8000/api/catalogo/categorias').subscribe({
+      next: (data: any) => this.categorias = data,
+      error: (err) => console.error("Error al cargar categorías", err)
+    });
+  }
+
+  cargarProveedores() {
+    this.http.get('http://localhost:8000/api/catalogo/proveedores').subscribe({
+      next: (data: any) => this.proveedores = data,
+      error: (err) => console.error("Error al cargar proveedores", err)
+    });
+  }
+
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
       this.imagenSeleccionada = file;
-      
-      // Creamos la vista previa de la imagen
       const reader = new FileReader();
       reader.onload = e => this.imagenPreview = reader.result;
       reader.readAsDataURL(file);
@@ -36,12 +56,16 @@ export class CrearPrendaComponent {
   }
 
   guardarPrenda() {
+    // Validaciones extra de seguridad
     if (!this.imagenSeleccionada) {
       alert("Por favor, selecciona una imagen para la prenda.");
       return;
     }
+    if (!this.nuevaPrenda.categoria_id || !this.nuevaPrenda.proveedor_id) {
+      alert("Por favor, selecciona una categoría y un proveedor.");
+      return;
+    }
 
-    // Armamos el "paquete" con los datos y el archivo
     const formData = new FormData();
     formData.append('nombre', this.nuevaPrenda.nombre);
     formData.append('descripcion', this.nuevaPrenda.descripcion);
@@ -50,11 +74,10 @@ export class CrearPrendaComponent {
     formData.append('proveedor_id', this.nuevaPrenda.proveedor_id.toString());
     formData.append('imagen', this.imagenSeleccionada);
 
-    // Enviamos el FormData al backend
     this.http.post('http://localhost:8000/api/catalogo/', formData).subscribe({
       next: (respuesta: any) => {
         alert('¡Prenda registrada con éxito!');
-        // Aquí podríamos limpiar el formulario
+        // Aquí puedes reiniciar el formulario si lo deseas
       },
       error: (error) => {
         console.error("Error completo:", error);

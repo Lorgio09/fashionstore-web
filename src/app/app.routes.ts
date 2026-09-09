@@ -6,6 +6,8 @@ import { RegistroComponent } from './features/auth/registro/registro';
 import { RecuperarPasswordComponent } from './features/auth/recuperar-password/recuperar-password';
 import { CrearPrendaComponent } from './features/admin/crear-prenda/crear-prenda';
 import { adminGuard } from './core/guards/admin-guard';
+import { AdminLayoutComponent } from './features/admin/admin-layout/admin-layout'; 
+import { ListarPrendasComponent } from './features/admin/listar-prenda/listar-prenda';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -13,13 +15,18 @@ export const routes: Routes = [
     { path: 'registro', component: RegistroComponent },
     { path: 'recuperar-password', component: RecuperarPasswordComponent },
     
-    // Aquí dejamos nuestra ruta protegida, antes del comodín
+    // ZONA DEL ADMINISTRADOR
     { 
-        path: 'admin/nueva-prenda', 
-        component: CrearPrendaComponent,
-        canActivate: [adminGuard]
+        path: 'admin', 
+        component: AdminLayoutComponent,
+        canActivate: [adminGuard],
+        children: [
+            { path: 'prendas', component: ListarPrendasComponent },
+            
+            { path: 'nueva-prenda', component: CrearPrendaComponent },
+            
+            { path: '', redirectTo: 'prendas', pathMatch: 'full' }
+        ]
     },
-
-    // El comodín asume su lugar obligatorio al final de la lista
     { path: '**', redirectTo: '' }
 ];

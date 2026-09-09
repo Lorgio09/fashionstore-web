@@ -20,9 +20,9 @@ export const adminGuard: CanActivateFn = (route, state) => {
       const payload = JSON.parse(atob(token.split('.')[1]));
 
       // Si es admin, lo dejamos quedarse en la página
-      if (payload.rol === 'admin' || payload.rol === 'administrador') {
-        return true; 
-      }
+        if (payload.rol === 2) { 
+          return true; 
+        }
     } catch (error) {
       console.error('Error al decodificar el token:', error);
     }

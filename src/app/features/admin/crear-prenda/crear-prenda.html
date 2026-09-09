@@ -18,6 +18,42 @@
           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black"></textarea>
       </div>
 
+      <!-- Precio Base -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Precio Base (Bs.)</label>
+        <input type="number" [(ngModel)]="nuevaPrenda.precio_base" name="precio_base" required min="0" step="0.1"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black">
+      </div>
+
+      <!-- ZONA NUEVA: Categoría y Proveedor en dos columnas -->
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <!-- Select Categoría -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Categoría</label>
+          <select [(ngModel)]="nuevaPrenda.categoria_id" name="categoria" required
+            class="mt-1 block w-full border border-gray-300 bg-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black">
+            <option [ngValue]="null" disabled selected>Selecciona una categoría</option>
+            
+            @for (categoria of categorias; track categoria.id) {
+              <option [value]="categoria.id">{{ categoria.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Select Proveedor -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Proveedor</label>
+          <select [(ngModel)]="nuevaPrenda.proveedor_id" name="proveedor" required
+            class="mt-1 block w-full border border-gray-300 bg-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black">
+            <option [ngValue]="null" disabled selected>Selecciona un proveedor</option>
+            
+            @for (proveedor of proveedores; track proveedor.id) {
+              <option [value]="proveedor.id">{{ proveedor.razon_social }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
       <!-- Subida de Imagen -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Foto de la Prenda</label>
@@ -37,7 +73,6 @@
             <div class="flex text-sm text-gray-600 justify-center">
               <label class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 px-3 py-2 shadow-sm border border-gray-200">
                 <span>Seleccionar archivo</span>
-                <!-- El input real está oculto (sr-only), usamos el label como botón -->
                 <input type="file" (change)="onFileSelected($event)" accept="image/*" class="sr-only">
               </label>
             </div>
@@ -46,17 +81,9 @@
         </div>
       </div>
 
-      <!-- Precio Base -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Precio Base (Bs.)</label>
-        <input type="number" [(ngModel)]="nuevaPrenda.precio_base" name="precio_base" required min="0" step="0.1"
-          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black">
-      </div>
-
       <!-- Botón de Guardar -->
       <div class="pt-4">
-        <!-- El botón se desactiva si el formulario no es válido o si no hay imagen seleccionada -->
-        <button type="submit" [disabled]="!prendaForm.form.valid || !imagenSeleccionada"
+        <button type="submit" [disabled]="!prendaForm.form.valid || !imagenSeleccionada || !nuevaPrenda.categoria_id || !nuevaPrenda.proveedor_id"
           class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black hover:bg-gray-800 disabled:bg-gray-400 transition-colors">
           Guardar Prenda en el Catálogo
         </button>

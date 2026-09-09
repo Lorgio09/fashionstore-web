@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CrearPrendaComponent } from './crear-prenda';
+import { AdminLayoutComponent } from './admin-layout';
 
-describe('CrearPrenda', () => {
-  let component: CrearPrendaComponent;
-  let fixture: ComponentFixture<CrearPrendaComponent>;
+describe('AdminLayout', () => {
+  let component: AdminLayoutComponent;
+  let fixture: ComponentFixture<AdminLayoutComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CrearPrendaComponent],
+      imports: [AdminLayoutComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CrearPrendaComponent);
+    fixture = TestBed.createComponent(AdminLayoutComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });
