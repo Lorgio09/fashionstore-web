@@ -8,6 +8,9 @@ import { CrearPrendaComponent } from './features/admin/crear-prenda/crear-prenda
 import { adminGuard } from './core/guards/admin-guard';
 import { AdminLayoutComponent } from './features/admin/admin-layout/admin-layout'; 
 import { ListarPrendasComponent } from './features/admin/listar-prenda/listar-prenda';
+import { GestionCategoriasComponent } from './features/gestion-categorias/gestion-categorias';
+import { GestionProveedoresComponent } from './features/gestion-proveedores/gestion-proveedores';
+import { GestionSucursalesComponent } from './features/gestion-sucursales/gestion-sucursales';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -21,9 +24,16 @@ export const routes: Routes = [
         component: AdminLayoutComponent,
         canActivate: [adminGuard],
         children: [
+            // Inventario
             { path: 'prendas', component: ListarPrendasComponent },
-            
             { path: 'nueva-prenda', component: CrearPrendaComponent },
+            { path: 'editar-prenda/:id', component: CrearPrendaComponent },
+            { path: 'categorias-tallas', component: GestionCategoriasComponent },
+            { path: 'proveedores', component: GestionProveedoresComponent },
+            { path: 'sucursales', component: GestionSucursalesComponent },
+            
+            // Administración (Las crearemos después)
+            // { path: 'proveedores', component: GestionProveedoresComponent },
             
             { path: '', redirectTo: 'prendas', pathMatch: 'full' }
         ]

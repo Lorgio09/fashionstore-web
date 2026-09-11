@@ -67,8 +67,12 @@
 
               <!-- Columna 4: Botones -->
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button class="text-blue-600 hover:text-blue-900 mr-4">Editar</button>
-                <button class="text-red-600 hover:text-red-900">Eliminar</button>
+                <a [routerLink]="['/admin/editar-prenda', prenda.id]" class="text-blue-600 hover:text-blue-900 mr-4 font-medium cursor-pointer">
+                  Editar
+                </a>
+                <button (click)="eliminarPrenda(prenda.id, prenda.nombre)" class="text-red-600 hover:text-red-900">
+                  Eliminar
+                </button>
               </td>
               
             </tr>

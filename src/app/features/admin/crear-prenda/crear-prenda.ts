@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-crear-prenda',
@@ -23,12 +24,24 @@ export class CrearPrendaComponent implements OnInit {
   categorias: any[] = [];
   proveedores: any[] = [];
 
-  constructor(private http: HttpClient) {}
+  isEditMode = false;
+  prendaId: string | null = null;
+
+  constructor(
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   // Esto se ejecuta automáticamente apenas abres la pantalla
   ngOnInit() {
     this.cargarCategorias();
     this.cargarProveedores();
+    this.prendaId = this.route.snapshot.paramMap.get('id');
+    if (this.prendaId) {
+      this.isEditMode = true;
+      this.cargarDatosPrenda(this.prendaId);
+    }
   }
 
   cargarCategorias() {
@@ -45,6 +58,25 @@ export class CrearPrendaComponent implements OnInit {
     });
   }
 
+  cargarDatosPrenda(id: string) {
+    this.http.get(`http://localhost:8000/api/catalogo/${id}`).subscribe({
+      next: (data: any) => {
+        this.nuevaPrenda = {
+          nombre: data.nombre,
+          descripcion: data.descripcion,
+          precio_base: data.precio_base,
+          categoria_id: data.categoria_id,
+          proveedor_id: data.proveedor_id
+        };
+        // Mostramos la imagen actual
+        if (data.imagen_url) {
+          this.imagenPreview = data.imagen_url;
+        }
+      },
+      error: (err) => alert("Error al cargar los datos de la prenda")
+    });
+  }
+
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (file) {
@@ -56,11 +88,6 @@ export class CrearPrendaComponent implements OnInit {
   }
 
   guardarPrenda() {
-    // Validaciones extra de seguridad
-    if (!this.imagenSeleccionada) {
-      alert("Por favor, selecciona una imagen para la prenda.");
-      return;
-    }
     if (!this.nuevaPrenda.categoria_id || !this.nuevaPrenda.proveedor_id) {
       alert("Por favor, selecciona una categoría y un proveedor.");
       return;
@@ -69,20 +96,37 @@ export class CrearPrendaComponent implements OnInit {
     const formData = new FormData();
     formData.append('nombre', this.nuevaPrenda.nombre);
     formData.append('descripcion', this.nuevaPrenda.descripcion);
-    formData.append('precio_base', this.nuevaPrenda.precio_base.toString());
-    formData.append('categoria_id', this.nuevaPrenda.categoria_id.toString());
-    formData.append('proveedor_id', this.nuevaPrenda.proveedor_id.toString());
-    formData.append('imagen', this.imagenSeleccionada);
+    formData.append('precio_base', String(this.nuevaPrenda.precio_base));
+    formData.append('categoria_id', String(this.nuevaPrenda.categoria_id));
+    formData.append('proveedor_id', String(this.nuevaPrenda.proveedor_id));
+    
+    if (this.imagenSeleccionada) {
+      formData.append('imagen', this.imagenSeleccionada);
+    }
 
-    this.http.post('http://localhost:8000/api/catalogo/', formData).subscribe({
-      next: (respuesta: any) => {
-        alert('¡Prenda registrada con éxito!');
-        // Aquí puedes reiniciar el formulario si lo deseas
-      },
-      error: (error) => {
-        console.error("Error completo:", error);
-        alert('Ocurrió un error al guardar la prenda.');
+    if (this.isEditMode) {
+      // MODO EDICIÓN (PUT)
+      this.http.put(`http://localhost:8000/api/catalogo/${this.prendaId}`, formData).subscribe({
+        next: () => {
+          alert('¡Prenda actualizada con éxito!');
+          this.router.navigate(['/admin/prendas']); 
+        },
+        error: (err) => alert('Error al actualizar la prenda.')
+      });
+    } else {
+      // MODO CREACIÓN (POST)
+      // Validamos imagen obligatoria solo al crear
+      if (!this.imagenSeleccionada) {
+        alert("Selecciona una foto para la nueva prenda.");
+        return;
       }
-    });
+      this.http.post('http://localhost:8000/api/catalogo/', formData).subscribe({
+        next: () => {
+          alert('¡Prenda registrada con éxito!');
+          this.router.navigate(['/admin/prendas']); // Volvemos a la tabla
+        },
+        error: (err) => alert('Error al guardar la prenda.')
+      });
+    }
   }
 }
