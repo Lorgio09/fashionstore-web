@@ -1,0 +1,75 @@
+<div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="mb-8 border-b border-gray-200 pb-5">
+    <h2 class="text-2xl font-bold text-gray-900">Entrada Rápida de Inventario</h2>
+    <p class="mt-1 text-sm text-gray-500">Registra nuevas variantes y agrega stock físico a tus sucursales.</p>
+  </div>
+
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-8">
+    <form (ngSubmit)="guardarEntrada()">
+      
+      <!-- Bloque 1: Producto y Destino -->
+      <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">1. Seleccionar Producto y Destino</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Prenda Base *</label>
+          <select [(ngModel)]="nuevaEntrada.prenda_id" name="prenda_id" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm bg-white">
+            <option [ngValue]="null" disabled>Selecciona una prenda...</option>
+            @for (prenda of prendas; track prenda.id) {
+              <option [value]="prenda.id">{{ prenda.nombre }} (Bs. {{ prenda.precio_base }})</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Sucursal de Destino *</label>
+          <select [(ngModel)]="nuevaEntrada.sucursal_id" name="sucursal_id" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm bg-white">
+            <option [ngValue]="null" disabled>Selecciona la sucursal...</option>
+            @for (sucursal of sucursales; track sucursal.id) {
+              <option [value]="sucursal.id">{{ sucursal.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Bloque 2: Detalles de la Variante -->
+      <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">2. Especificaciones y Cantidad</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Talla *</label>
+          <input type="text" [(ngModel)]="nuevaEntrada.talla" name="talla" placeholder="Ej. M, XL, 32" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm uppercase">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Color</label>
+          <input type="text" [(ngModel)]="nuevaEntrada.color" name="color" placeholder="Ej. Negro, Blanco" 
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Código SKU *</label>
+          <input type="text" [(ngModel)]="nuevaEntrada.codigo_sku" name="codigo_sku" placeholder="Ej. POL-BLA-M" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm uppercase">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad a ingresar *</label>
+          <input type="number" [(ngModel)]="nuevaEntrada.cantidad" name="cantidad" min="1" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+      </div>
+
+      <!-- Botón de Envío -->
+      <div class="flex justify-end pt-4 border-t border-gray-200">
+        <button type="submit" [disabled]="!nuevaEntrada.prenda_id || !nuevaEntrada.sucursal_id || !nuevaEntrada.talla || !nuevaEntrada.codigo_sku || cargando"
+          class="bg-black text-white px-8 py-2 rounded-md hover:bg-gray-800 disabled:bg-gray-400 font-medium transition-colors">
+          {{ cargando ? 'Registrando Stock...' : 'Guardar Entrada' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
