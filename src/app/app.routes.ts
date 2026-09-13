@@ -12,6 +12,9 @@ import { GestionCategoriasComponent } from './features/gestion-categorias/gestio
 import { GestionProveedoresComponent } from './features/gestion-proveedores/gestion-proveedores';
 import { GestionSucursalesComponent } from './features/gestion-sucursales/gestion-sucursales';
 import { EntradaInventarioComponent } from './features/entrada-inventario/entrada-inventario';
+import { GestionUsuariosComponent } from './features/gestion-usuarios/gestion-usuarios';
+import { BitacoraComponent } from './features/bitacora/bitacora';
+import { TemporadasComponent } from './features/temporadas/temporadas';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -33,6 +36,9 @@ export const routes: Routes = [
             { path: 'proveedores', component: GestionProveedoresComponent },
             { path: 'sucursales', component: GestionSucursalesComponent },
             { path: 'entrada-inventario', component: EntradaInventarioComponent },
+            { path: 'gestion-usuarios', component: GestionUsuariosComponent },
+            { path: 'auditoria', component: BitacoraComponent },
+            { path: 'temporadas', component: TemporadasComponent },
             
             // Administración (Las crearemos después)
             // { path: 'proveedores', component: GestionProveedoresComponent },

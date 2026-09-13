@@ -1,0 +1,55 @@
+<div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="mb-8 border-b border-gray-200 pb-5">
+    <h2 class="text-2xl font-bold text-gray-900">Bitácora de Auditoría</h2>
+    <p class="mt-1 text-sm text-gray-500">Historial completo de movimientos y modificaciones en el sistema.</p>
+  </div>
+
+  <div class="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha y Hora</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario (ID)</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acción</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Módulo</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalle</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 bg-white">
+        
+        @if (cargando) {
+          <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">Cargando registros...</td>
+          </tr>
+        } @else {
+          @for (registro of registros; track registro.id) {
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <!-- Usamos el pipe de Angular para formatear la fecha -->
+                {{ registro.fecha_hora | date:'short' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                Empleado #{{ registro.usuario_id }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" [ngClass]="obtenerColorAccion(registro.accion)">
+                  {{ registro.accion }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
+                {{ registro.tabla_afectada }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                {{ registro.detalle }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-6 py-8 text-center text-sm text-gray-500">No hay movimientos registrados en la bitácora.</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

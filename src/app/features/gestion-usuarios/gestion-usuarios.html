@@ -1,0 +1,102 @@
+<div class="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="mb-8 border-b border-gray-200 pb-5">
+    <h2 class="text-2xl font-bold text-gray-900">Gestión de Usuarios y Accesos</h2>
+    <p class="mt-1 text-sm text-gray-500">Registra nuevos empleados y asígnales roles y sucursales.</p>
+  </div>
+
+  <!-- Formulario de Registro -->
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-8">
+    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Registrar Nuevo Empleado</h3>
+    <form (ngSubmit)="guardarUsuario()">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
+          <input type="text" [(ngModel)]="nuevoUsuario.nombre_completo" name="nombre" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico *</label>
+          <input type="email" [(ngModel)]="nuevoUsuario.email" name="email" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
+          <input type="password" [(ngModel)]="nuevoUsuario.password" name="password" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input type="text" [(ngModel)]="nuevoUsuario.telefono" name="telefono"
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Rol de Acceso *</label>
+          <select [(ngModel)]="nuevoUsuario.rol_id" name="rol_id" required
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm bg-white">
+            <option [ngValue]="null" disabled>Selecciona un rol...</option>
+            @for (rol of roles; track rol.id) {
+              <option [value]="rol.id">{{ rol.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Sucursal Asignada</label>
+          <select [(ngModel)]="nuevoUsuario.sucursal_id" name="sucursal_id"
+            class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-black focus:border-black text-sm bg-white">
+            <option [ngValue]="null">Ninguna (Global)</option>
+            @for (sucursal of sucursales; track sucursal.id) {
+              <option [value]="sucursal.id">{{ sucursal.nombre }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-4">
+        <button type="submit" [disabled]="!nuevoUsuario.nombre_completo || !nuevoUsuario.email || !nuevoUsuario.password || !nuevoUsuario.rol_id || cargando"
+          class="bg-black text-white px-8 py-2 rounded-md hover:bg-gray-800 disabled:bg-gray-400 font-medium transition-colors">
+          {{ cargando ? 'Registrando...' : 'Crear Usuario' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabla de Usuarios Registrados -->
+  <div class="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 bg-white">
+        @for (user of usuarios; track user.id) {
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ user.nombre_completo }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ user.email }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rol #{{ user.rol_id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                    [class.bg-green-100]="user.activo" [class.text-green-800]="user.activo"
+                    [class.bg-red-100]="!user.activo" [class.text-red-800]="!user.activo">
+                {{ user.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500">No hay usuarios registrados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+<div class="max-w-4xl mx-auto py-8 px-4">
+  <div class="mb-8 border-b border-gray-200 pb-5">
+    <h2 class="text-2xl font-bold text-gray-900">Gestión de Temporadas</h2>
+    <p class="mt-1 text-sm text-gray-500">Administra las colecciones de Verano, Invierno, etc.</p>
+  </div>
+
+  <!-- Formulario -->
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6 mb-8">
+    <form (ngSubmit)="guardarTemporada()">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre (Ej: Verano 2026) *</label>
+          <input type="text" [(ngModel)]="nuevaTemporada.nombre" name="nombre" required
+            class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Inicio</label>
+          <input type="date" [(ngModel)]="nuevaTemporada.fecha_inicio" name="fecha_inicio"
+            class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Fin</label>
+          <input type="date" [(ngModel)]="nuevaTemporada.fecha_fin" name="fecha_fin"
+            class="block w-full border border-gray-300 rounded-md py-2 px-3 focus:ring-black focus:border-black text-sm">
+        </div>
+      </div>
+      <div class="flex justify-end pt-2">
+        <button type="submit" [disabled]="!nuevaTemporada.nombre || cargando"
+          class="bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 disabled:bg-gray-400 font-medium">
+          {{ cargando ? 'Guardando...' : 'Crear Temporada' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabla -->
+  <div class="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inicio</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fin</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 bg-white">
+        @for (temp of temporadas; track temp.id) {
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ temp.nombre }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ temp.fecha_inicio || 'No definida' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ temp.fecha_fin || 'No definida' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

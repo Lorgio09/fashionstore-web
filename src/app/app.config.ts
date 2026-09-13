@@ -9,8 +9,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes), provideClientHydration(),
-    provideHttpClient(),
+    provideRouter(routes), 
+    provideClientHydration(),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync()
   ]
