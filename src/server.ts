@@ -13,8 +13,8 @@ app.use(
   })
 );
 
-// 2. Para TODAS las rutas, devolver directamente el index.html (Bypass total de SSR)
-app.get('*', (req, res) => {
+// 2. Fallback seguro para Express 5 (Bypass total de SSR)
+app.use((req, res) => {
   res.sendFile(join(browserDistFolder, 'index.html'));
 });
 
