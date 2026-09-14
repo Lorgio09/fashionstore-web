@@ -1,37 +1,37 @@
 import { Component } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // <-- Para leer los inputs
-import { HttpClient } from '@angular/common/http'; // <-- Para enviar datos
+import { HttpClient } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-registro',
   standalone: true,
-  imports: [RouterLink, FormsModule], // <-- Agregamos FormsModule
+  imports: [RouterLink, FormsModule],
   styleUrl: './registro.scss',
   templateUrl: './registro.html',
 })
 export class RegistroComponent {
-  // Objeto donde guardaremos lo que el usuario escriba
+  // 1. Alineado exactamente con el esquema ClienteCreate de FastAPI (sin rol_id)
   datosRegistro = {
     nombre_completo: '',
     email: '',
-    password: '',
-    rol_id: 1 // Suponiendo que el rol 1 es para "Cliente"
+    password: ''
   };
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  // Esta función se ejecuta al hacer clic en "Crear cuenta"
   crearCuenta() {
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/registro', this.datosRegistro)
+    // 2. Ruta corregida apuntando exactamente al endpoint del cliente
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/registro/cliente', this.datosRegistro)
       .subscribe({
         next: (respuesta) => {
           alert('¡Cuenta creada con éxito! Ya puedes iniciar sesión.');
-          this.router.navigate(['/login']); // Redirigimos al login
+          this.router.navigate(['/login']);
         },
         error: (error) => {
-          // Si el correo ya existe, mostramos el error de FastAPI
-          alert('Error: ' + error.error.detail);
+          // Extraemos el detalle del error si FastAPI nos rechaza (ej. correo duplicado)
+          const mensajeError = error.error?.detail || 'Ocurrió un error al registrarse';
+          alert('Error: ' + mensajeError);
         }
       });
   }
