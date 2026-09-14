@@ -20,7 +20,7 @@ export class LoginComponent {
   constructor(private http: HttpClient, private router: Router) {}
 
   iniciarSesion() {
-    this.http.post('http://localhost:8000/api/usuarios/login', this.datosLogin).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/login', this.datosLogin).subscribe({
       next: (respuesta: any) => {
         const token = respuesta.access_token;
         localStorage.setItem('token', token); // Guardamos el token
@@ -30,7 +30,7 @@ export class LoginComponent {
         // Ahora verificamos el número 2, que es el rol_id de tu administrador en la base de datos
         if (payload.rol === 2) {
           // Si es el administrador, lo mandamos al panel
-          this.router.navigate(['/admin/prendas']); 
+          this.router.navigate(['/admin/dashboard']); 
         } else {
           // Si es un cliente normal (ej. rol 1), lo mandamos al inicio
           this.router.navigate(['/']); 

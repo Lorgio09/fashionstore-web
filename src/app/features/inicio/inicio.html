@@ -118,10 +118,11 @@
             <h3 class="font-bold text-lg text-gray-900 truncate">{{ prenda.nombre }}</h3>
             <p class="text-sm text-gray-500 mt-1 line-clamp-2 leading-relaxed">{{ prenda.descripcion }}</p>
             <div class="mt-6 flex justify-between items-center">
-              <span class="text-xl font-black text-gray-900">Bs. {{ prenda.precio }}</span>
-              <button class="bg-white text-black border-2 border-black px-4 py-2 text-sm font-bold hover:bg-black hover:text-white transition-all duration-300 ease-out rounded-full">
+              <!-- ¡AQUÍ CORREGIMOS prenda.precio POR prenda.precio_base! -->
+              <span class="text-xl font-black text-gray-900">Bs. {{ prenda.precio_base }}</span>
+              <a [routerLink]="['/prenda', prenda.id]" class="bg-white text-black border-2 border-black px-4 py-2 text-sm font-bold hover:bg-black hover:text-white transition-all duration-300 ease-out rounded-full text-center cursor-pointer">
                 Ver detalles
-              </button>
+              </a>
             </div>
           </div>
         </div>

@@ -37,21 +37,21 @@ export class GestionUsuariosComponent implements OnInit {
   }
 
   cargarRoles() {
-    this.http.get('http://localhost:8000/api/usuarios/roles').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/usuarios/roles').subscribe({
       next: (data: any) => { this.roles = data; this.cdr.detectChanges(); },
       error: (err) => console.error("Error al cargar roles", err)
     });
   }
 
   cargarSucursales() {
-    this.http.get('http://localhost:8000/api/catalogo/sucursales').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales').subscribe({
       next: (data: any) => { this.sucursales = data; this.cdr.detectChanges(); },
       error: (err) => console.error("Error al cargar sucursales", err)
     });
   }
 
   cargarUsuarios() {
-    this.http.get('http://localhost:8000/api/usuarios/').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/usuarios/').subscribe({
       next: (data: any) => { this.usuarios = data; this.cdr.detectChanges(); },
       error: (err) => console.error("Error al cargar usuarios", err)
     });
@@ -64,7 +64,7 @@ export class GestionUsuariosComponent implements OnInit {
     }
 
     this.cargando = true;
-    this.http.post('http://localhost:8000/api/usuarios/usuarios', this.nuevoUsuario).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/usuarios', this.nuevoUsuario).subscribe({
       next: () => {
         alert('¡Empleado registrado con éxito!');
         this.cargarUsuarios(); 

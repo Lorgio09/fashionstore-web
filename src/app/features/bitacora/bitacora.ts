@@ -22,7 +22,7 @@ export class BitacoraComponent implements OnInit {
   }
 
   cargarBitacora() {
-    this.http.get('http://localhost:8000/api/auditoria/').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/auditoria/').subscribe({
       next: (data: any) => { 
         this.registros = data; 
         this.cargando = false;

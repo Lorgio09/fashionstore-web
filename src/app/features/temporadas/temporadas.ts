@@ -25,7 +25,7 @@ export class TemporadasComponent implements OnInit {
   }
 
   cargarTemporadas() {
-    this.http.get('http://localhost:8000/api/catalogo/temporadas').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/temporadas').subscribe({
       next: (data: any) => { 
         this.temporadas = data; 
         this.cdr.detectChanges(); 
@@ -41,7 +41,7 @@ export class TemporadasComponent implements OnInit {
     }
 
     this.cargando = true;
-    this.http.post('http://localhost:8000/api/catalogo/temporadas', this.nuevaTemporada).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/temporadas', this.nuevaTemporada).subscribe({
       next: () => {
         alert('¡Temporada registrada con éxito!');
         this.cargarTemporadas();

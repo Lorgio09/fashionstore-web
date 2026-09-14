@@ -21,7 +21,7 @@ export class ListarPrendasComponent implements OnInit {
   }
 
   cargarPrendas() {
-    this.http.get('http://localhost:8000/api/catalogo/').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
       next: (data: any) => {
         this.prendas = data;
         this.cdr.detectChanges();
@@ -32,7 +32,7 @@ export class ListarPrendasComponent implements OnInit {
 
   eliminarPrenda(id: number, nombre: string) {
     if (confirm(`¿Estás seguro de que deseas eliminar la prenda "${nombre}"?`)) {
-      this.http.delete(`http://localhost:8000/api/catalogo/${id}`).subscribe({
+      this.http.delete(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${id}`).subscribe({
         next: () => {
           alert('Prenda eliminada correctamente');
           this.cargarPrendas(); // Recargamos la tabla para que desaparezca

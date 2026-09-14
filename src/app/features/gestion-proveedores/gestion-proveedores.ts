@@ -23,7 +23,7 @@ export class GestionProveedoresComponent implements OnInit {
   }
 
   cargarProveedores() {
-    this.http.get('http://localhost:8000/api/catalogo/proveedores').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/proveedores').subscribe({
       next: (data: any) => {
         this.proveedores = data;
         this.cdr.detectChanges(); // 3. Despertar a Angular al cargar
@@ -36,7 +36,7 @@ export class GestionProveedoresComponent implements OnInit {
     if (!this.nuevoProveedor.nombre.trim()) return;
     
     this.cargando = true;
-    this.http.post('http://localhost:8000/api/catalogo/proveedores', this.nuevoProveedor).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/proveedores', this.nuevoProveedor).subscribe({
       next: () => {
         this.nuevoProveedor.nombre = ''; 
         this.cargarProveedores();         

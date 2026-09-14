@@ -24,7 +24,7 @@ export class GestionSucursalesComponent implements OnInit {
 
   cargarSucursales() {
     // Si tu ruta en FastAPI es diferente, ajusta el enlace aquí:
-    this.http.get('http://localhost:8000/api/catalogo/sucursales').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales').subscribe({
       next: (data: any) => {
         this.sucursales = data;
         this.cdr.detectChanges();
@@ -37,7 +37,7 @@ export class GestionSucursalesComponent implements OnInit {
     if (!this.nuevaSucursal.nombre.trim()) return;
 
     this.cargando = true;
-    this.http.post('http://localhost:8000/api/catalogo/sucursales', this.nuevaSucursal).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales', this.nuevaSucursal).subscribe({
       next: () => {
         this.nuevaSucursal = { nombre: '', direccion: '' };
         this.cargarSucursales();

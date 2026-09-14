@@ -1,0 +1,119 @@
+<div class="min-h-screen bg-white pt-10 pb-20">
+  
+  <!-- Botón de volver (Aquí está el RouterLink que Angular pedía) -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+    <a routerLink="/" class="text-sm font-medium text-gray-500 hover:text-black transition-colors flex items-center cursor-pointer">
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+      Volver al catálogo
+    </a>
+  </div>
+
+  @if (cargando) {
+    <div class="flex justify-center py-20">
+      <p class="text-gray-500 text-lg">Cargando detalles...</p>
+    </div>
+  } @else if (prenda) {
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row -mx-4">
+        
+        <!-- Columna Izquierda: Imagen -->
+        <div class="md:flex-1 px-4 mb-8 md:mb-0">
+          <div class="h-[500px] rounded-lg bg-gray-100 overflow-hidden relative">
+            <img [src]="prenda.imagen_url" [alt]="prenda.nombre" class="w-full h-full object-cover">
+            <!-- Etiqueta AR -->
+            <button class="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm text-black px-4 py-2 rounded-full text-xs font-bold flex items-center shadow-lg hover:scale-105 transition-transform cursor-help" title="Disponible en la App Móvil">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+              Ver en AR
+            </button>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Información y Compra -->
+        <div class="md:flex-1 px-4">
+          <h2 class="text-3xl font-extrabold text-gray-900 mb-2">{{ prenda.nombre }}</h2>
+          <p class="text-2xl font-bold text-gray-900 mb-6">Bs. {{ prenda.precio_base }}</p>
+          
+          <p class="text-gray-600 mb-8 leading-relaxed">
+            {{ prenda.descripcion }}
+          </p>
+
+          <!-- Selector de Color (Dinámico) -->
+          <div class="mb-6">
+            <span class="block text-sm font-medium text-gray-700 mb-3">Color: <span class="font-bold text-black">{{ colorSeleccionado || 'Selecciona un color' }}</span></span>
+            <div class="flex flex-wrap gap-3">
+              @for (color of coloresUnicos; track color) {
+                <button 
+                  (click)="seleccionarColor(color)" 
+                  [class.bg-black]="colorSeleccionado === color"
+                  [class.text-white]="colorSeleccionado === color"
+                  [class.border-black]="colorSeleccionado === color"
+                  class="border border-gray-300 rounded-md px-4 py-2 text-sm font-medium hover:border-black transition-colors">
+                  {{ color }}
+                </button>
+              } @empty {
+                <p class="text-sm text-gray-400">No hay colores registrados</p>
+              }
+            </div>
+          </div>
+
+          <!-- Selector de Talla (Dinámico) -->
+          <div class="mb-8">
+            <div class="flex justify-between items-center mb-3">
+              <span class="block text-sm font-medium text-gray-700">Talla: <span class="font-bold text-black">{{ tallaSeleccionada || 'Selecciona una talla' }}</span></span>
+              <a href="#" class="text-sm text-gray-500 underline">Guía de tallas</a>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              @for (talla of tallasUnicas; track talla) {
+                <button 
+                  (click)="seleccionarTalla(talla)" 
+                  [class.bg-black]="tallaSeleccionada === talla" 
+                  [class.text-white]="tallaSeleccionada === talla"
+                  [class.border-black]="tallaSeleccionada === talla"
+                  class="border border-gray-300 rounded-md px-5 py-3 text-sm font-medium hover:border-black transition-colors min-w-[3rem]">
+                  {{ talla }}
+                </button>
+              } @empty {
+                <p class="text-sm text-gray-400">No hay tallas registradas</p>
+              }
+            </div>
+          </div>
+
+          <!-- Mensaje de Stock en Tiempo Real -->
+          <div class="mb-6 h-6">
+            @if (colorSeleccionado && tallaSeleccionada) {
+              @if (stockDisponible > 0) {
+                <div class="text-sm font-medium flex items-center text-green-600">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  Stock disponible: {{ stockDisponible }} unidades
+                </div>
+              } @else {
+                <div class="text-sm font-medium flex items-center text-red-500">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  Agotado para esta combinación
+                </div>
+              }
+            } @else {
+              <div class="text-sm text-gray-500">Selecciona talla y color para ver disponibilidad</div>
+            }
+          </div>
+
+          <!-- Botones de Acción (AQUÍ ESTÁ EL CAMBIO) -->
+          <div class="flex space-x-4 mb-6">
+            <button 
+              (click)="agregarAlCarrito()"
+              [disabled]="stockDisponible === 0"
+              class="flex-1 bg-black text-white py-4 rounded-md font-bold text-lg hover:bg-gray-800 transition-colors flex items-center justify-center disabled:bg-gray-300 disabled:cursor-not-allowed">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+              Agregar al Carrito
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="text-center py-20 text-gray-500">
+      <p class="text-xl">No se encontró la prenda.</p>
+    </div>
+  }
+</div>

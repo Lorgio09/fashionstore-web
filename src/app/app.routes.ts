@@ -15,12 +15,17 @@ import { EntradaInventarioComponent } from './features/entrada-inventario/entrad
 import { GestionUsuariosComponent } from './features/gestion-usuarios/gestion-usuarios';
 import { BitacoraComponent } from './features/bitacora/bitacora';
 import { TemporadasComponent } from './features/temporadas/temporadas';
+import { DashboardComponent } from './features/dashboard/dashboard';
+import { ColeccionesComponent } from './features/colecciones/colecciones';
+import { DetallePrendaComponent } from './features/detalle-prenda/detalle-prenda';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
     { path: 'login', component: LoginComponent },
     { path: 'registro', component: RegistroComponent },
     { path: 'recuperar-password', component: RecuperarPasswordComponent },
+    { path: 'prenda/:id', component: DetallePrendaComponent },
+    { path: 'login', component: LoginComponent },
     
     // ZONA DEL ADMINISTRADOR
     { 
@@ -28,6 +33,8 @@ export const routes: Routes = [
         component: AdminLayoutComponent,
         canActivate: [adminGuard],
         children: [
+            { path: 'dashboard', component: DashboardComponent },
+            
             // Inventario
             { path: 'prendas', component: ListarPrendasComponent },
             { path: 'nueva-prenda', component: CrearPrendaComponent },
@@ -39,11 +46,10 @@ export const routes: Routes = [
             { path: 'gestion-usuarios', component: GestionUsuariosComponent },
             { path: 'auditoria', component: BitacoraComponent },
             { path: 'temporadas', component: TemporadasComponent },
+            { path: 'colecciones', component: ColeccionesComponent },
             
-            // Administración (Las crearemos después)
-            // { path: 'proveedores', component: GestionProveedoresComponent },
-            
-            { path: '', redirectTo: 'prendas', pathMatch: 'full' }
+            // Ahora sí, la redirección por defecto funcionará
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },
     { path: '**', redirectTo: '' }

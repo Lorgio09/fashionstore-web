@@ -23,7 +23,7 @@ export class RegistroComponent {
 
   // Esta función se ejecuta al hacer clic en "Crear cuenta"
   crearCuenta() {
-    this.http.post('http://localhost:8000/api/usuarios/registro', this.datosRegistro)
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/registro', this.datosRegistro)
       .subscribe({
         next: (respuesta) => {
           alert('¡Cuenta creada con éxito! Ya puedes iniciar sesión.');

@@ -23,7 +23,7 @@ export class GestionCategoriasComponent implements OnInit {
   }
 
   cargarCategorias() {
-    this.http.get('http://localhost:8000/api/catalogo/categorias').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/categorias').subscribe({
       next: (data: any) => {
         this.categorias = data;
         this.cdr.detectChanges(); 
@@ -39,7 +39,7 @@ export class GestionCategoriasComponent implements OnInit {
     }
     
     this.cargando = true;
-    this.http.post('http://localhost:8000/api/catalogo/categorias', this.nuevaCategoria).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/categorias', this.nuevaCategoria).subscribe({
       next: () => {
         this.nuevaCategoria.nombre = ''; 
         this.cargarCategorias();         

@@ -45,21 +45,21 @@ export class CrearPrendaComponent implements OnInit {
   }
 
   cargarCategorias() {
-    this.http.get('http://localhost:8000/api/catalogo/categorias').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/categorias').subscribe({
       next: (data: any) => this.categorias = data,
       error: (err) => console.error("Error al cargar categorías", err)
     });
   }
 
   cargarProveedores() {
-    this.http.get('http://localhost:8000/api/catalogo/proveedores').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/proveedores').subscribe({
       next: (data: any) => this.proveedores = data,
       error: (err) => console.error("Error al cargar proveedores", err)
     });
   }
 
   cargarDatosPrenda(id: string) {
-    this.http.get(`http://localhost:8000/api/catalogo/${id}`).subscribe({
+    this.http.get(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${id}`).subscribe({
       next: (data: any) => {
         this.nuevaPrenda = {
           nombre: data.nombre,
@@ -106,7 +106,7 @@ export class CrearPrendaComponent implements OnInit {
 
     if (this.isEditMode) {
       // MODO EDICIÓN (PUT)
-      this.http.put(`http://localhost:8000/api/catalogo/${this.prendaId}`, formData).subscribe({
+      this.http.put(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${this.prendaId}`, formData).subscribe({
         next: () => {
           alert('¡Prenda actualizada con éxito!');
           this.router.navigate(['/admin/prendas']); 
@@ -120,7 +120,7 @@ export class CrearPrendaComponent implements OnInit {
         alert("Selecciona una foto para la nueva prenda.");
         return;
       }
-      this.http.post('http://localhost:8000/api/catalogo/', formData).subscribe({
+      this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/', formData).subscribe({
         next: () => {
           alert('¡Prenda registrada con éxito!');
           this.router.navigate(['/admin/prendas']); // Volvemos a la tabla

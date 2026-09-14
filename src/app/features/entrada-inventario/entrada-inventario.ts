@@ -34,7 +34,7 @@ export class EntradaInventarioComponent implements OnInit {
   }
 
   cargarPrendas() {
-    this.http.get('http://localhost:8000/api/catalogo/').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
       next: (data: any) => { 
         this.prendas = data; 
         this.cdr.detectChanges(); 
@@ -44,7 +44,7 @@ export class EntradaInventarioComponent implements OnInit {
   }
 
   cargarSucursales() {
-    this.http.get('http://localhost:8000/api/catalogo/sucursales').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales').subscribe({
       next: (data: any) => { 
         this.sucursales = data; 
         this.cdr.detectChanges(); 
@@ -60,7 +60,7 @@ export class EntradaInventarioComponent implements OnInit {
     }
 
     this.cargando = true;
-    this.http.post('http://localhost:8000/api/catalogo/variantes-stock', this.nuevaEntrada).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/variantes-stock', this.nuevaEntrada).subscribe({
       next: () => {
         alert('¡Inventario registrado con éxito!');
         this.nuevaEntrada = { prenda_id: null, talla: '', color: '', codigo_sku: '', sucursal_id: null, cantidad: 1 };

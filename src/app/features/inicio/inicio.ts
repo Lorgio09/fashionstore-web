@@ -4,11 +4,10 @@ import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { ScrollRevealDirective } from '../../shared/scroll-reveal';
 
-
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [RouterLink,ScrollRevealDirective],
+  imports: [RouterLink, ScrollRevealDirective],
   styleUrl: './inicio.scss',
   templateUrl: './inicio.html',
   animations: [
@@ -32,8 +31,6 @@ import { ScrollRevealDirective } from '../../shared/scroll-reveal';
 })
 export class InicioComponent implements OnInit {
   nombreUsuario: string | null = null;
-  
-  // Aquí guardaremos la lista de prendas que llegue del backend
   prendas: any[] = []; 
 
   constructor(private http: HttpClient) {}
@@ -43,14 +40,14 @@ export class InicioComponent implements OnInit {
       this.nombreUsuario = localStorage.getItem('usuarioNombre');
     }
     
-    // Llamamos a la función apenas cargue el componente
     this.cargarCatalogo();
   }
 
   cargarCatalogo() {
-    this.http.get('http://localhost:8000/api/catalogo').subscribe({
+    // Aseguramos la barra final para que coincida exactamente con tu router de FastAPI
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
       next: (datos: any) => {
-        this.prendas = datos; // Guardamos los datos en nuestra variable
+        this.prendas = datos; 
       },
       error: (error) => {
         console.error("Error al cargar el catálogo:", error);
@@ -67,7 +64,7 @@ export class InicioComponent implements OnInit {
   }
 
   probarCandado() {
-    this.http.get('http://localhost:8000/api/usuarios/perfil').subscribe({
+    this.http.get('https://fashionstore-api-kedu.onrender.com/api/usuarios/perfil').subscribe({
       next: (respuesta: any) => {
         alert(respuesta.mensaje);
       },
