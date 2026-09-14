@@ -10,6 +10,20 @@ import { join } from 'node:path';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+
+// ==========================================
+// PARCHE DE SEGURIDAD PARA RENDER
+// ==========================================
+app.set('trust proxy', true);
+app.use((req, res, next) => {
+  req.headers['host'] = 'localhost';
+  delete req.headers['x-forwarded-for'];
+  delete req.headers['x-forwarded-proto'];
+  delete req.headers['x-forwarded-host'];
+  next();
+});
+// ==========================================
+
 const angularApp = new AngularNodeAppEngine();
 
 /**
