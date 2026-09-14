@@ -20,7 +20,7 @@ export class LoginComponent {
   constructor(private http: HttpClient, private router: Router) {}
 
   iniciarSesion() {
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/login', this.datosLogin).subscribe({
+    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/registro/cliente', this.datosLogin).subscribe({
       next: (respuesta: any) => {
         const token = respuesta.access_token;
         localStorage.setItem('token', token); // Guardamos el token
