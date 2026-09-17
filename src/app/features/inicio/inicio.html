@@ -13,13 +13,21 @@
       
       <!-- Menú Dinámico conectado a inicio.ts -->
       <div class="flex items-center space-x-6">
+        <a routerLink="/carrito" class="relative text-gray-600 hover:text-black transition-colors cursor-pointer mr-2">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+          <!-- BURBUJA DEL CONTADOR (Solo aparece si hay > 0 prendas) -->
+          @if (cantidadCarrito > 0) {
+            <span class="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+              {{ cantidadCarrito }}
+            </span>
+          }
+        </a>
         @if (nombreUsuario) {
           <span class="text-sm font-medium text-gray-900">
             Hola, <span class="font-bold">{{ nombreUsuario }}</span>
           </span>
-          <button (click)="probarCandado()" class="bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors">
-            Probar zona privada
-          </button>
           <button (click)="cerrarSesion()" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors">
             Cerrar sesión
           </button>

@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { CarritoService } from '../../core/services/carrito';
+import { CarritoService } from '../../shared/services/carrito.service';
 
 @Component({
   selector: 'app-detalle-prenda',
@@ -89,14 +89,15 @@ export class DetallePrendaComponent implements OnInit {
     }
   }
 
-  agregarAlCarrito() {
+agregarAlCarrito() {
     if (!this.colorSeleccionado || !this.tallaSeleccionada) return;
 
     // Buscamos el ID exacto de la variante seleccionada
     const variante = this.variantes.find(v => v.color === this.colorSeleccionado && v.talla === this.tallaSeleccionada);
     
     if (variante) {
-      this.carritoService.agregarAlCarrito({
+      // Usamos agregarItem (el nombre real del método en el servicio)
+      this.carritoService.agregarItem({
         prenda_id: this.prenda.id,
         variante_id: variante.id,
         nombre: this.prenda.nombre,
@@ -107,7 +108,7 @@ export class DetallePrendaComponent implements OnInit {
         imagen_url: this.prenda.imagen_url
       });
 
-      alert('¡Agregado al carrito de compras!');
+      alert('¡Prenda agregada a tu carrito!');
     }
   }
 }

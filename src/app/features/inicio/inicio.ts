@@ -3,6 +3,7 @@ import { RouterLink, Router } from '@angular/router'; // Añadimos Router
 import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { ScrollRevealDirective } from '../../shared/scroll-reveal';
+import { CarritoService } from '../../shared/services/carrito.service';
 
 @Component({
   selector: 'app-inicio',
@@ -32,13 +33,18 @@ import { ScrollRevealDirective } from '../../shared/scroll-reveal';
 export class InicioComponent implements OnInit {
   nombreUsuario: string | null = null;
   prendas: any[] = []; 
+  cantidadCarrito: number = 0;
 
   // Inyectamos el Router para poder redireccionar al cerrar sesión
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private carritoService: CarritoService) {}
 
   ngOnInit() {
-    this.verificarSesion(); // Cambiamos la lógica aquí
+    this.verificarSesion(); 
     this.cargarCatalogo();
+    this.carritoService.carrito$.subscribe(items => {
+      // Suma la cantidad total de prendas
+      this.cantidadCarrito = items.reduce((total, item) => total + item.cantidad, 0);
+    });
   }
 
   // Nueva función que lee y decodifica el JWT
