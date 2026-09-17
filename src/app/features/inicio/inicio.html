@@ -1,40 +1,40 @@
 <div class="min-h-screen bg-white">
   
   <!-- 1. BARRA DE NAVEGACIÓN (Navbar) -->
-  <nav class="sticky top-0 border-b border-gray-100 bg-white/95 backdrop-blur-sm relative z-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-20 items-center">
-        <!-- Logo -->
-        <div class="flex-shrink-0 flex items-center cursor-pointer" routerLink="/">
-          <h1 class="text-2xl font-extrabold tracking-tight text-gray-900">
-            FASHION<span class="text-gray-400">STORE</span>
-          </h1>
-        </div>
-        
-        <!-- Menú Dinámico -->
-        <div class="flex items-center space-x-6">
-          @if (nombreUsuario) {
-            <span class="text-sm font-medium text-gray-900">
-              Hola, <span class="font-bold">{{ nombreUsuario }}</span>
-            </span>
-            <button (click)="probarCandado()" class="bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors">
-              Probar zona privada
-            </button>
-            <button (click)="cerrarSesion()" class="text-sm font-medium text-gray-500 hover:text-black transition-colors">
-              Cerrar sesión
-            </button>
-          } @else {
-            <a routerLink="/login" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">
-              Iniciar sesión
-            </a>
-            <a routerLink="/registro" class="bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors">
-              Crear cuenta
-            </a>
-          }
-        </div>
+<nav class="sticky top-0 border-b border-gray-100 bg-white/95 backdrop-blur-sm relative z-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-20 items-center">
+      <!-- Logo -->
+      <div class="flex-shrink-0 flex items-center cursor-pointer" routerLink="/">
+        <h1 class="text-2xl font-extrabold tracking-tight text-gray-900">
+          FASHION<span class="text-gray-400">STORE</span>
+        </h1>
+      </div>
+      
+      <!-- Menú Dinámico conectado a inicio.ts -->
+      <div class="flex items-center space-x-6">
+        @if (nombreUsuario) {
+          <span class="text-sm font-medium text-gray-900">
+            Hola, <span class="font-bold">{{ nombreUsuario }}</span>
+          </span>
+          <button (click)="probarCandado()" class="bg-black text-white px-4 py-2 text-sm font-medium hover:bg-gray-800 transition-colors">
+            Probar zona privada
+          </button>
+          <button (click)="cerrarSesion()" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors">
+            Cerrar sesión
+          </button>
+        } @else {
+          <a routerLink="/login" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">
+            Iniciar sesión
+          </a>
+          <a routerLink="/registro" class="bg-black text-white px-5 py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors">
+            Crear cuenta
+          </a>
+        }
       </div>
     </div>
-  </nav>
+  </div>
+</nav>
 
   <!-- 2. HERO SECTION -->
   <div class="relative bg-black text-white overflow-hidden">

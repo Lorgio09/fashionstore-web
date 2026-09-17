@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router'; // Añadimos Router
 import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { ScrollRevealDirective } from '../../shared/scroll-reveal';
@@ -33,18 +33,31 @@ export class InicioComponent implements OnInit {
   nombreUsuario: string | null = null;
   prendas: any[] = []; 
 
-  constructor(private http: HttpClient) {}
+  // Inyectamos el Router para poder redireccionar al cerrar sesión
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit() {
-    if (typeof localStorage !== 'undefined') {
-      this.nombreUsuario = localStorage.getItem('usuarioNombre');
-    }
-    
+    this.verificarSesion(); // Cambiamos la lógica aquí
     this.cargarCatalogo();
   }
 
+  // Nueva función que lee y decodifica el JWT
+  verificarSesion() {
+    if (typeof localStorage !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // Decodificamos el payload del JWT
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          this.nombreUsuario = payload.nombre; // Extraemos el nombre que guardó FastAPI
+        } catch (e) {
+          this.cerrarSesion();
+        }
+      }
+    }
+  }
+
   cargarCatalogo() {
-    // Aseguramos la barra final para que coincida exactamente con tu router de FastAPI
     this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
       next: (datos: any) => {
         this.prendas = datos; 
@@ -58,9 +71,9 @@ export class InicioComponent implements OnInit {
   cerrarSesion() {
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem('token');
-      localStorage.removeItem('usuarioNombre');
     }
     this.nombreUsuario = null; 
+    this.router.navigate(['/login']); // Redireccionamos al login
   }
 
   probarCandado() {
