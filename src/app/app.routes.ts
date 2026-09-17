@@ -19,6 +19,7 @@ import { DashboardComponent } from './features/dashboard/dashboard';
 import { ColeccionesComponent } from './features/colecciones/colecciones';
 import { DetallePrendaComponent } from './features/detalle-prenda/detalle-prenda';
 import { CarritoComponent } from './features/carrito/carrito';
+import { CheckoutComponent } from './features/checkout/checkout';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -28,6 +29,7 @@ export const routes: Routes = [
     { path: 'prenda/:id', component: DetallePrendaComponent },
     { path: 'login', component: LoginComponent },
     {path: 'carrito', component: CarritoComponent},
+    {path: 'checkout', component: CheckoutComponent},
     
     // ZONA DEL ADMINISTRADOR
     { 
