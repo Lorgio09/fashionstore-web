@@ -18,6 +18,7 @@ import { TemporadasComponent } from './features/temporadas/temporadas';
 import { DashboardComponent } from './features/dashboard/dashboard';
 import { ColeccionesComponent } from './features/colecciones/colecciones';
 import { DetallePrendaComponent } from './features/detalle-prenda/detalle-prenda';
+import { CarritoComponent } from './features/carrito/carrito';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -26,6 +27,7 @@ export const routes: Routes = [
     { path: 'recuperar-password', component: RecuperarPasswordComponent },
     { path: 'prenda/:id', component: DetallePrendaComponent },
     { path: 'login', component: LoginComponent },
+    {path: 'carrito', component: CarritoComponent},
     
     // ZONA DEL ADMINISTRADOR
     { 
