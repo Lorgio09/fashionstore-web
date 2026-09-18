@@ -16,12 +16,12 @@ export class CheckoutComponent implements OnInit {
   total: number = 0;
   procesando: boolean = false;
 
-  // Molde para los datos del cliente
+  // Nuevas variables para atrapar el pago
+  qrBase64: string | null = null;
+  ordenId: number | null = null;
+
   cliente = {
-    nombre: '',
-    correo: '',
-    telefono: '',
-    direccion: ''
+    nombre: '', correo: '', telefono: '', direccion: ''
   };
 
   constructor(
@@ -36,8 +36,7 @@ export class CheckoutComponent implements OnInit {
       this.total = this.items.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
     });
 
-    // Si el carrito está vacío, lo devolvemos a la tienda
-    if (this.items.length === 0) {
+    if (this.items.length === 0 && !this.qrBase64) {
       this.router.navigate(['/']);
     }
   }
@@ -50,7 +49,6 @@ export class CheckoutComponent implements OnInit {
 
     this.procesando = true;
 
-    // Empacamos los datos exactamente como los espera FastAPI (Pydantic: OrdenCreate)
     const payload = {
       nombre_cliente: this.cliente.nombre,
       correo_cliente: this.cliente.correo,
@@ -64,23 +62,27 @@ export class CheckoutComponent implements OnInit {
       }))
     };
 
-    // Enviamos la petición al endpoint que acabas de crear
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout', payload)
+    const API_URL = 'https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/bcp-qr'; 
+
+    this.http.post(API_URL, payload)
       .subscribe({
         next: (respuesta: any) => {
-          alert('¡Compra exitosa! Tu número de orden es: ' + respuesta.orden_id);
+          this.procesando = false;
           
-          // Limpiamos la memoria del navegador
-          if (typeof localStorage !== 'undefined') {
-            localStorage.removeItem('carrito_compras');
+          if (respuesta.qr_imagen_base64) {
+            // Guardamos el QR en memoria para que Angular lo dibuje
+            this.qrBase64 = respuesta.qr_imagen_base64;
+            this.ordenId = respuesta.orden_id;
+            
+            // Limpiamos el carrito local
+            if (typeof localStorage !== 'undefined') {
+              localStorage.removeItem('carrito_compras');
+            }
           }
-          
-          // Redirigimos al inicio recargando para limpiar los estados
-          window.location.href = '/';
         },
         error: (err) => {
           console.error("Error en la compra:", err);
-          alert('Error al procesar la compra: ' + (err.error?.detail || 'Intenta de nuevo más tarde'));
+          alert('Error al generar el pago: ' + (err.error?.detail || 'Intenta de nuevo.'));
           this.procesando = false;
         }
       });
