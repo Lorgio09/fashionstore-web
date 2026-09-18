@@ -20,6 +20,7 @@ import { ColeccionesComponent } from './features/colecciones/colecciones';
 import { DetallePrendaComponent } from './features/detalle-prenda/detalle-prenda';
 import { CarritoComponent } from './features/carrito/carrito';
 import { CheckoutComponent } from './features/checkout/checkout';
+import { PuntoVenta } from './features/admin/punto-venta/punto-venta';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -27,32 +28,102 @@ export const routes: Routes = [
     { path: 'registro', component: RegistroComponent },
     { path: 'recuperar-password', component: RecuperarPasswordComponent },
     { path: 'prenda/:id', component: DetallePrendaComponent },
-    { path: 'login', component: LoginComponent },
-    {path: 'carrito', component: CarritoComponent},
-    {path: 'checkout', component: CheckoutComponent},
+    { path: 'carrito', component: CarritoComponent },
+    { path: 'checkout', component: CheckoutComponent },
     
-    // ZONA DEL ADMINISTRADOR
+    // ZONA DEL ADMINISTRADOR Y EMPLEADOS
     { 
         path: 'admin', 
         component: AdminLayoutComponent,
         canActivate: [adminGuard],
+        // 1. Permitimos que TANTO el Admin (2) COMO el Encargado (3) entren al contenedor principal
+        data: { roles: [2, 3] }, 
         children: [
-            { path: 'dashboard', component: DashboardComponent },
+            { 
+                path: 'punto-venta', 
+                component: PuntoVenta,
+                canActivate: [adminGuard],
+                data: { roles: [4] } // Solo el Cajero
+            },
+            { 
+                path: 'dashboard', 
+                component: DashboardComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] } // Solo Admin
+            },
             
-            // Inventario
-            { path: 'prendas', component: ListarPrendasComponent },
-            { path: 'nueva-prenda', component: CrearPrendaComponent },
-            { path: 'editar-prenda/:id', component: CrearPrendaComponent },
-            { path: 'categorias-tallas', component: GestionCategoriasComponent },
-            { path: 'proveedores', component: GestionProveedoresComponent },
-            { path: 'sucursales', component: GestionSucursalesComponent },
-            { path: 'entrada-inventario', component: EntradaInventarioComponent },
-            { path: 'gestion-usuarios', component: GestionUsuariosComponent },
-            { path: 'auditoria', component: BitacoraComponent },
-            { path: 'temporadas', component: TemporadasComponent },
-            { path: 'colecciones', component: ColeccionesComponent },
+            // --- Módulo de Inventario ---
+            { 
+                path: 'prendas', 
+                component: ListarPrendasComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] } // Solo Admin
+            },
+            { 
+                path: 'nueva-prenda', 
+                component: CrearPrendaComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
+            { 
+                path: 'editar-prenda/:id', 
+                component: CrearPrendaComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
+            { 
+                path: 'categorias-tallas', 
+                component: GestionCategoriasComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
+            { 
+                path: 'temporadas', 
+                component: TemporadasComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
+            { 
+                path: 'colecciones', 
+                component: ColeccionesComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
             
-            // Ahora sí, la redirección por defecto funcionará
+            // --- Operaciones Operativas (Aquí entra el Encargado) ---
+            { 
+                path: 'entrada-inventario', 
+                component: EntradaInventarioComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2, 3] } // Admin Y Encargado de sucursal
+            },
+
+            // --- Módulo Estructural ---
+            { 
+                path: 'proveedores', 
+                component: GestionProveedoresComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
+            { 
+                path: 'sucursales', 
+                component: GestionSucursalesComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
+            { 
+                path: 'gestion-usuarios', 
+                component: GestionUsuariosComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] }
+            },
+            { 
+                path: 'auditoria', 
+                component: BitacoraComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2] } // Solo Admin
+            },
+            
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
         ]
     },

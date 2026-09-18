@@ -1,0 +1,88 @@
+<div class="flex h-full gap-6">
+  
+  <!-- PANEL IZQUIERDO: Catálogo y Búsqueda -->
+  <div class="flex-1 flex flex-col bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+    <div class="p-4 border-b border-gray-200 bg-gray-50">
+      <input type="text" placeholder="Buscar por código (SKU) o nombre de la prenda..." 
+             class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-black focus:border-black">
+    </div>
+    
+    <!-- Grilla de productos (Ejemplo estático) -->
+    <div class="p-4 grid grid-cols-3 gap-4 overflow-y-auto">
+      <!-- Envuelve esto en un @for para iterar 'productosDisponibles' -->
+      <div class="border border-gray-200 p-3 rounded-lg hover:border-black cursor-pointer transition-colors"
+           (click)="agregarAlCarrito({id: 1, nombre: 'Camiseta Básica Negra', precio: 150})">
+        <div class="h-24 bg-gray-100 rounded mb-2 flex items-center justify-center text-gray-400">IMG</div>
+        <h3 class="text-sm font-bold text-gray-800 line-clamp-1">Camiseta Básica Negra</h3>
+        <p class="text-xs text-gray-500">Talla: M | Color: Negro</p>
+        <p class="text-md font-extrabold mt-1">150 Bs.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL DERECHO: Ticket y Pagos -->
+  <div class="w-96 bg-white rounded-lg shadow border border-gray-200 flex flex-col">
+    <div class="p-4 border-b border-gray-200 bg-black text-white">
+      <h2 class="text-lg font-bold">Ticket de Venta</h2>
+    </div>
+
+    <!-- Lista de Items en el carrito -->
+    <div class="flex-1 p-4 overflow-y-auto space-y-3">
+      @if (carrito.length === 0) {
+        <p class="text-center text-gray-400 text-sm mt-10">Agregue productos para comenzar</p>
+      }
+      
+      @for (item of carrito; track item.id; let i = $index) {
+        <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+          <div>
+            <p class="text-sm font-bold text-gray-800">{{ item.nombre }}</p>
+            <p class="text-xs text-gray-500">{{ item.cantidad }} x {{ item.precio }} Bs.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-bold">{{ item.precio * item.cantidad }} Bs.</span>
+            <button (click)="quitarDelCarrito(i)" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Totales y Métodos de Pago -->
+    <div class="p-4 bg-gray-50 border-t border-gray-200">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-gray-600 font-bold">TOTAL A COBRAR</span>
+        <span class="text-2xl font-extrabold text-black">{{ total }} Bs.</span>
+      </div>
+
+      <p class="text-xs font-bold text-gray-500 mb-2 uppercase">Método de Pago en Caja</p>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button (click)="seleccionarMetodo('EFECTIVO')" 
+                [class.bg-black]="metodoPagoSeleccionado === 'EFECTIVO'"
+                [class.text-white]="metodoPagoSeleccionado === 'EFECTIVO'"
+                [class.bg-white]="metodoPagoSeleccionado !== 'EFECTIVO'"
+                class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors">
+          Efectivo
+        </button>
+        <button (click)="seleccionarMetodo('QR')" 
+                [class.bg-black]="metodoPagoSeleccionado === 'QR'"
+                [class.text-white]="metodoPagoSeleccionado === 'QR'"
+                [class.bg-white]="metodoPagoSeleccionado !== 'QR'"
+                class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors">
+          QR
+        </button>
+        <button (click)="seleccionarMetodo('TARJETA')" 
+                [class.bg-black]="metodoPagoSeleccionado === 'TARJETA'"
+                [class.text-white]="metodoPagoSeleccionado === 'TARJETA'"
+                [class.bg-white]="metodoPagoSeleccionado !== 'TARJETA'"
+                class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors">
+          Tarjeta
+        </button>
+      </div>
+
+      <button (click)="confirmarVenta()" 
+              [disabled]="carrito.length === 0 || procesando"
+              class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold text-lg transition-colors disabled:bg-gray-300">
+        {{ procesando ? 'Procesando...' : 'CONFIRMAR E IMPRIMIR' }}
+      </button>
+    </div>
+  </div>
+</div>
