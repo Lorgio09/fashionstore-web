@@ -36,7 +36,7 @@
     </form>
   </div>
 } @else {
-  <!-- PANTALLA DE PAGO QR (Aparece instantáneamente al recibir la respuesta) -->
+  <!-- PANTALLA DE PAGO QR -->
   <div class="bg-gray-50 border border-gray-200 p-8 flex flex-col items-center justify-center text-center">
     <h2 class="text-2xl font-bold text-gray-900 mb-2">Escanea para Pagar</h2>
     <p class="text-gray-600 mb-6">Abre la aplicación de tu banco o billetera móvil y escanea este código.</p>
@@ -49,8 +49,16 @@
       Orden #{{ ordenId }} • Total a pagar: Bs. {{ total }}
     </div>
 
-    <a href="/" class="text-gray-500 hover:text-black font-medium transition-colors underline">
-      Volver a la tienda
-    </a>
+    <!-- BOTONES DE SIMULACIÓN -->
+    <div class="flex gap-4 w-full max-w-sm">
+      <button (click)="simularRechazo()" [disabled]="simulando" 
+              class="flex-1 bg-red-100 text-red-700 py-3 rounded-lg font-bold hover:bg-red-200 transition-colors disabled:opacity-50">
+        Simular Rechazo
+      </button>
+      <button (click)="simularPago()" [disabled]="simulando" 
+              class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors disabled:opacity-50">
+        Simular Pago
+      </button>
+    </div>
   </div>
 }

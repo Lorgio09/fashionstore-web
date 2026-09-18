@@ -30,6 +30,42 @@ export class CheckoutComponent implements OnInit {
     private router: Router
   ) {}
 
+simulando: boolean = false;
+
+  simularPago() {
+    if (!this.ordenId) return;
+    this.simulando = true;
+    
+    this.http.post(`https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/${this.ordenId}/simular-pago`, {})
+      .subscribe({
+        next: () => {
+          alert('¡Pago confirmado! El stock ha sido descontado y tu orden está en preparación.');
+          window.location.href = '/'; 
+        },
+        error: (err) => {
+          alert('Error al simular pago: ' + (err.error?.detail || 'Error desconocido'));
+          this.simulando = false;
+        }
+      });
+  }
+
+  simularRechazo() {
+    if (!this.ordenId) return;
+    this.simulando = true;
+
+    this.http.post(`https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/${this.ordenId}/simular-rechazo`, {})
+      .subscribe({
+        next: () => {
+          alert('El pago ha sido rechazado. La orden fue cancelada.');
+          window.location.href = '/'; // Volvemos al inicio
+        },
+        error: (err) => {
+          alert('Error al simular rechazo: ' + (err.error?.detail || 'Error desconocido'));
+          this.simulando = false;
+        }
+      });
+  }
+
   ngOnInit() {
     this.carritoService.carrito$.subscribe(datos => {
       this.items = datos;
