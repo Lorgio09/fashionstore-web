@@ -1,43 +1,43 @@
 <!-- Formulario de Datos (Solo visible si no hay QR) -->
 @if (!qrBase64) {
   <div>
-    <h2 class="text-2xl font-bold text-gray-900 mb-6">Detalles de Facturación y Envío</h2>
+    <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight mb-6">Detalles de Facturación y Envío</h2>
     
     <form (ngSubmit)="confirmarCompra()" class="space-y-6">
       
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Nombre completo *</label>
         <input type="text" [(ngModel)]="cliente.nombre" name="nombre" required 
-              class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+              class="w-full border border-gray-300 p-3 text-gray-900 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors">
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico *</label>
         <input type="email" [(ngModel)]="cliente.correo" name="correo" required 
-              class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+              class="w-full border border-gray-300 p-3 text-gray-900 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors">
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono de contacto *</label>
         <input type="tel" [(ngModel)]="cliente.telefono" name="telefono" required 
-              class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+              class="w-full border border-gray-300 p-3 text-gray-900 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors">
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Dirección de envío (Opcional si recoges en tienda)</label>
         <textarea [(ngModel)]="cliente.direccion" name="direccion" rows="3"
-                  class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black"></textarea>
+                  class="w-full border border-gray-300 p-3 text-gray-900 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-colors"></textarea>
       </div>
 
       <!-- Botones de Pago -->
-      <div class="flex flex-col gap-4 pt-4">
+      <div class="flex flex-col gap-3 pt-4">
         <button type="button" (click)="confirmarCompra()" [disabled]="procesando" 
-                class="w-full bg-black text-white py-4 font-bold hover:bg-gray-800 transition-colors disabled:bg-gray-400">
+                class="w-full bg-black text-white py-4 font-bold tracking-wide hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed">
           {{ procesando ? 'Procesando...' : 'Pagar con QR (BCP)' }}
         </button>
 
         <button type="button" (click)="pagarConStripe()" [disabled]="procesando" 
-                class="w-full bg-indigo-600 text-white py-4 font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400">
+                class="w-full bg-white text-black border-2 border-black py-4 font-bold tracking-wide hover:bg-black hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-black">
           {{ procesando ? 'Procesando...' : 'Pagar con Tarjeta (Stripe)' }}
         </button>
       </div>
@@ -46,27 +46,30 @@
 } @else {
   <!-- PANTALLA DE PAGO QR -->
   <div class="bg-gray-50 border border-gray-200 p-8 flex flex-col items-center justify-center text-center">
-    <h2 class="text-2xl font-bold text-gray-900 mb-2">Escanea para Pagar</h2>
-    <p class="text-gray-600 mb-6">Abre la aplicación de tu banco o billetera móvil y escanea este código.</p>
+    <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight mb-2">Escanea para Pagar</h2>
+    <p class="text-gray-500 mb-6">Abre la aplicación de tu banco o billetera móvil y escanea este código.</p>
     
-    <div class="border-4 border-black p-4 rounded-xl bg-white mb-6">
+    <div class="border border-gray-200 p-4 bg-white mb-6 shadow-sm">
       <img [src]="'data:image/png;base64,' + qrBase64" alt="Código QR BCP" class="w-64 h-64 object-contain">
     </div>
     
-    <div class="text-sm font-medium text-gray-900 bg-white px-4 py-2 border border-gray-200 rounded-full mb-6">
+    <div class="text-sm font-medium text-gray-900 bg-white px-4 py-2 border border-gray-200 rounded-full mb-8">
       Orden #{{ ordenId }} • Total a pagar: Bs. {{ total }}
     </div>
 
     <!-- BOTONES DE SIMULACIÓN -->
-    <div class="flex gap-4 w-full max-w-sm">
-      <button (click)="simularRechazo()" [disabled]="simulando" 
-              class="flex-1 bg-red-100 text-red-700 py-3 rounded-lg font-bold hover:bg-red-200 transition-colors disabled:opacity-50">
-        Simular Rechazo
-      </button>
-      <button (click)="simularPago()" [disabled]="simulando" 
-              class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors disabled:opacity-50">
-        Simular Pago
-      </button>
+    <div class="w-full max-w-sm">
+      <p class="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Simulación de pago</p>
+      <div class="flex gap-3">
+        <button (click)="simularRechazo()" [disabled]="simulando" 
+                class="flex-1 bg-white text-gray-700 border border-gray-300 py-3 font-bold hover:border-black hover:text-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          Simular Rechazo
+        </button>
+        <button (click)="simularPago()" [disabled]="simulando" 
+                class="flex-1 bg-black text-white py-3 font-bold hover:bg-gray-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          Simular Pago
+        </button>
+      </div>
     </div>
   </div>
 }
