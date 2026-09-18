@@ -4,8 +4,31 @@
     <h2 class="text-2xl font-bold text-gray-900 mb-6">Detalles de Facturación y Envío</h2>
     
     <form (ngSubmit)="confirmarCompra()" class="space-y-6">
-      <!-- (Conserva todos tus inputs de nombre, correo, telefono y dirección aquí) -->
       
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre completo *</label>
+        <input type="text" [(ngModel)]="cliente.nombre" name="nombre" required 
+               class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico *</label>
+        <input type="email" [(ngModel)]="cliente.correo" name="correo" required 
+               class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono de contacto *</label>
+        <input type="tel" [(ngModel)]="cliente.telefono" name="telefono" required 
+               class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Dirección de envío (Opcional si recoges en tienda)</label>
+        <textarea [(ngModel)]="cliente.direccion" name="direccion" rows="3"
+                  class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black"></textarea>
+      </div>
+
       <button type="submit" [disabled]="procesando" 
               class="w-full bg-black text-white py-4 font-bold hover:bg-gray-800 transition-colors disabled:bg-gray-400">
         {{ procesando ? 'Generando QR Seguro...' : 'Pagar con QR (BCP)' }}
@@ -19,7 +42,6 @@
     <p class="text-gray-600 mb-6">Abre la aplicación de tu banco o billetera móvil y escanea este código.</p>
     
     <div class="border-4 border-black p-4 rounded-xl bg-white mb-6">
-      <!-- Magia de Angular: Convierte el texto Base64 en una imagen real -->
       <img [src]="'data:image/png;base64,' + qrBase64" alt="Código QR BCP" class="w-64 h-64 object-contain">
     </div>
     
