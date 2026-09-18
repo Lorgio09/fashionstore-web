@@ -20,7 +20,7 @@ import { ColeccionesComponent } from './features/colecciones/colecciones';
 import { DetallePrendaComponent } from './features/detalle-prenda/detalle-prenda';
 import { CarritoComponent } from './features/carrito/carrito';
 import { CheckoutComponent } from './features/checkout/checkout';
-import { PuntoVenta } from './features/admin/punto-venta/punto-venta';
+import { PuntoVentaComponent } from './features/admin/punto-venta/punto-venta';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -41,7 +41,7 @@ export const routes: Routes = [
         children: [
             { 
                 path: 'punto-venta', 
-                component: PuntoVenta,
+                component: PuntoVentaComponent,
                 canActivate: [adminGuard],
                 data: { roles: [4] } // Solo el Cajero
             },
