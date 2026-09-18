@@ -1,46 +1,46 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-  <h1 class="text-3xl font-extrabold text-gray-900 mb-8">Tu Carrito de Compras</h1>
+  <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mb-8">Tu Carrito de Compras</h1>
 
   @if (items.length > 0) {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
       
       <!-- Lista de Productos (Izquierda) -->
-      <div class="lg:col-span-2 space-y-6">
+      <div class="lg:col-span-2 space-y-4">
         @for (item of items; track item.variante_id) {
-          <div class="flex items-center gap-6 p-4 bg-white border border-gray-100 shadow-sm">
+          <div class="flex items-center gap-6 p-4 bg-white border border-gray-200 rounded-md hover:shadow-sm transition-shadow">
             <!-- Imagen -->
-            <img [src]="item.imagen_url" alt="{{ item.nombre }}" class="w-24 h-32 object-cover bg-gray-50">
+            <img [src]="item.imagen_url" alt="{{ item.nombre }}" class="w-24 h-32 object-cover bg-gray-50 rounded-sm flex-shrink-0">
             
             <!-- Detalles -->
-            <div class="flex-1">
-              <h3 class="font-bold text-lg text-gray-900">{{ item.nombre }}</h3>
-              <p class="text-sm text-gray-500 mt-1">Talla: <span class="font-medium text-gray-900">{{ item.talla }}</span> | Color: <span class="font-medium text-gray-900">{{ item.color }}</span></p>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-lg text-gray-900 truncate">{{ item.nombre }}</h3>
+              <p class="text-sm text-gray-500 mt-1">Talla: <span class="font-medium text-gray-900">{{ item.talla }}</span> · Color: <span class="font-medium text-gray-900">{{ item.color }}</span></p>
               <p class="text-sm text-gray-500 mt-1">Cantidad: {{ item.cantidad }}</p>
             </div>
             
             <!-- Precio -->
-            <div class="text-right">
+            <div class="text-right flex-shrink-0">
               <p class="text-xl font-black text-gray-900">Bs. {{ item.precio * item.cantidad }}</p>
             </div>
           </div>
         }
 
-        <button (click)="vaciarCarrito()" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors mt-4">
+        <button (click)="vaciarCarrito()" class="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors mt-4">
           Vaciar carrito
         </button>
       </div>
 
       <!-- Resumen del Pedido (Derecha) -->
-      <div class="bg-gray-50 p-6 border border-gray-100 h-fit">
-        <h2 class="text-xl font-bold text-gray-900 mb-6">Resumen del pedido</h2>
+      <div class="bg-gray-50 p-6 border border-gray-200 rounded-md h-fit lg:sticky lg:top-6">
+        <h2 class="text-xl font-extrabold text-gray-900 tracking-tight mb-6">Resumen del pedido</h2>
         
-        <div class="flex justify-between text-gray-600 mb-4">
+        <div class="flex justify-between text-sm text-gray-600 mb-4">
           <span>Subtotal</span>
-          <span>Bs. {{ total }}</span>
+          <span class="font-medium text-gray-900">Bs. {{ total }}</span>
         </div>
-        <div class="flex justify-between text-gray-600 mb-4 pb-4 border-b border-gray-200">
+        <div class="flex justify-between text-sm text-gray-600 mb-4 pb-4 border-b border-gray-200">
           <span>Envío o Recojo</span>
-          <span class="text-green-600 font-medium">Gratis en sucursal</span>
+          <span class="font-medium text-gray-900">Gratis en sucursal</span>
         </div>
         
         <div class="flex justify-between text-xl font-black text-gray-900 mb-8">
@@ -49,10 +49,10 @@
         </div>
 
         <!-- Botón de Checkout -->
-        <button routerLink="/checkout" class="w-full bg-black text-white py-4 text-sm font-bold hover:bg-gray-800 transition-colors">
+        <button routerLink="/checkout" class="w-full bg-black text-white py-3.5 rounded-md text-sm font-bold tracking-wide hover:bg-gray-800 transition-colors">
           Continuar con el Pago
         </button>
-        <a routerLink="/" class="block text-center mt-4 text-sm font-medium text-gray-600 hover:text-black">
+        <a routerLink="/" class="block text-center mt-4 text-sm font-medium text-gray-500 hover:text-black transition-colors">
           Seguir comprando
         </a>
       </div>
@@ -60,13 +60,13 @@
     </div>
   } @else {
     <!-- Estado Vacío -->
-    <div class="text-center py-20 bg-gray-50 border border-gray-100">
+    <div class="text-center py-20 bg-gray-50 border border-gray-200 rounded-md">
       <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
       </svg>
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">Tu carrito está vacío</h2>
+      <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight mb-2">Tu carrito está vacío</h2>
       <p class="text-gray-500 mb-8">Parece que aún no has agregado nada a tu carrito.</p>
-      <a routerLink="/" class="bg-black text-white px-8 py-3 font-bold hover:bg-gray-800 transition-colors">
+      <a routerLink="/" class="inline-block bg-black text-white px-8 py-3 rounded-md text-sm font-bold tracking-wide hover:bg-gray-800 transition-colors">
         Explorar Catálogo
       </a>
     </div>
