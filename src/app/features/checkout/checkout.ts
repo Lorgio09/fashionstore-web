@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Necesario para los inputs (ngModel)
 import { Router, RouterLink } from '@angular/router';
@@ -27,7 +27,8 @@ export class CheckoutComponent implements OnInit {
   constructor(
     private carritoService: CarritoService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
 simulando: boolean = false;
@@ -114,12 +115,15 @@ simulando: boolean = false;
             if (typeof localStorage !== 'undefined') {
               localStorage.removeItem('carrito_compras');
             }
+
+            this.cdr.detectChanges();
           }
         },
         error: (err) => {
           console.error("Error en la compra:", err);
           alert('Error al generar el pago: ' + (err.error?.detail || 'Intenta de nuevo.'));
           this.procesando = false;
+          this.cdr.detectChanges();
         }
       });
   }
