@@ -8,19 +8,19 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Nombre completo *</label>
         <input type="text" [(ngModel)]="cliente.nombre" name="nombre" required 
-               class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+              class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico *</label>
         <input type="email" [(ngModel)]="cliente.correo" name="correo" required 
-               class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+              class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
       </div>
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono de contacto *</label>
         <input type="tel" [(ngModel)]="cliente.telefono" name="telefono" required 
-               class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
+              class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black">
       </div>
 
       <div>
@@ -29,10 +29,18 @@
                   class="w-full border border-gray-300 p-3 text-gray-900 focus:ring-black focus:border-black"></textarea>
       </div>
 
-      <button type="submit" [disabled]="procesando" 
-              class="w-full bg-black text-white py-4 font-bold hover:bg-gray-800 transition-colors disabled:bg-gray-400">
-        {{ procesando ? 'Generando QR Seguro...' : 'Pagar con QR (BCP)' }}
-      </button>
+      <!-- Botones de Pago -->
+      <div class="flex flex-col gap-4 pt-4">
+        <button type="button" (click)="confirmarCompra()" [disabled]="procesando" 
+                class="w-full bg-black text-white py-4 font-bold hover:bg-gray-800 transition-colors disabled:bg-gray-400">
+          {{ procesando ? 'Procesando...' : 'Pagar con QR (BCP)' }}
+        </button>
+
+        <button type="button" (click)="pagarConStripe()" [disabled]="procesando" 
+                class="w-full bg-indigo-600 text-white py-4 font-bold hover:bg-indigo-700 transition-colors disabled:bg-gray-400">
+          {{ procesando ? 'Procesando...' : 'Pagar con Tarjeta (Stripe)' }}
+        </button>
+      </div>
     </form>
   </div>
 } @else {

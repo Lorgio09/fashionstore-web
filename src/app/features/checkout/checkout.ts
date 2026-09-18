@@ -127,4 +127,45 @@ simulando: boolean = false;
         }
       });
   }
+
+  pagarConStripe() {
+    if (!this.cliente.nombre || !this.cliente.correo || !this.cliente.telefono) {
+      alert('Por favor, completa todos los campos obligatorios (*)');
+      return;
+    }
+
+    this.procesando = true;
+
+    const payload = {
+      nombre_cliente: this.cliente.nombre,
+      correo_cliente: this.cliente.correo,
+      telefono_cliente: this.cliente.telefono,
+      direccion_envio: this.cliente.direccion,
+      items: this.items.map(item => ({
+        prenda_id: item.prenda_id,
+        variante_id: item.variante_id,
+        cantidad: item.cantidad,
+        precio: item.precio
+      }))
+    };
+
+    const STRIPE_API_URL = 'https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/stripe'; 
+
+    this.http.post(STRIPE_API_URL, payload)
+      .subscribe({
+        next: (respuesta: any) => {
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('carrito_compras');
+          }
+          // Stripe nos devuelve una URL segura, redirigimos físicamente al cliente allí
+          window.location.href = respuesta.url_pago;
+        },
+        error: (err) => {
+          console.error("Error en Stripe:", err);
+          alert('Error al conectar con la pasarela de tarjetas.');
+          this.procesando = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
 }
