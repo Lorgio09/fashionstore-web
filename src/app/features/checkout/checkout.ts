@@ -62,7 +62,7 @@ export class CheckoutComponent implements OnInit {
       }))
     };
 
-    const API_URL = 'https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/bcp-qr'; 
+    const API_URL = 'https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout';
 
     this.http.post(API_URL, payload)
       .subscribe({
