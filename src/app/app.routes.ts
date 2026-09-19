@@ -43,7 +43,7 @@ export const routes: Routes = [
                 path: 'punto-venta', 
                 component: PuntoVentaComponent,
                 canActivate: [adminGuard],
-                data: { roles: [4] } // Solo el Cajero
+                data: { roles: [2,4] } // Solo el Cajero
             },
             { 
                 path: 'dashboard', 
