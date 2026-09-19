@@ -46,9 +46,13 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   cargarProductosStock() {
-    this.http.get<any[]>(`${this.API_URL}/inventario/sucursal/${this.sucursalId}`).subscribe({
-      next: (data) => this.productosDisponibles = data,
-      error: (err) => console.error('Error cargando productos:', err)
+    // Cambiamos temporalmente el endpoint de '/inventario/sucursal/...' 
+    // al endpoint general del catálogo para traer todo
+    this.http.get<any[]>(`${this.API_URL}/catalogo/`).subscribe({
+      next: (data) => {
+        this.productosDisponibles = data;
+      },
+      error: (err) => console.error('Error cargando catálogo general:', err)
     });
   }
 
