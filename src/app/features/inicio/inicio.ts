@@ -4,12 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { ScrollRevealDirective } from '../../shared/scroll-reveal';
 import { CarritoService } from '../../shared/services/carrito.service';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser,CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [RouterLink, ScrollRevealDirective],
+  imports: [RouterLink, ScrollRevealDirective, CommonModule],
   styleUrl: './inicio.scss',
   templateUrl: './inicio.html',
   animations: [
@@ -34,31 +34,28 @@ import { isPlatformBrowser } from '@angular/common';
 export class InicioComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  
   nombreUsuario: string | null = null;
-  prendas: any[] = []; 
+  seccionesAgrupadas: any[] = []; // <-- Cambiamos 'prendas' por esta nueva variable
   cantidadCarrito: number = 0;
 
-  // Inyectamos el Router para poder redireccionar al cerrar sesión
   constructor(private http: HttpClient, private router: Router, private carritoService: CarritoService) {}
 
   ngOnInit() {
     this.verificarSesion(); 
     this.cargarCatalogo();
     this.carritoService.carrito$.subscribe(items => {
-      // Suma la cantidad total de prendas
       this.cantidadCarrito = items.reduce((total, item) => total + item.cantidad, 0);
     });
   }
 
-  // Nueva función que lee y decodifica el JWT
   verificarSesion() {
     if (typeof localStorage !== 'undefined') {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // Decodificamos el payload del JWT
           const payload = JSON.parse(atob(token.split('.')[1]));
-          this.nombreUsuario = payload.nombre; // Extraemos el nombre que guardó FastAPI
+          this.nombreUsuario = payload.nombre; 
         } catch (e) {
           this.cerrarSesion();
         }
@@ -68,13 +65,14 @@ export class InicioComponent implements OnInit {
 
   cargarCatalogo() {
     if (isPlatformBrowser(this.platformId)) {
-      this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
+      // <-- Llamamos al nuevo endpoint seguro que agrupa por categorías
+      this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/agrupado/secciones').subscribe({
         next: (datos: any) => {
-          this.prendas = datos; 
-          this.cdr.detectChanges(); // <-- OBLIGAMOS A ANGULAR A ACTUALIZAR EL HTML
+          this.seccionesAgrupadas = datos; 
+          this.cdr.detectChanges(); 
         },
         error: (error) => {
-          console.error("Error al cargar el catálogo:", error.message);
+          console.error("Error al cargar las secciones:", error.message);
         }
       });
     } else {
@@ -87,7 +85,7 @@ export class InicioComponent implements OnInit {
       localStorage.removeItem('token');
     }
     this.nombreUsuario = null; 
-    this.router.navigate(['/login']); // Redireccionamos al login
+    this.router.navigate(['/login']); 
   }
 
   probarCandado() {

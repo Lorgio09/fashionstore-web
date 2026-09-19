@@ -7,7 +7,7 @@
       <p class="text-sm text-gray-500 mt-1">Resumen en tiempo real de tu comercio electrónico.</p>
     </div>
     
-    <!-- Este botón será el disparador de la API de voz / Gemini -->
+    <!-- Botón disparador de la API de voz / Gemini -->
     <button 
       (click)="iniciarReconocimientoVoz()" 
       [disabled]="escuchando || procesandoIA"
@@ -100,7 +100,6 @@
         </div>
       </div>
 
-      <!-- Espacio reservado para el reporte de IA -->
       <!-- Cuadro Dinámico de Resultados IA -->
       <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col min-h-[350px]">
         <div class="flex items-center gap-3 mb-4">
@@ -127,7 +126,56 @@
           }
         </div>
       </div>
-
     </div>
+
+    <!-- HISTORIAL DE VENTAS (NUEVA SECCIÓN) -->
+    <div class="mt-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-lg font-bold text-gray-900">Últimas Ventas Registradas</h3>
+        <span class="text-sm text-gray-500">{{ ventas.length }} transacciones</span>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-left text-gray-600">
+          <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+            <tr>
+              <th class="px-6 py-4 font-semibold">ID Orden</th>
+              <th class="px-6 py-4 font-semibold">Cliente</th>
+              <th class="px-6 py-4 font-semibold">Método / Envío</th>
+              <th class="px-6 py-4 font-semibold">Estado</th>
+              <th class="px-6 py-4 font-semibold text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (venta of ventas; track venta.id) {
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 font-bold text-gray-900">#{{ venta.id }}</td>
+                <td class="px-6 py-4">{{ venta.nombre_cliente }}</td>
+                <td class="px-6 py-4 text-xs">{{ venta.direccion_envio }}</td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold"
+                        [ngClass]="{
+                          'bg-green-100 text-green-800': venta.estado === 'COMPLETADO' || venta.estado === 'PAGADO',
+                          'bg-yellow-100 text-yellow-800': venta.estado === 'PENDIENTE',
+                          'bg-red-100 text-red-800': venta.estado === 'RECHAZADO' || venta.estado === 'CANCELADO'
+                        }">
+                    {{ venta.estado }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 font-black text-gray-900 text-right">{{ venta.total }} Bs.</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="px-6 py-10 text-center text-gray-400">
+                  No hay ventas registradas todavía.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- FIN HISTORIAL DE VENTAS -->
+
   }
 </div>

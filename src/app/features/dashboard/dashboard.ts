@@ -36,9 +36,12 @@ export class DashboardComponent implements OnInit {
     private sanitizer: DomSanitizer // Inyectamos la herramienta para limpiar el HTML de la IA
   ) {}
 
+  ventas: any[] = [];
+
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.cargarResumen();
+      this.cargarVentas();
     } else {
       this.cargando = false;
     }
@@ -126,4 +129,13 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
+  cargarVentas() {
+  this.http.get<any[]>('https://fashionstore-api-kedu.onrender.com/api/catalogo/ordenes/historial').subscribe({
+    next: (data) => {
+      this.ventas = data;
+      this.cdr.detectChanges();
+    },
+    error: (err) => console.error("Error al cargar ventas:", err)
+  });
+}
 }
