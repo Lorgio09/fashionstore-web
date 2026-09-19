@@ -8,11 +8,27 @@
     </div>
     
     <!-- Este botón será el disparador de la API de voz / Gemini -->
-    <button class="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all font-bold text-sm">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-      </svg>
-      Generar Reporte IA por Voz
+    <button 
+      (click)="iniciarReconocimientoVoz()" 
+      [disabled]="escuchando || procesandoIA"
+      [ngClass]="escuchando ? 'bg-red-600 animate-pulse' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-lg'"
+      class="flex items-center gap-2 text-white px-5 py-2.5 rounded-lg shadow-md transition-all font-bold text-sm disabled:opacity-70">
+      
+      @if (escuchando) {
+        <span class="relative flex h-3 w-3 mr-1">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+        </span>
+        Escuchando voz...
+      } @else if (procesandoIA) {
+        <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        Analizando datos...
+      } @else {
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+        </svg>
+        Generar Reporte IA por Voz
+      }
     </button>
   </div>
 
@@ -85,15 +101,30 @@
       </div>
 
       <!-- Espacio reservado para el reporte de IA -->
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+      <!-- Cuadro Dinámico de Resultados IA -->
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col min-h-[350px]">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold">IA</div>
-          <h3 class="text-lg font-bold text-gray-900">Análisis Inteligente</h3>
+          <h3 class="text-lg font-bold text-gray-900">Análisis Generativo</h3>
         </div>
         
-        <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600 flex flex-col items-center justify-center text-center">
-          <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-          <p>Presiona el botón de <strong>Generar Reporte IA por Voz</strong> para que nuestro asistente analice el inventario y las ventas actuales.</p>
+        <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-5 text-sm text-gray-700 overflow-y-auto">
+          @if (reporteIA) {
+            <div class="mb-3 text-xs text-indigo-600 font-bold uppercase tracking-wider border-b pb-2">
+              Orden detectada: "{{ comandoReconocido }}"
+            </div>
+            <div [innerHTML]="reporteIA" class="leading-relaxed"></div>
+          } @else if (procesandoIA) {
+            <div class="flex flex-col items-center justify-center h-full text-gray-400">
+              <svg class="animate-spin h-8 w-8 text-indigo-500 mb-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <p class="animate-pulse">Gemini está redactando el análisis...</p>
+            </div>
+          } @else {
+            <div class="flex flex-col items-center justify-center h-full text-gray-400 text-center">
+              <svg class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+              <p>Haz clic en el botón superior, permite el acceso al micrófono y pide un análisis de ventas o recomendaciones sobre el stock.</p>
+            </div>
+          }
         </div>
       </div>
 
