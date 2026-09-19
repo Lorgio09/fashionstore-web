@@ -8,7 +8,7 @@
     </div>
     
     <div class="p-4 grid grid-cols-3 gap-4 overflow-y-auto">
-      @for (producto of productosDisponibles; track producto.variante_id) {
+      @for (producto of productosDisponibles; track $index) {
         <div class="border border-gray-200 p-3 rounded-lg hover:border-black cursor-pointer transition-colors relative flex flex-col"
              (click)="agregarAlCarrito(producto)">
 

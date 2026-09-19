@@ -1,4 +1,4 @@
-import { Component, OnInit, inject,PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +22,9 @@ export class PuntoVentaComponent implements OnInit {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
+  
+  // 1. INYECTAMOS EL DETECTOR DE CAMBIOS
+  private cdr = inject(ChangeDetectorRef);
 
   productosDisponibles: any[] = []; 
   carrito: ItemCarrito[] = [];
@@ -30,12 +33,11 @@ export class PuntoVentaComponent implements OnInit {
   metodoPagoSeleccionado: string = 'EFECTIVO';
   procesando: boolean = false;
   sucursalId: number = 0;
-  qrGenerado: string | null = null; // Guardará el QR del BCP
+  qrGenerado: string | null = null; 
 
   private API_URL = 'https://fashionstore-api-kedu.onrender.com/api';
 
   ngOnInit() {
-    // 1. Evitamos el error 429 de Render asegurándonos de que esto solo corra en el navegador del usuario
     if (isPlatformBrowser(this.platformId)) {
       const usuario = this.authService.getUsuarioActual();
       
@@ -51,12 +53,10 @@ export class PuntoVentaComponent implements OnInit {
   cargarProductosStock() {
     this.http.get<any[]>(`${this.API_URL}/catalogo/`).subscribe({
       next: (data) => {
-        // 1. Usamos un arreglo temporal para armar las tarjetas
         const catalogoProcesado: any[] = [];
         
         if (data && data.length > 0) {
           data.forEach(prenda => {
-            // 2. Si tiene variantes, creamos una tarjeta por cada variante (Talla/Color)
             if (prenda.variantes && prenda.variantes.length > 0) {
               prenda.variantes.forEach((variante: any) => {
                 catalogoProcesado.push({
@@ -70,11 +70,9 @@ export class PuntoVentaComponent implements OnInit {
                 });
               });
             } else {
-              // 3. FALLBACK: Si la prenda NO tiene variantes en la base de datos, 
-              // la agregamos igual para que no desaparezca de la pantalla.
               catalogoProcesado.push({
                 prenda_id: prenda.id,
-                variante_id: 0, // ID genérico para que no falle el HTML
+                variante_id: prenda.id, // Usamos el ID de la prenda para evitar duplicados en cero
                 nombre: prenda.nombre,
                 precio: prenda.precio_base,
                 imagen_url: prenda.imagen_url,
@@ -85,9 +83,10 @@ export class PuntoVentaComponent implements OnInit {
           });
         }
 
-        // 4. Asignamos todo el bloque de golpe. 
-        // Esto "despierta" a Angular y lo obliga a borrar el mensaje de "vacío" y dibujar las prendas.
         this.productosDisponibles = catalogoProcesado;
+        
+        // 2. OBLIGAMOS A ANGULAR A REDIBUJAR LA PANTALLA SÍ O SÍ
+        this.cdr.detectChanges(); 
       },
       error: (err) => {
         console.error('Error crítico al cargar catálogo:', err);
@@ -125,7 +124,7 @@ export class PuntoVentaComponent implements OnInit {
 
   seleccionarMetodo(metodo: string) {
     this.metodoPagoSeleccionado = metodo;
-    this.qrGenerado = null; // Limpiamos el QR si cambia de método
+    this.qrGenerado = null; 
   }
 
   limpiarCaja() {
@@ -140,7 +139,6 @@ export class PuntoVentaComponent implements OnInit {
     this.procesando = true;
     this.qrGenerado = null;
 
-    // 1. LÓGICA PARA EFECTIVO (Rápido y descuenta stock en caja)
     if (this.metodoPagoSeleccionado === 'EFECTIVO') {
       const payloadEfectivo = {
         sucursal_id: this.sucursalId,
@@ -167,14 +165,12 @@ export class PuntoVentaComponent implements OnInit {
         }
       });
     } 
-    
-    // 2. LÓGICA PARA QR (Reutilizando el endpoint web del BCP)
     else if (this.metodoPagoSeleccionado === 'QR') {
       const payloadQR = {
-        nombre_cliente: "Cliente en Caja",       // Dato fantasma obligatorio
-        correo_cliente: "caja@fashionstore.com", // Dato fantasma obligatorio
-        telefono_cliente: "00000000",            // Dato fantasma obligatorio
-        direccion_envio: "Retiro en Sucursal",   // Dato fantasma obligatorio
+        nombre_cliente: "Cliente en Caja",
+        correo_cliente: "caja@fashionstore.com", 
+        telefono_cliente: "00000000", 
+        direccion_envio: "Retiro en Sucursal", 
         items: this.carrito.map(item => ({
           prenda_id: item.prenda_id,
           variante_id: item.variante_id,
@@ -185,10 +181,8 @@ export class PuntoVentaComponent implements OnInit {
 
       this.http.post(`${this.API_URL}/checkout`, payloadQR).subscribe({
         next: (res: any) => {
-          // Atrapamos la imagen del QR para mostrarla en pantalla
           this.qrGenerado = res.qr_imagen_base64;
           this.procesando = false;
-          // NOTA: No limpiamos la caja aún para que el cajero y el cliente puedan ver el QR en pantalla
         },
         error: (err) => {
           alert('Error al generar el QR con el BCP.');
