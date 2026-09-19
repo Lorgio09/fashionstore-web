@@ -7,7 +7,7 @@ import { AuthService } from '../../core/services/auth';
   selector: 'app-reservas-admin',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './reservas-admin.component.html'
+  templateUrl: './reservas.html'
 })
 export class ReservasAdminComponent implements OnInit {
   private reservaService = inject(ReservaService);
