@@ -4,7 +4,8 @@ import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // Necesario para ngModel en el modal
 import { CarritoService, ItemCarrito } from '../../shared/services/carrito.service'; 
 import { ReservaService } from '../../core/services/reserva.service';
-import { AuthService } from '../../core/services/auth'; // Asegúrate de que la ruta sea correcta
+import { AuthService } from '../../core/services/auth'; 
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-carrito',
@@ -13,6 +14,7 @@ import { AuthService } from '../../core/services/auth'; // Asegúrate de que la 
   templateUrl: './carrito.html'
 })
 export class CarritoComponent implements OnInit {
+  private http = inject(HttpClient);
   private carritoService = inject(CarritoService);
   private reservaService = inject(ReservaService);
   private authService = inject(AuthService);
@@ -26,11 +28,7 @@ export class CarritoComponent implements OnInit {
   fechaVisita: string = '';
   sucursalSeleccionada: number = 0;
   
-  // Opciones de sucursales (Puedes reemplazarlo luego llamando a un endpoint de sucursales)
-  sucursales: any[] = [
-    { id: 1, nombre: 'Sucursal Central - Santa Cruz' },
-    { id: 2, nombre: 'Sucursal Norte - Santa Cruz' }
-  ];
+  sucursales: any[] = [];
 
   ngOnInit() {
     this.carritoService.carrito$.subscribe(datos => {
@@ -59,15 +57,38 @@ export class CarritoComponent implements OnInit {
   // --- LÓGICA DE RESERVAS ---
   
   abrirModalReserva() {
-    // Verificamos si el usuario está logueado antes de dejarle reservar
     const usuario = this.authService.getUsuarioActual();
     if (!usuario) {
       alert('Debes iniciar sesión para poder reservar prendas.');
-      this.router.navigate(['/login']); // Ajusta a tu ruta de login
+      this.router.navigate(['/login']);
       return;
     }
     
-    this.mostrarModalReserva = true;
+    // 1. Armamos lo que vamos a consultar al backend
+    const payloadCheck = this.items.map(item => ({
+      variante_id: item.variante_id,
+      cantidad: item.cantidad
+    }));
+
+    // 2. Llamamos al nuevo endpoint filtrador
+    this.http.post<any[]>('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales-disponibles', payloadCheck).subscribe({
+      next: (sucursalesValidas) => {
+        this.sucursales = sucursalesValidas;
+        
+        // Si el backend devuelve una lista vacía, significa que el pedido no se puede cumplir en ninguna tienda
+        if (this.sucursales.length === 0) {
+           alert("Lo sentimos, ninguna sucursal tiene stock suficiente para todas las prendas de tu carrito juntas.");
+           return;
+        }
+
+        // Si hay sucursales disponibles, recién abrimos el modal
+        this.mostrarModalReserva = true;
+      },
+      error: (err) => {
+        console.error("Error validando sucursales:", err);
+        alert("Ocurrió un error al verificar la disponibilidad en tiendas.");
+      }
+    });
   }
 
   cerrarModalReserva() {
