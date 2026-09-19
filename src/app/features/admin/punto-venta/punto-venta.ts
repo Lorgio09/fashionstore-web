@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject,PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth';
 
@@ -21,6 +21,7 @@ export interface ItemCarrito {
 export class PuntoVentaComponent implements OnInit {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private platformId = inject(PLATFORM_ID);
 
   productosDisponibles: any[] = []; 
   carrito: ItemCarrito[] = [];
@@ -34,13 +35,15 @@ export class PuntoVentaComponent implements OnInit {
   private API_URL = 'https://fashionstore-api-kedu.onrender.com/api';
 
   ngOnInit() {
-    const usuario = this.authService.getUsuarioActual();
-    
-    if (usuario && usuario.sucursal_id) {
-      this.sucursalId = usuario.sucursal_id;
-      this.cargarProductosStock();
-    } else {
-      this.sucursalId = 1; 
+    // 1. Evitamos el error 429 de Render asegurándonos de que esto solo corra en el navegador del usuario
+    if (isPlatformBrowser(this.platformId)) {
+      const usuario = this.authService.getUsuarioActual();
+      
+      if (usuario && usuario.sucursal_id) {
+        this.sucursalId = usuario.sucursal_id;
+      } else {
+        this.sucursalId = 1; 
+      }
       this.cargarProductosStock();
     }
   }
@@ -48,18 +51,23 @@ export class PuntoVentaComponent implements OnInit {
   cargarProductosStock() {
     this.http.get<any[]>(`${this.API_URL}/catalogo/`).subscribe({
       next: (data) => {
+        console.log("¡DATOS RECIBIDOS DEL BACKEND! ->", data); // <-- RASTREADOR: Veremos esto en la consola (F12)
+        
         this.productosDisponibles = [];
         
-        // Recorremos cada prenda del JSON
+        if (!data || data.length === 0) {
+           console.warn("El backend respondió correctamente, pero mandó una lista vacía [].");
+           return;
+        }
+
         data.forEach(prenda => {
-          // Si la prenda tiene variantes, creamos un item seleccionable por cada una
           if (prenda.variantes && prenda.variantes.length > 0) {
             prenda.variantes.forEach((variante: any) => {
               this.productosDisponibles.push({
                 prenda_id: prenda.id,
                 variante_id: variante.id,
                 nombre: prenda.nombre,
-                precio: prenda.precio_base, // Mapeamos precio_base a precio
+                precio: prenda.precio_base,
                 imagen_url: prenda.imagen_url,
                 talla: variante.talla,
                 color: variante.color
@@ -68,7 +76,9 @@ export class PuntoVentaComponent implements OnInit {
           }
         });
       },
-      error: (err) => console.error('Error cargando catálogo general:', err)
+      error: (err) => {
+        console.error('ERROR CRÍTICO AL CARGAR CATÁLOGO:', err);
+      }
     });
   }
 
