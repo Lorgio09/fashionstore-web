@@ -152,7 +152,7 @@ export class PuntoVentaComponent implements OnInit {
         }))
       };
 
-      this.http.post(`${this.API_URL}/checkout/presencial`, payloadEfectivo).subscribe({
+      this.http.post(`${this.API_URL}/catalogo/checkout/presencial`, payloadEfectivo).subscribe({
         next: () => {
           alert('Venta en Efectivo registrada con éxito. Imprimiendo recibo...');
           this.limpiarCaja();
@@ -179,7 +179,7 @@ export class PuntoVentaComponent implements OnInit {
         }))
       };
 
-      this.http.post(`${this.API_URL}/checkout`, payloadQR).subscribe({
+      this.http.post(`${this.API_URL}/catalogo/checkout`, payloadQR).subscribe({
         next: (res: any) => {
           this.qrGenerado = res.qr_imagen_base64;
           this.procesando = false;
