@@ -37,7 +37,7 @@ export const routes: Routes = [
         component: AdminLayoutComponent,
         canActivate: [adminGuard],
         // 1. Permitimos que TANTO el Admin (2) COMO el Encargado (3) entren al contenedor principal
-        data: { roles: [2, 3] }, 
+        data: { roles: [2, 3,4] }, 
         children: [
             { 
                 path: 'punto-venta', 
