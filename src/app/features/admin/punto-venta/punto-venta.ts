@@ -46,11 +46,27 @@ export class PuntoVentaComponent implements OnInit {
   }
 
   cargarProductosStock() {
-    // Cambiamos temporalmente el endpoint de '/inventario/sucursal/...' 
-    // al endpoint general del catálogo para traer todo
     this.http.get<any[]>(`${this.API_URL}/catalogo/`).subscribe({
       next: (data) => {
-        this.productosDisponibles = data;
+        this.productosDisponibles = [];
+        
+        // Recorremos cada prenda del JSON
+        data.forEach(prenda => {
+          // Si la prenda tiene variantes, creamos un item seleccionable por cada una
+          if (prenda.variantes && prenda.variantes.length > 0) {
+            prenda.variantes.forEach((variante: any) => {
+              this.productosDisponibles.push({
+                prenda_id: prenda.id,
+                variante_id: variante.id,
+                nombre: prenda.nombre,
+                precio: prenda.precio_base, // Mapeamos precio_base a precio
+                imagen_url: prenda.imagen_url,
+                talla: variante.talla,
+                color: variante.color
+              });
+            });
+          }
+        });
       },
       error: (err) => console.error('Error cargando catálogo general:', err)
     });
