@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router'; // Añadimos Router
 import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
@@ -33,6 +33,7 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class InicioComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef);
   nombreUsuario: string | null = null;
   prendas: any[] = []; 
   cantidadCarrito: number = 0;
@@ -66,18 +67,17 @@ export class InicioComponent implements OnInit {
   }
 
   cargarCatalogo() {
-    // 2. Solo hacemos la petición si estamos en el navegador real del usuario
     if (isPlatformBrowser(this.platformId)) {
       this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
         next: (datos: any) => {
           this.prendas = datos; 
+          this.cdr.detectChanges(); // <-- OBLIGAMOS A ANGULAR A ACTUALIZAR EL HTML
         },
         error: (error) => {
           console.error("Error al cargar el catálogo:", error.message);
         }
       });
     } else {
-      // Si estamos en el servidor de Render, no hacemos nada para evitar el error 429
       console.log('Omitiendo llamada a la API durante el renderizado del servidor.');
     }
   }
