@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { ReservaService } from '../../core/services/reserva.service';
 import { AuthService } from '../../core/services/auth';
@@ -12,6 +12,7 @@ import { AuthService } from '../../core/services/auth';
 export class ReservasAdminComponent implements OnInit {
   private reservaService = inject(ReservaService);
   private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
 
   reservas: any[] = [];
   sucursalId: number = 0;
@@ -29,10 +30,12 @@ export class ReservasAdminComponent implements OnInit {
       next: (data) => {
         this.reservas = data;
         this.cargando = false;
+        this.cdr.detectChanges(); // 2. Obligamos a Angular a mostrar la tabla
       },
       error: (err) => {
         console.error('Error al cargar reservas:', err);
         this.cargando = false;
+        this.cdr.detectChanges(); // También actualizamos si hay error
       }
     });
   }
