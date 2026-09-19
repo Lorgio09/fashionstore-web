@@ -15,7 +15,7 @@ export class AuthService {
   }
 
   // Verifica si el usuario activo tiene un rol específico
-  tieneRol(rolEsperado: number): boolean {
+  tieneRol(rolEsperado: string): boolean {
     const user = this.getUsuarioActual();
     return user && user.rol === rolEsperado;
   }
