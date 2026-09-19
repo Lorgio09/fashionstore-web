@@ -51,33 +51,46 @@ export class PuntoVentaComponent implements OnInit {
   cargarProductosStock() {
     this.http.get<any[]>(`${this.API_URL}/catalogo/`).subscribe({
       next: (data) => {
-        console.log("¡DATOS RECIBIDOS DEL BACKEND! ->", data); // <-- RASTREADOR: Veremos esto en la consola (F12)
+        // 1. Usamos un arreglo temporal para armar las tarjetas
+        const catalogoProcesado: any[] = [];
         
-        this.productosDisponibles = [];
-        
-        if (!data || data.length === 0) {
-           console.warn("El backend respondió correctamente, pero mandó una lista vacía [].");
-           return;
-        }
-
-        data.forEach(prenda => {
-          if (prenda.variantes && prenda.variantes.length > 0) {
-            prenda.variantes.forEach((variante: any) => {
-              this.productosDisponibles.push({
+        if (data && data.length > 0) {
+          data.forEach(prenda => {
+            // 2. Si tiene variantes, creamos una tarjeta por cada variante (Talla/Color)
+            if (prenda.variantes && prenda.variantes.length > 0) {
+              prenda.variantes.forEach((variante: any) => {
+                catalogoProcesado.push({
+                  prenda_id: prenda.id,
+                  variante_id: variante.id,
+                  nombre: prenda.nombre,
+                  precio: prenda.precio_base,
+                  imagen_url: prenda.imagen_url,
+                  talla: variante.talla,
+                  color: variante.color
+                });
+              });
+            } else {
+              // 3. FALLBACK: Si la prenda NO tiene variantes en la base de datos, 
+              // la agregamos igual para que no desaparezca de la pantalla.
+              catalogoProcesado.push({
                 prenda_id: prenda.id,
-                variante_id: variante.id,
+                variante_id: 0, // ID genérico para que no falle el HTML
                 nombre: prenda.nombre,
                 precio: prenda.precio_base,
                 imagen_url: prenda.imagen_url,
-                talla: variante.talla,
-                color: variante.color
+                talla: 'Única',
+                color: 'Estándar'
               });
-            });
-          }
-        });
+            }
+          });
+        }
+
+        // 4. Asignamos todo el bloque de golpe. 
+        // Esto "despierta" a Angular y lo obliga a borrar el mensaje de "vacío" y dibujar las prendas.
+        this.productosDisponibles = catalogoProcesado;
       },
       error: (err) => {
-        console.error('ERROR CRÍTICO AL CARGAR CATÁLOGO:', err);
+        console.error('Error crítico al cargar catálogo:', err);
       }
     });
   }
