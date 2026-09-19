@@ -183,11 +183,13 @@ export class PuntoVentaComponent implements OnInit {
         next: (res: any) => {
           this.qrGenerado = res.qr_imagen_base64;
           this.procesando = false;
+          this.cdr.detectChanges(); // <-- OBLIGAMOS A MOSTRAR EL QR Y QUITAR "PROCESANDO"
         },
         error: (err) => {
           alert('Error al generar el QR con el BCP.');
           console.error(err);
           this.procesando = false;
+          this.cdr.detectChanges(); // <-- LIBERAMOS EL BOTÓN SI HAY ERROR
         }
       });
     }
