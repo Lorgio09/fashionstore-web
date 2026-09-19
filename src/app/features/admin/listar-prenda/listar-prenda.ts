@@ -26,7 +26,11 @@ export class ListarPrendasComponent implements OnInit {
         this.prendas = data;
         this.cdr.detectChanges();
       },
-
+      error: (err) => {
+        // Al agregar esto, si el backend rechaza la petición por tráfico, 
+        // solo se mostrará este console.error, pero el servidor seguirá vivo.
+        console.error("Error al cargar prendas en la tabla:", err.message);
+      }
     });
   }
 
