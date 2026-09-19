@@ -21,6 +21,7 @@ import { DetallePrendaComponent } from './features/detalle-prenda/detalle-prenda
 import { CarritoComponent } from './features/carrito/carrito';
 import { CheckoutComponent } from './features/checkout/checkout';
 import { PuntoVentaComponent } from './features/admin/punto-venta/punto-venta';
+import { ReservasAdminComponent } from './features/reservas/reservas';
 
 export const routes: Routes = [
     { path: '', component: InicioComponent }, 
@@ -94,6 +95,13 @@ export const routes: Routes = [
             { 
                 path: 'entrada-inventario', 
                 component: EntradaInventarioComponent,
+                canActivate: [adminGuard],
+                data: { roles: [2, 3] } // Admin Y Encargado de sucursal
+            },
+
+            { 
+                path: 'reservas', 
+                component: ReservasAdminComponent,
                 canActivate: [adminGuard],
                 data: { roles: [2, 3] } // Admin Y Encargado de sucursal
             },
