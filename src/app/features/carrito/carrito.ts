@@ -107,7 +107,7 @@ export class CarritoComponent implements OnInit {
 
     const payload = {
       fecha_visita: new Date(this.fechaVisita).toISOString(),
-      cliente_id: Number(usuario.sub || usuario.id || usuario.usuario_id),
+      cliente_id: Number(usuario.id),
       sucursal_id: Number(this.sucursalSeleccionada),
       detalles: this.items.map(item => ({
         variante_id: item.variante_id,
