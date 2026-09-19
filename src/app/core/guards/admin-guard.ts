@@ -1,39 +1,43 @@
 import { inject, PLATFORM_ID } from '@angular/core';
-import { Router, CanActivateFn } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 
 export const adminGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
   const platformId = inject(PLATFORM_ID);
 
-  // 1. Si estamos en el servidor (SSR), dejamos que renderice temporalmente.
+  // 1. SSR pasa de largo
   if (!isPlatformBrowser(platformId)) {
     return true;
   }
 
-  // --- 2. DE AQUÍ EN ADELANTE SOLO SE EJECUTA EN EL NAVEGADOR ---
   const token = localStorage.getItem('token');
   
-  // Leemos los roles permitidos que configuraste en app.routes.ts
-  const rolesPermitidos = route.data['roles'] as Array<number>;
+  // Extraemos la información de app.routes.ts y forzamos a que sean números reales
+  const rolesBrutos = route.data['roles'];
+  const rolesPermitidos = Array.isArray(rolesBrutos) ? rolesBrutos.map(Number) : null;
 
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
+      const userRol = Number(payload.rol); // Blindamos el rol del token convirtiéndolo a número
 
-      // Verificamos si la ruta tiene restricciones y si el rol del usuario está incluido
-      if (rolesPermitidos && rolesPermitidos.includes(payload.rol)) { 
-        return true; 
-      } 
-      // Fallback de seguridad: si una ruta no tiene roles definidos, solo pasa el Admin (2)
-      else if (!rolesPermitidos && payload.rol === 2) {
+      // Si el rol del usuario está dentro del arreglo permitido, pasa
+      if (rolesPermitidos && rolesPermitidos.includes(userRol)) {
         return true;
+      } 
+      // Fallback de seguridad exclusivo para el Administrador
+      else if (!rolesPermitidos && userRol === 2) {
+        return true;
+      } else {
+        // Si te vuelve a botar, abre la consola (F12) y este mensaje te dirá exactamente el motivo.
+        console.warn(`Acceso bloqueado en ${state.url}. Tu rol: ${userRol} | Permitidos:`, rolesPermitidos);
       }
     } catch (error) {
       console.error('Error al decodificar el token:', error);
     }
   }
 
-  // 3. Si está en el navegador y NO tiene el rol adecuado, lo pateamos a inicio.
+  // Si no cumple nada, lo enviamos al inicio
   return router.createUrlTree(['/']);
 };
