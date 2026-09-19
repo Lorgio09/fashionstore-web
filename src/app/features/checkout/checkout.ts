@@ -1,14 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Necesario para los inputs (ngModel)
-import { Router, RouterLink } from '@angular/router';
+import { Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CarritoService, ItemCarrito } from '../../shared/services/carrito.service'; 
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './checkout.html'
 })
 export class CheckoutComponent implements OnInit {
