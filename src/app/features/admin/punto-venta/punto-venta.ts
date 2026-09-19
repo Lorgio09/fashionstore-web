@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // 1. NUEVA LÍNEA: Importar el módulo de formularios
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth';
 
 export interface ItemCarrito {
@@ -15,7 +15,7 @@ export interface ItemCarrito {
 @Component({
   selector: 'app-punto-venta',
   standalone: true,
-  imports: [CommonModule, FormsModule], // 2. NUEVA LÍNEA: Inyectarlo en el componente
+  imports: [CommonModule, FormsModule],
   templateUrl: './punto-venta.html'
 })
 export class PuntoVentaComponent implements OnInit {
@@ -29,6 +29,7 @@ export class PuntoVentaComponent implements OnInit {
   metodoPagoSeleccionado: string = 'EFECTIVO';
   procesando: boolean = false;
   sucursalId: number = 0;
+  qrGenerado: string | null = null; // Guardará el QR del BCP
 
   private API_URL = 'https://fashionstore-api-kedu.onrender.com/api';
 
@@ -39,7 +40,6 @@ export class PuntoVentaComponent implements OnInit {
       this.sucursalId = usuario.sucursal_id;
       this.cargarProductosStock();
     } else {
-      console.warn('El usuario actual no tiene un sucursal_id definido.');
       this.sucursalId = 1; 
       this.cargarProductosStock();
     }
@@ -48,7 +48,7 @@ export class PuntoVentaComponent implements OnInit {
   cargarProductosStock() {
     this.http.get<any[]>(`${this.API_URL}/inventario/sucursal/${this.sucursalId}`).subscribe({
       next: (data) => this.productosDisponibles = data,
-      error: (err) => console.error('Error cargando productos de la sucursal:', err)
+      error: (err) => console.error('Error cargando productos:', err)
     });
   }
 
@@ -82,38 +82,77 @@ export class PuntoVentaComponent implements OnInit {
 
   seleccionarMetodo(metodo: string) {
     this.metodoPagoSeleccionado = metodo;
+    this.qrGenerado = null; // Limpiamos el QR si cambia de método
+  }
+
+  limpiarCaja() {
+    this.carrito = [];
+    this.calcularTotal();
+    this.qrGenerado = null;
+    this.cargarProductosStock();
   }
 
   confirmarVenta() {
     if (this.carrito.length === 0) return;
-
     this.procesando = true;
+    this.qrGenerado = null;
 
-    const payloadVenta = {
-      sucursal_id: this.sucursalId,
-      metodo_pago: this.metodoPagoSeleccionado,
-      total: this.total,
-      items: this.carrito.map(item => ({
-        prenda_id: item.prenda_id,
-        variante_id: item.variante_id,
-        cantidad: item.cantidad,
-        precio: item.precio
-      }))
-    };
+    // 1. LÓGICA PARA EFECTIVO (Rápido y descuenta stock en caja)
+    if (this.metodoPagoSeleccionado === 'EFECTIVO') {
+      const payloadEfectivo = {
+        sucursal_id: this.sucursalId,
+        metodo_pago: 'EFECTIVO',
+        total: this.total,
+        items: this.carrito.map(item => ({
+          prenda_id: item.prenda_id,
+          variante_id: item.variante_id,
+          cantidad: item.cantidad,
+          precio: item.precio
+        }))
+      };
 
-    this.http.post(`${this.API_URL}/checkout/presencial`, payloadVenta).subscribe({
-      next: (res) => {
-        alert('Venta registrada con éxito. Imprimiendo recibo...');
-        this.carrito = [];
-        this.calcularTotal();
-        this.procesando = false;
-        this.cargarProductosStock();
-      },
-      error: (err) => {
-        alert('Error al registrar la venta. Verifique la conexión o el stock.');
-        console.error(err);
-        this.procesando = false;
-      }
-    });
+      this.http.post(`${this.API_URL}/checkout/presencial`, payloadEfectivo).subscribe({
+        next: () => {
+          alert('Venta en Efectivo registrada con éxito. Imprimiendo recibo...');
+          this.limpiarCaja();
+          this.procesando = false;
+        },
+        error: (err) => {
+          alert('Error al registrar la venta en efectivo.');
+          console.error(err);
+          this.procesando = false;
+        }
+      });
+    } 
+    
+    // 2. LÓGICA PARA QR (Reutilizando el endpoint web del BCP)
+    else if (this.metodoPagoSeleccionado === 'QR') {
+      const payloadQR = {
+        nombre_cliente: "Cliente en Caja",       // Dato fantasma obligatorio
+        correo_cliente: "caja@fashionstore.com", // Dato fantasma obligatorio
+        telefono_cliente: "00000000",            // Dato fantasma obligatorio
+        direccion_envio: "Retiro en Sucursal",   // Dato fantasma obligatorio
+        items: this.carrito.map(item => ({
+          prenda_id: item.prenda_id,
+          variante_id: item.variante_id,
+          cantidad: item.cantidad,
+          precio: item.precio
+        }))
+      };
+
+      this.http.post(`${this.API_URL}/checkout`, payloadQR).subscribe({
+        next: (res: any) => {
+          // Atrapamos la imagen del QR para mostrarla en pantalla
+          this.qrGenerado = res.qr_imagen_base64;
+          this.procesando = false;
+          // NOTA: No limpiamos la caja aún para que el cajero y el cliente puedan ver el QR en pantalla
+        },
+        error: (err) => {
+          alert('Error al generar el QR con el BCP.');
+          console.error(err);
+          this.procesando = false;
+        }
+      });
+    }
   }
 }

@@ -7,16 +7,29 @@
              class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-black focus:border-black">
     </div>
     
-    <!-- Grilla de productos (Ejemplo estático) -->
     <div class="p-4 grid grid-cols-3 gap-4 overflow-y-auto">
-      <!-- Envuelve esto en un @for para iterar 'productosDisponibles' -->
-      <div class="border border-gray-200 p-3 rounded-lg hover:border-black cursor-pointer transition-colors"
-           (click)="agregarAlCarrito({id: 1, nombre: 'Camiseta Básica Negra', precio: 150})">
-        <div class="h-24 bg-gray-100 rounded mb-2 flex items-center justify-center text-gray-400">IMG</div>
-        <h3 class="text-sm font-bold text-gray-800 line-clamp-1">Camiseta Básica Negra</h3>
-        <p class="text-xs text-gray-500">Talla: M | Color: Negro</p>
-        <p class="text-md font-extrabold mt-1">150 Bs.</p>
-      </div>
+      @for (producto of productosDisponibles; track producto.variante_id) {
+        <div class="border border-gray-200 p-3 rounded-lg hover:border-black cursor-pointer transition-colors relative"
+            (click)="agregarAlCarrito(producto)">
+    
+          <!-- Etiqueta de Stock -->
+          <span class="absolute top-2 right-2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">
+            Stock: {{ producto.stock }}
+          </span>
+
+          <div class="h-24 bg-gray-50 rounded mb-2 flex items-center justify-center text-gray-400">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-gray-800 leading-tight mb-1">{{ producto.nombre }}</h3>
+          <p class="text-md font-extrabold text-black mt-1">{{ producto.precio }} Bs.</p>
+        </div>
+      } @empty {
+        <div class="col-span-3 text-center text-gray-500 py-10">
+          No hay prendas disponibles en el inventario de esta sucursal.
+        </div>
+      }
     </div>
   </div>
 
@@ -54,7 +67,8 @@
       </div>
 
       <p class="text-xs font-bold text-gray-500 mb-2 uppercase">Método de Pago en Caja</p>
-      <div class="grid grid-cols-3 gap-2 mb-4">
+      <!-- Cambiamos a grid-cols-2 y quitamos el botón de tarjeta -->
+      <div class="grid grid-cols-2 gap-2 mb-4">
         <button (click)="seleccionarMetodo('EFECTIVO')" 
                 [class.bg-black]="metodoPagoSeleccionado === 'EFECTIVO'"
                 [class.text-white]="metodoPagoSeleccionado === 'EFECTIVO'"
@@ -67,14 +81,7 @@
                 [class.text-white]="metodoPagoSeleccionado === 'QR'"
                 [class.bg-white]="metodoPagoSeleccionado !== 'QR'"
                 class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors">
-          QR
-        </button>
-        <button (click)="seleccionarMetodo('TARJETA')" 
-                [class.bg-black]="metodoPagoSeleccionado === 'TARJETA'"
-                [class.text-white]="metodoPagoSeleccionado === 'TARJETA'"
-                [class.bg-white]="metodoPagoSeleccionado !== 'TARJETA'"
-                class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors">
-          Tarjeta
+          QR (Pantalla)
         </button>
       </div>
 
@@ -83,6 +90,15 @@
               class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold text-lg transition-colors disabled:bg-gray-300">
         {{ procesando ? 'Procesando...' : 'CONFIRMAR E IMPRIMIR' }}
       </button>
+      @if (qrGenerado) {
+        <div class="mt-4 p-4 bg-white border border-gray-200 rounded-lg flex flex-col items-center">
+          <p class="font-bold text-black mb-2 text-center">Escanea para pagar</p>
+          <img [src]="'data:image/png;base64,' + qrGenerado" alt="QR BCP" class="w-48 h-48 object-cover mb-3">
+          <button (click)="limpiarCaja()" class="text-sm font-bold text-gray-500 hover:text-black">
+            Cerrar y Nueva Venta
+          </button>
+        </div>
+      }
     </div>
   </div>
 </div>
