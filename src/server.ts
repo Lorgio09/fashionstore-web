@@ -12,6 +12,7 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+
 app.use(
   express.static(browserDistFolder, {
     maxAge: '1y',

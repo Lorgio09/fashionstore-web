@@ -32,7 +32,7 @@
         <p class="text-center text-gray-400 text-sm mt-10">Agregue productos para comenzar</p>
       }
       
-      @for (item of carrito; track item.id; let i = $index) {
+      @for (item of carrito; track item.prenda_id; let i = $index) {
         <div class="flex justify-between items-center border-b border-gray-100 pb-2">
           <div>
             <p class="text-sm font-bold text-gray-800">{{ item.nombre }}</p>

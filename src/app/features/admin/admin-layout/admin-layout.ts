@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-admin-layout',
@@ -12,6 +13,7 @@ export class AdminLayoutComponent {
   
   // 1. Inyectamos el Router aquí para poder usarlo
   constructor(private router: Router) {}
+  public authService = inject(AuthService);
 
   // 2. Envolvemos las instrucciones en la función que llama tu botón
   cerrarSesion() {
