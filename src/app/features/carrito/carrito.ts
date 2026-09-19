@@ -107,7 +107,7 @@ export class CarritoComponent implements OnInit {
 
     const payload = {
       fecha_visita: new Date(this.fechaVisita).toISOString(),
-      cliente_id: Number(usuario.sub),
+      cliente_id: Number(usuario.sub || usuario.id || usuario.usuario_id),
       sucursal_id: Number(this.sucursalSeleccionada),
       detalles: this.items.map(item => ({
         variante_id: item.variante_id,
@@ -115,15 +115,21 @@ export class CarritoComponent implements OnInit {
       }))
     };
 
+    console.log("PAQUETE ENVIADO A FASTAPI:", payload);
     this.reservaService.crearReserva(payload).subscribe({
       next: (res) => {
         alert(`¡Reserva confirmada! Tu código es #${res.id}. Te esperamos en la tienda.`);
         this.cerrarModalReserva();
-        this.limpiarDatosCarrito(); // Vaciamos el carrito tras reservar exitosamente
+        this.limpiarDatosCarrito(); 
       },
       error: (err) => {
-        console.error(err);
-        alert('Error al procesar la reserva. Verifica que haya stock suficiente en la sucursal elegida.');
+        // ATRAPAMOS EL MENSAJE EXACTO DE FASTAPI
+        console.error("ERROR 422 COMPLETO:", err);
+        const detalle = err.error?.detail;
+        
+        // FastAPI devuelve un arreglo detallando qué campo falló
+        const mensajeExacto = typeof detalle === 'object' ? JSON.stringify(detalle) : detalle;
+        alert(`FastAPI rechazó los datos (422). Detalle: ${mensajeExacto}`);
       }
     });
   }
