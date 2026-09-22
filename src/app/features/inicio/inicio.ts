@@ -1,10 +1,10 @@
 import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
-import { RouterLink, Router } from '@angular/router'; // Añadimos Router
+import { RouterLink, Router } from '@angular/router'; 
 import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { ScrollRevealDirective } from '../../shared/scroll-reveal';
 import { CarritoService } from '../../shared/services/carrito.service';
-import { isPlatformBrowser,CommonModule } from '@angular/common';
+import { isPlatformBrowser, CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-inicio',
@@ -36,8 +36,15 @@ export class InicioComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   
   nombreUsuario: string | null = null;
-  seccionesAgrupadas: any[] = []; // <-- Cambiamos 'prendas' por esta nueva variable
   cantidadCarrito: number = 0;
+
+  // --- NUEVAS VARIABLES PARA LOS FILTROS ---
+  seccionesOriginales: any[] = []; // Guarda el catálogo intacto
+  seccionesAgrupadas: any[] = []; // Es lo que se dibuja en pantalla
+  
+  coloresDisponibles: string[] = ['Todos'];
+  categoriaSeleccionada: string = 'Todas';
+  colorSeleccionado: string = 'Todos';
 
   constructor(private http: HttpClient, private router: Router, private carritoService: CarritoService) {}
 
@@ -65,19 +72,70 @@ export class InicioComponent implements OnInit {
 
   cargarCatalogo() {
     if (isPlatformBrowser(this.platformId)) {
-      // <-- Llamamos al nuevo endpoint seguro que agrupa por categorías
       this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/agrupado/secciones').subscribe({
         next: (datos: any) => {
+          this.seccionesOriginales = datos; 
           this.seccionesAgrupadas = datos; 
+          
+          // Extraemos los colores únicos automáticamente
+          const coloresSet = new Set<string>();
+          datos.forEach((seccion: any) => {
+            seccion.prendas.forEach((prenda: any) => {
+              prenda.variantes?.forEach((variante: any) => {
+                if (variante.color) coloresSet.add(variante.color);
+              });
+            });
+          });
+          
+          this.coloresDisponibles = ['Todos', ...Array.from(coloresSet).sort()];
           this.cdr.detectChanges(); 
         },
         error: (error) => {
           console.error("Error al cargar las secciones:", error.message);
         }
       });
-    } else {
-      console.log('Omitiendo llamada a la API durante el renderizado del servidor.');
     }
+  }
+
+  // --- MOTOR MATEMÁTICO DE FILTRADO ---
+  seleccionarCategoria(categoria: string) {
+    this.categoriaSeleccionada = categoria;
+    this.aplicarFiltros();
+  }
+
+  seleccionarColor(color: string) {
+    this.colorSeleccionado = color;
+    this.aplicarFiltros();
+  }
+
+  aplicarFiltros() {
+    let resultado = [];
+
+    for (const seccion of this.seccionesOriginales) {
+      // 1. Filtro por Categoría
+      if (this.categoriaSeleccionada !== 'Todas' && seccion.nombre_seccion !== this.categoriaSeleccionada) {
+        continue;
+      }
+
+      // 2. Filtro por Color
+      const prendasFiltradas = seccion.prendas.filter((prenda: any) => {
+        if (this.colorSeleccionado === 'Todos') return true;
+        return prenda.variantes && prenda.variantes.some((v: any) => 
+          v.color.toLowerCase() === this.colorSeleccionado.toLowerCase()
+        );
+      });
+
+      // 3. Agregar si sobrevivieron prendas
+      if (prendasFiltradas.length > 0) {
+        resultado.push({
+          ...seccion,
+          prendas: prendasFiltradas
+        });
+      }
+    }
+
+    this.seccionesAgrupadas = resultado;
+    this.cdr.detectChanges();
   }
 
   cerrarSesion() {
@@ -86,17 +144,6 @@ export class InicioComponent implements OnInit {
     }
     this.nombreUsuario = null; 
     this.router.navigate(['/login']); 
-  }
-
-  probarCandado() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/usuarios/perfil').subscribe({
-      next: (respuesta: any) => {
-        alert(respuesta.mensaje);
-      },
-      error: (error) => {
-        alert("Acceso denegado: " + error.error.detail);
-      }
-    });
   }
 
   onImgLoad(event: Event) {

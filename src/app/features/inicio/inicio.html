@@ -104,12 +104,49 @@
 
   <!-- 4. SECCIÓN DEL CATÁLOGO AGRUPADO POR SECCIONES/CATEGORÍAS -->
   <div id="catalogo" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 bg-gray-50">
-    <div class="text-center mb-14">
+    <div class="text-center mb-10">
       <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">Tendencias de la Temporada</h2>
       <div class="w-24 h-1 bg-black mx-auto mt-4 mb-6"></div>
       <p class="text-gray-500 max-w-2xl mx-auto">Seleccionado especialmente para ti. Encuentra tu próximo outfit favorito.</p>
     </div>
     
+    <!-- BARRA DE FILTROS DINÁMICOS -->
+    <div class="mb-12 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      
+      <!-- Filtro Colecciones -->
+      <div class="mb-6">
+        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Colecciones</h3>
+        <div class="flex flex-wrap gap-2">
+          <button (click)="seleccionarCategoria('Todas')" 
+                  [class]="categoriaSeleccionada === 'Todas' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                  class="px-5 py-2 rounded-full text-sm font-medium transition-colors">
+            Todas
+          </button>
+          @for (seccion of seccionesOriginales; track seccion.id_seccion) {
+            <button (click)="seleccionarCategoria(seccion.nombre_seccion)" 
+                    [class]="categoriaSeleccionada === seccion.nombre_seccion ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                    class="px-5 py-2 rounded-full text-sm font-medium transition-colors">
+              {{ seccion.nombre_seccion }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Filtro Colores -->
+      <div>
+        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Color</h3>
+        <div class="flex flex-wrap gap-2">
+          @for (color of coloresDisponibles; track color) {
+            <button (click)="seleccionarColor(color)" 
+                    [class]="colorSeleccionado === color ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                    class="px-5 py-2 rounded-full text-sm font-medium transition-colors">
+              {{ color }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
     <div [@staggerCards]="seccionesAgrupadas.length">
       
       <!-- Mensaje si no hay datos aún -->
