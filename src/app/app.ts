@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NotificacionesComponent } from './shared/components/notificaciones/notificaciones';
+import { PwaService } from './core/services/pwa.service';
 
 @Component({
   selector: 'app-root',
@@ -11,4 +12,9 @@ import { NotificacionesComponent } from './shared/components/notificaciones/noti
 })
 export class App {
   protected readonly title = signal('fashionstore-web');
+  protected pwa = inject(PwaService);
+
+  constructor() {
+    this.pwa.iniciar();
+  }
 }
