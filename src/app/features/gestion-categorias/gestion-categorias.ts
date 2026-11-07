@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-gestion-categorias',
@@ -9,6 +11,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './gestion-categorias.html'
 })
 export class GestionCategoriasComponent implements OnInit {
+  private notif = inject(NotificacionService);
   categorias: any[] = [];
   nuevaCategoria = { nombre: '' };
   cargando = false;
@@ -23,7 +26,7 @@ export class GestionCategoriasComponent implements OnInit {
   }
 
   cargarCategorias() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/categorias').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/categorias`).subscribe({
       next: (data: any) => {
         this.categorias = data;
         this.cdr.detectChanges(); 
@@ -39,7 +42,7 @@ export class GestionCategoriasComponent implements OnInit {
     }
     
     this.cargando = true;
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/categorias', this.nuevaCategoria).subscribe({
+    this.http.post(`${environment.apiUrl}/catalogo/categorias`, this.nuevaCategoria).subscribe({
       next: () => {
         this.nuevaCategoria.nombre = ''; 
         this.cargarCategorias();         
@@ -47,7 +50,7 @@ export class GestionCategoriasComponent implements OnInit {
         this.cdr.detectChanges(); 
       },
       error: (err) => {
-        alert('Error al guardar la categoría');
+        this.notif.errorHttp(err, 'Error al guardar la categoría.');
         this.cargando = false;
         this.cdr.detectChanges(); 
       }

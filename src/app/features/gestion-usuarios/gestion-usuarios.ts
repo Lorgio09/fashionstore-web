@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-gestion-usuarios',
@@ -9,6 +11,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './gestion-usuarios.html'
 })
 export class GestionUsuariosComponent implements OnInit {
+  private notif = inject(NotificacionService);
   usuarios: any[] = [];
   roles: any[] = [];
   sucursales: any[] = [];
@@ -37,21 +40,21 @@ export class GestionUsuariosComponent implements OnInit {
   }
 
   cargarRoles() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/usuarios/roles').subscribe({
+    this.http.get(`${environment.apiUrl}/usuarios/roles`).subscribe({
       next: (data: any) => { this.roles = data; this.cdr.detectChanges(); },
       error: (err) => console.error("Error al cargar roles", err)
     });
   }
 
   cargarSucursales() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/sucursales`).subscribe({
       next: (data: any) => { this.sucursales = data; this.cdr.detectChanges(); },
       error: (err) => console.error("Error al cargar sucursales", err)
     });
   }
 
   cargarUsuarios() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/usuarios/').subscribe({
+    this.http.get(`${environment.apiUrl}/usuarios/`).subscribe({
       next: (data: any) => { this.usuarios = data; this.cdr.detectChanges(); },
       error: (err) => console.error("Error al cargar usuarios", err)
     });
@@ -64,7 +67,7 @@ export class GestionUsuariosComponent implements OnInit {
     }
 
     this.cargando = true;
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/usuarios', this.nuevoUsuario).subscribe({
+    this.http.post(`${environment.apiUrl}/usuarios/usuarios`, this.nuevoUsuario).subscribe({
       next: () => {
         alert('¡Empleado registrado con éxito!');
         this.cargarUsuarios(); 
@@ -73,7 +76,7 @@ export class GestionUsuariosComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        alert(err.error?.detail || 'Error al registrar el usuario.');
+        this.notif.errorHttp(err, 'Error al registrar el usuario.');
         this.cargando = false;
         this.cdr.detectChanges();
       }

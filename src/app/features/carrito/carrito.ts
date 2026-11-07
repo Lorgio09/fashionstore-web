@@ -6,6 +6,8 @@ import { CarritoService, ItemCarrito } from '../../shared/services/carrito.servi
 import { ReservaService } from '../../core/services/reserva.service';
 import { AuthService } from '../../core/services/auth'; 
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-carrito',
@@ -14,6 +16,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './carrito.html'
 })
 export class CarritoComponent implements OnInit {
+  private notif = inject(NotificacionService);
   private http = inject(HttpClient);
   private carritoService = inject(CarritoService);
   private reservaService = inject(ReservaService);
@@ -71,7 +74,7 @@ export class CarritoComponent implements OnInit {
     }));
 
     // 2. Llamamos al nuevo endpoint filtrador
-    this.http.post<any[]>('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales-disponibles', payloadCheck).subscribe({
+    this.http.post<any[]>(`${environment.apiUrl}/catalogo/sucursales-disponibles`, payloadCheck).subscribe({
       next: (sucursalesValidas) => {
         this.sucursales = sucursalesValidas;
         
@@ -86,7 +89,7 @@ export class CarritoComponent implements OnInit {
       },
       error: (err) => {
         console.error("Error validando sucursales:", err);
-        alert("Ocurrió un error al verificar la disponibilidad en tiendas.");
+        this.notif.errorHttp(err, 'Ocurrió un error al verificar la disponibilidad en tiendas.');
       }
     });
   }
@@ -107,7 +110,7 @@ export class CarritoComponent implements OnInit {
 
     const payload = {
       fecha_visita: new Date(this.fechaVisita).toISOString(),
-      cliente_id: Number(usuario.id),
+      cliente_id: Number(usuario?.id),
       sucursal_id: Number(this.sucursalSeleccionada),
       detalles: this.items.map(item => ({
         variante_id: item.variante_id,
@@ -123,13 +126,7 @@ export class CarritoComponent implements OnInit {
         this.limpiarDatosCarrito(); 
       },
       error: (err) => {
-        // ATRAPAMOS EL MENSAJE EXACTO DE FASTAPI
-        console.error("ERROR 422 COMPLETO:", err);
-        const detalle = err.error?.detail;
-        
-        // FastAPI devuelve un arreglo detallando qué campo falló
-        const mensajeExacto = typeof detalle === 'object' ? JSON.stringify(detalle) : detalle;
-        alert(`FastAPI rechazó los datos (422). Detalle: ${mensajeExacto}`);
+        this.notif.errorHttp(err, 'No se pudo registrar la reserva.');
       }
     });
   }

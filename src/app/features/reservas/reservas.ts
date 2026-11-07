@@ -2,14 +2,17 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core'
 import { CommonModule } from '@angular/common';
 import { ReservaService } from '../../core/services/reserva.service';
 import { AuthService } from '../../core/services/auth';
+import { SelectorSucursalComponent } from '../../shared/components/selector-sucursal/selector-sucursal';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-reservas-admin',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SelectorSucursalComponent],
   templateUrl: './reservas.html'
 })
 export class ReservasAdminComponent implements OnInit {
+  private notif = inject(NotificacionService);
   private reservaService = inject(ReservaService);
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
@@ -19,12 +22,19 @@ export class ReservasAdminComponent implements OnInit {
   cargando: boolean = true;
 
   ngOnInit() {
-    const usuario = this.authService.getUsuarioActual();
-    this.sucursalId = usuario?.sucursal_id || 1; // Fallback a sucursal 1 si no hay
+    // La sucursal llega desde <app-selector-sucursal> (sin "1" por defecto: los ids son de cada empresa).
+    this.sucursalId = this.authService.usuario()?.sucursal_id ?? 0;
+    this.cargando = false;
+  }
+
+  cambiarSucursal(id: number) {
+    if (id === this.sucursalId && this.reservas.length) return;
+    this.sucursalId = id;
     this.cargarReservas();
   }
 
   cargarReservas() {
+    if (!this.sucursalId) return;
     this.cargando = true;
     this.reservaService.obtenerReservasSucursal(this.sucursalId).subscribe({
       next: (data) => {
@@ -46,7 +56,7 @@ export class ReservasAdminComponent implements OnInit {
         next: () => {
           this.cargarReservas(); // Recargamos para ver los cambios
         },
-        error: (err) => alert('Error al cambiar el estado')
+        error: (err) => this.notif.errorHttp(err, 'Error al cambiar el estado de la reserva.')
       });
     }
   }

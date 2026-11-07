@@ -28,6 +28,9 @@
             <span class="text-sm font-medium text-gray-900">
               Hola, <span class="font-bold">{{ nombreUsuario }}</span>
             </span>
+            @if (auth.esPersonal()) {
+              <a [routerLink]="auth.rutaInicio()" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">Ir al panel</a>
+            }
             <button (click)="cerrarSesion()" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors">
               Cerrar sesión
             </button>

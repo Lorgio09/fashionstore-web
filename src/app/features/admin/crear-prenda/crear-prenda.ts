@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
+import { NotificacionService } from '../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-crear-prenda',
@@ -10,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   templateUrl: './crear-prenda.html'
 })
 export class CrearPrendaComponent implements OnInit {
+  private notif = inject(NotificacionService);
   nuevaPrenda = {
     nombre: '',
     descripcion: '',
@@ -45,21 +48,21 @@ export class CrearPrendaComponent implements OnInit {
   }
 
   cargarCategorias() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/categorias').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/categorias`).subscribe({
       next: (data: any) => this.categorias = data,
       error: (err) => console.error("Error al cargar categorías", err)
     });
   }
 
   cargarProveedores() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/proveedores').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/proveedores`).subscribe({
       next: (data: any) => this.proveedores = data,
       error: (err) => console.error("Error al cargar proveedores", err)
     });
   }
 
   cargarDatosPrenda(id: string) {
-    this.http.get(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${id}`).subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/${id}`).subscribe({
       next: (data: any) => {
         this.nuevaPrenda = {
           nombre: data.nombre,
@@ -73,7 +76,7 @@ export class CrearPrendaComponent implements OnInit {
           this.imagenPreview = data.imagen_url;
         }
       },
-      error: (err) => alert("Error al cargar los datos de la prenda")
+      error: (err) => this.notif.errorHttp(err, 'Error al cargar los datos de la prenda.')
     });
   }
 
@@ -106,12 +109,12 @@ export class CrearPrendaComponent implements OnInit {
 
     if (this.isEditMode) {
       // MODO EDICIÓN (PUT)
-      this.http.put(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${this.prendaId}`, formData).subscribe({
+      this.http.put(`${environment.apiUrl}/catalogo/${this.prendaId}`, formData).subscribe({
         next: () => {
           alert('¡Prenda actualizada con éxito!');
           this.router.navigate(['/admin/prendas']); 
         },
-        error: (err) => alert('Error al actualizar la prenda.')
+        error: (err) => this.notif.errorHttp(err, 'Error al actualizar la prenda.')
       });
     } else {
       // MODO CREACIÓN (POST)
@@ -120,12 +123,12 @@ export class CrearPrendaComponent implements OnInit {
         alert("Selecciona una foto para la nueva prenda.");
         return;
       }
-      this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/', formData).subscribe({
+      this.http.post(`${environment.apiUrl}/catalogo/`, formData).subscribe({
         next: () => {
           alert('¡Prenda registrada con éxito!');
           this.router.navigate(['/admin/prendas']); // Volvemos a la tabla
         },
-        error: (err) => alert('Error al guardar la prenda.')
+        error: (err) => this.notif.errorHttp(err, 'Error al guardar la prenda.')
       });
     }
   }

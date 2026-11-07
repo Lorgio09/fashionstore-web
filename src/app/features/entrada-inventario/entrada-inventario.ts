@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-entrada-inventario',
@@ -9,6 +11,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './entrada-inventario.html'
 })
 export class EntradaInventarioComponent implements OnInit {
+  private notif = inject(NotificacionService);
   prendas: any[] = [];
   sucursales: any[] = [];
   
@@ -34,7 +37,7 @@ export class EntradaInventarioComponent implements OnInit {
   }
 
   cargarPrendas() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/`).subscribe({
       next: (data: any) => { 
         this.prendas = data; 
         this.cdr.detectChanges(); 
@@ -44,7 +47,7 @@ export class EntradaInventarioComponent implements OnInit {
   }
 
   cargarSucursales() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/sucursales').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/sucursales`).subscribe({
       next: (data: any) => { 
         this.sucursales = data; 
         this.cdr.detectChanges(); 
@@ -60,7 +63,7 @@ export class EntradaInventarioComponent implements OnInit {
     }
 
     this.cargando = true;
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/variantes-stock', this.nuevaEntrada).subscribe({
+    this.http.post(`${environment.apiUrl}/catalogo/variantes-stock`, this.nuevaEntrada).subscribe({
       next: () => {
         alert('¡Inventario registrado con éxito!');
         this.nuevaEntrada = { prenda_id: null, talla: '', color: '', codigo_sku: '', sucursal_id: null, cantidad: 1 };
@@ -68,7 +71,7 @@ export class EntradaInventarioComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        alert('Error al registrar el inventario.');
+        this.notif.errorHttp(err, 'Error al registrar el inventario.');
         this.cargando = false;
         this.cdr.detectChanges();
       }

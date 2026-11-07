@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { CarritoService } from '../../shared/services/carrito.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-detalle-prenda',
@@ -39,7 +40,7 @@ export class DetallePrendaComponent implements OnInit {
 
   cargarDetalle(id: string) {
     // 1. Cargar la info base de la prenda
-    this.http.get(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${id}`).subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/${id}`).subscribe({
       next: (data: any) => {
         this.prenda = data;
         this.cargarVariantes(id); // Llamamos al paso 2
@@ -54,7 +55,7 @@ export class DetallePrendaComponent implements OnInit {
 
   cargarVariantes(id: string) {
     // 2. Cargar las variantes y calcular stock
-    this.http.get(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${id}/variantes`).subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/${id}/variantes`).subscribe({
       next: (data: any) => {
         this.variantes = data;
         

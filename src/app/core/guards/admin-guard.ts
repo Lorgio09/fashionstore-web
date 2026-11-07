@@ -1,42 +1,45 @@
 import { inject, PLATFORM_ID } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
+import { AuthService } from '../services/auth';
+import { FuncionesPlan, RolNombre } from '../models/sesion';
 
-export const adminGuard: CanActivateFn = (route, state) => {
+/**
+ * Deja pasar si el usuario tiene uno de los roles de `data.roles` (por NOMBRE, ver ROLES).
+ * Sin `data.roles` basta con estar autenticado.
+ * Opcional: `data.funcion` ('reportes_ia' | 'offline') exige que el plan la incluya.
+ */
+export const rolGuard: CanActivateFn = (route) => {
+  // En el servidor (SSR) no hay sesión: se decide en el navegador.
+  if (!isPlatformBrowser(inject(PLATFORM_ID))) return true;
+
+  const auth = inject(AuthService);
   const router = inject(Router);
-  const platformId = inject(PLATFORM_ID);
 
-  if (!isPlatformBrowser(platformId)) return true;
+  if (!auth.autenticado()) return router.createUrlTree(['/login']);
 
-  const token = localStorage.getItem('token');
-  const rolesBrutos = route.data['roles'];
-  const rolesPermitidos = Array.isArray(rolesBrutos) ? rolesBrutos.map(Number) : null;
-
-  // RASTREADOR 1: Ver qué ruta estamos intentando abrir
-  console.log(`[Guard] Intentando entrar a: ${state.url}`);
-
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const userRol = Number(payload.rol);
-
-      // RASTREADOR 2: Confirmar las llaves que tiene el usuario vs las que pide la puerta
-      console.log(`[Guard] Tu Rol: ${userRol} | Roles que pueden entrar:`, rolesPermitidos);
-
-      if (rolesPermitidos && rolesPermitidos.includes(userRol)) {
-        console.log(`[Guard] ¡Acceso APROBADO para ${state.url}!`);
-        return true; // <--- Si ves este mensaje en consola y te bota, el culpable 100% era el FormsModule.
-      } 
-      else if (!rolesPermitidos && userRol === 2) {
-        return true;
-      } else {
-        console.warn(`[Guard] Acceso DENEGADO para ${state.url}`);
-        return router.createUrlTree(['/']);
-      }
-    } catch (error) {
-      console.error('Error al decodificar el token:', error);
-    }
+  const roles = route.data['roles'] as RolNombre[] | undefined;
+  if (roles?.length && !auth.tieneRol(...roles)) {
+    return router.createUrlTree([auth.rutaInicio()]);
   }
 
-  return router.createUrlTree(['/']);
+  const funcion = route.data['funcion'] as keyof FuncionesPlan | undefined;
+  // Si mi-empresa aún no cargó se deja pasar: el backend responde 403 y se muestra el detail.
+  if (funcion && auth.miEmpresa() && !auth.tieneFuncion(funcion)) {
+    return router.createUrlTree([auth.rutaInicio()]);
+  }
+  return true;
 };
+
+/**
+ * Para `/admin` vacío: manda a cada rol a su pantalla de inicio.
+ * Es un guard (no `redirectTo`) porque en SSR no hay sesión y el servidor redirigiría a "/".
+ */
+export const inicioPorRolGuard: CanActivateFn = () => {
+  if (!isPlatformBrowser(inject(PLATFORM_ID))) return true;
+  const auth = inject(AuthService);
+  return inject(Router).parseUrl(auth.rutaInicio());
+};
+
+/** @deprecated usar rolGuard */
+export const adminGuard = rolGuard;

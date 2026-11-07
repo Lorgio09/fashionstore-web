@@ -43,6 +43,9 @@
     <div class="p-4 border-b border-gray-200 bg-black text-white">
       <h2 class="text-lg font-bold">Ticket de Venta</h2>
     </div>
+    <div class="px-4 py-2 border-b border-gray-200 bg-gray-50">
+      <app-selector-sucursal (cambio)="sucursalId = $event" />
+    </div>
 
     <!-- Lista de Items en el carrito -->
     <div class="flex-1 p-4 overflow-y-auto space-y-3">

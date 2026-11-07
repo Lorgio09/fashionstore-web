@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { environment } from '../../../../environments/environment';
+import { NotificacionService } from '../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-listar-prendas',
@@ -9,6 +11,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
   templateUrl: './listar-prenda.html'
 })
 export class ListarPrendasComponent implements OnInit {
+  private notif = inject(NotificacionService);
   prendas: any[] = [];
 
   constructor(
@@ -21,7 +24,7 @@ export class ListarPrendasComponent implements OnInit {
   }
 
   cargarPrendas() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/`).subscribe({
       next: (data: any) => {
         this.prendas = data;
         this.cdr.detectChanges();
@@ -34,12 +37,12 @@ export class ListarPrendasComponent implements OnInit {
 
   eliminarPrenda(id: number, nombre: string) {
     if (confirm(`¿Estás seguro de que deseas eliminar la prenda "${nombre}"?`)) {
-      this.http.delete(`https://fashionstore-api-kedu.onrender.com/api/catalogo/${id}`).subscribe({
+      this.http.delete(`${environment.apiUrl}/catalogo/${id}`).subscribe({
         next: () => {
           alert('Prenda eliminada correctamente');
           this.cargarPrendas(); // Recargamos la tabla para que desaparezca
         },
-        error: (err) => console.error("Error al eliminar", err)
+        error: (err) => this.notif.errorHttp(err, 'Error al eliminar la prenda.')
       });
     }
   }

@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common'; // Necesario para el pipe de fecha (date)
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-bitacora',
@@ -22,7 +23,7 @@ export class BitacoraComponent implements OnInit {
   }
 
   cargarBitacora() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/auditoria/').subscribe({
+    this.http.get(`${environment.apiUrl}/auditoria/`).subscribe({
       next: (data: any) => { 
         this.registros = data; 
         this.cargando = false;

@@ -1,7 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-temporadas',
@@ -10,6 +12,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './temporadas.html'
 })
 export class TemporadasComponent implements OnInit {
+  private notif = inject(NotificacionService);
   temporadas: any[] = [];
   nuevaTemporada = {
     nombre: '',
@@ -25,7 +28,7 @@ export class TemporadasComponent implements OnInit {
   }
 
   cargarTemporadas() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/temporadas').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/temporadas`).subscribe({
       next: (data: any) => { 
         this.temporadas = data; 
         this.cdr.detectChanges(); 
@@ -41,7 +44,7 @@ export class TemporadasComponent implements OnInit {
     }
 
     this.cargando = true;
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/temporadas', this.nuevaTemporada).subscribe({
+    this.http.post(`${environment.apiUrl}/catalogo/temporadas`, this.nuevaTemporada).subscribe({
       next: () => {
         alert('¡Temporada registrada con éxito!');
         this.cargarTemporadas();
@@ -50,7 +53,7 @@ export class TemporadasComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        alert('Error al registrar la temporada.');
+        this.notif.errorHttp(err, 'Error al registrar la temporada.');
         this.cargando = false;
         this.cdr.detectChanges();
       }

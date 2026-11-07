@@ -1,0 +1,157 @@
+<div class="mx-auto max-w-7xl">
+  <div class="mb-6 flex flex-col gap-3 border-b border-gray-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Empresas</h1>
+      <p class="mt-1 text-sm text-gray-500">Empresas contratantes (tenants), su plan y su suscripción.</p>
+    </div>
+    @if (!mostrandoForm()) {
+      <button type="button" (click)="abrirForm()" class="rounded-md bg-black px-5 py-2 text-sm font-medium text-white hover:bg-gray-800">
+        + Registrar empresa
+      </button>
+    }
+  </div>
+
+  <!-- Registro de empresa -->
+  @if (mostrandoForm()) {
+    <form #f="ngForm" (ngSubmit)="registrar()" class="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+      <h2 class="mb-4 text-lg font-bold text-gray-900">Nueva empresa</h2>
+
+      <fieldset class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <legend class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Datos de la empresa</legend>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Razón social *</span>
+          <input name="razon_social" [(ngModel)]="nueva.razon_social" (ngModelChange)="sugerirSlug()" required
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+        </label>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">NIT *</span>
+          <input name="nit" [(ngModel)]="nueva.nit" required
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+        </label>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Slug (tienda) *</span>
+          <input name="slug" [(ngModel)]="nueva.slug" (input)="slugEditado = true" required pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 font-mono focus:border-black focus:ring-black">
+          <span class="mt-1 block text-xs text-gray-500">Minúsculas, números y guiones. Tienda: <code>?tienda={{ nueva.slug || '…' }}</code></span>
+        </label>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Correo</span>
+          <input name="correo" type="email" [(ngModel)]="nueva.correo"
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+        </label>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Teléfono</span>
+          <input name="telefono" [(ngModel)]="nueva.telefono"
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+        </label>
+      </fieldset>
+
+      <fieldset class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <legend class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Suscripción inicial</legend>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Plan *</span>
+          <select name="plan_codigo" [(ngModel)]="nueva.plan_codigo" required
+                  class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-black focus:ring-black">
+            @for (p of planes(); track p.id) {
+              <option [value]="p.codigo">{{ p.nombre }} — Bs {{ p.precio_mensual }}/mes</option>
+            }
+          </select>
+        </label>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Periodicidad *</span>
+          <select name="periodicidad" [(ngModel)]="nueva.periodicidad" required
+                  class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-black focus:ring-black">
+            <option value="MENSUAL">Mensual</option>
+            <option value="ANUAL">Anual</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <legend class="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Administrador de la empresa</legend>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Nombre *</span>
+          <input name="admin_nombre" [(ngModel)]="nueva.admin_nombre" required
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+        </label>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Email *</span>
+          <input name="admin_email" type="email" [(ngModel)]="nueva.admin_email" required email
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+        </label>
+        <label class="block text-sm">
+          <span class="font-medium text-gray-700">Contraseña *</span>
+          <input name="admin_password" type="password" [(ngModel)]="nueva.admin_password" required minlength="6" autocomplete="new-password"
+                 class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+        </label>
+      </fieldset>
+
+      <div class="mt-6 flex gap-3">
+        <button type="submit" [disabled]="f.invalid || guardando()"
+                class="rounded-md bg-black px-6 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:bg-gray-400">
+          {{ guardando() ? 'Registrando…' : 'Registrar empresa' }}
+        </button>
+        <button type="button" (click)="mostrandoForm.set(false)" class="rounded-md border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  }
+
+  <!-- Listado -->
+  <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-gray-200 text-sm">
+      <thead class="bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
+        <tr>
+          <th class="px-4 py-3">Empresa</th>
+          <th class="px-4 py-3">Estado</th>
+          <th class="px-4 py-3">Plan</th>
+          <th class="px-4 py-3">Suscripción</th>
+          <th class="px-4 py-3">Vence</th>
+          <th class="px-4 py-3">Sucursales</th>
+          <th class="px-4 py-3 text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        @if (cargando()) {
+          <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Cargando empresas…</td></tr>
+        } @else {
+          @for (e of empresas(); track e.id) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-3">
+                <p class="font-semibold text-gray-900">{{ e.razon_social }}</p>
+                <p class="text-xs text-gray-500">NIT {{ e.nit }} · <span class="font-mono">{{ e.slug }}</span></p>
+              </td>
+              <td class="px-4 py-3"><app-estado-badge [estado]="e.estado" /></td>
+              <td class="px-4 py-3">{{ e.suscripcion.plan?.nombre ?? '—' }}
+                @if (e.suscripcion.periodicidad) { <span class="text-xs text-gray-500">({{ e.suscripcion.periodicidad | lowercase }})</span> }
+              </td>
+              <td class="px-4 py-3"><app-estado-badge [estado]="e.suscripcion.estado" /></td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                {{ fecha(e.suscripcion.fecha_fin) }}
+                @if (e.suscripcion.dias_restantes !== null) {
+                  <span class="block text-xs" [class.text-gray-500]="e.suscripcion.dias_restantes > 30" [class.text-amber-700]="e.suscripcion.dias_restantes <= 30">
+                    {{ e.suscripcion.dias_restantes }} días
+                  </span>
+                }
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                {{ e.suscripcion.uso.sucursales_activas }} / {{ e.suscripcion.plan?.max_sucursales ?? '∞' }}
+              </td>
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <a [routerLink]="['/plataforma/empresas', e.id]" class="mr-3 font-medium text-black underline hover:text-gray-600">Suscripción</a>
+                <button type="button" (click)="cambiarEstado(e)" [disabled]="procesando() === e.id"
+                        class="font-medium disabled:opacity-50"
+                        [class.text-red-700]="e.estado === 'ACTIVA'" [class.text-green-700]="e.estado !== 'ACTIVA'">
+                  {{ e.estado === 'ACTIVA' ? 'Suspender' : 'Reactivar' }}
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No hay empresas registradas.</td></tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

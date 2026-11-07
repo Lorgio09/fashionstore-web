@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../core/services/auth';
+import { NotificacionService } from '../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-login',
@@ -12,32 +13,35 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+
   datosLogin = {
     email: '',
     password: ''
   };
 
-  constructor(private http: HttpClient, private router: Router) {}
+  cargando = signal(false);
+  error = signal<string | null>(null);
 
   iniciarSesion() {
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/login', this.datosLogin).subscribe({
-      next: (respuesta: any) => {
-        const token = respuesta.access_token;
-        localStorage.setItem('token', token); // Guardamos el token
+    if (this.cargando()) return;
+    this.cargando.set(true);
+    this.error.set(null);
 
-        // Decodificamos el JWT para leer los datos internos (Payload)
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        // Ahora verificamos el número 2, que es el rol_id de tu administrador en la base de datos
-        if (payload.rol === 2) {
-          // Si es el administrador, lo mandamos al panel
-          this.router.navigate(['/admin/dashboard']); 
-        } else {
-          // Si es un cliente normal (ej. rol 1), lo mandamos al inicio
-          this.router.navigate(['/']); 
-        }
+    this.auth.login(this.datosLogin.email.trim(), this.datosLogin.password).subscribe({
+      next: () => {
+        this.cargando.set(false);
+        // Destino según rol_nombre (no rol_id: los ids cambian entre bases)
+        this.router.navigateByUrl(this.auth.rutaInicio());
       },
-      error: (err) => {
-        alert('Credenciales incorrectas');
+      error: (err: HttpErrorResponse) => {
+        this.cargando.set(false);
+        // 401: credenciales o usuario desactivado · 403: empresa suspendida (contrato §2)
+        this.error.set(
+          NotificacionService.detalle(err) ??
+            (err.status === 401 ? 'Correo o contraseña incorrectos.' : 'No se pudo iniciar sesión. Intenta de nuevo.'),
+        );
       }
     });
   }

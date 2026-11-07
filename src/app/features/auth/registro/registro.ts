@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environments/environment';
+import { NotificacionService } from '../../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-registro',
@@ -11,6 +13,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './registro.html',
 })
 export class RegistroComponent {
+  private notif = inject(NotificacionService);
   // 1. Alineado exactamente con el esquema ClienteCreate de FastAPI (sin rol_id)
   datosRegistro = {
     nombre_completo: '',
@@ -22,7 +25,7 @@ export class RegistroComponent {
 
   crearCuenta() {
     // 2. Ruta corregida apuntando exactamente al endpoint del cliente
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/usuarios/registro/cliente', this.datosRegistro)
+    this.http.post(`${environment.apiUrl}/usuarios/registro/cliente`, this.datosRegistro)
       .subscribe({
         next: (respuesta) => {
           alert('¡Cuenta creada con éxito! Ya puedes iniciar sesión.');
@@ -30,8 +33,7 @@ export class RegistroComponent {
         },
         error: (error) => {
           // Extraemos el detalle del error si FastAPI nos rechaza (ej. correo duplicado)
-          const mensajeError = error.error?.detail || 'Ocurrió un error al registrarse';
-          alert('Error: ' + mensajeError);
+          this.notif.errorHttp(error, 'Ocurrió un error al registrarse.');
         }
       });
   }

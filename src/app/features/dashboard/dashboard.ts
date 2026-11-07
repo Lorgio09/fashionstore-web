@@ -1,9 +1,12 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../../core/services/auth';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,6 +15,8 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   templateUrl: './dashboard.html' 
 })
 export class DashboardComponent implements OnInit {
+  auth = inject(AuthService);
+  private notif = inject(NotificacionService);
   resumen = { total_prendas: 0, total_sucursales: 0, total_proveedores: 0, total_categorias: 0, stock_total: 0 };
   cargando = true;
 
@@ -48,7 +53,7 @@ export class DashboardComponent implements OnInit {
   }
 
   cargarResumen() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/dashboard/resumen').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/dashboard/resumen`).subscribe({
       next: (data: any) => {
         this.resumen = data;
         this.chartData = {
@@ -109,7 +114,7 @@ export class DashboardComponent implements OnInit {
     this.reporteIA = null;
     this.cdr.detectChanges();
 
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/ia/generar-reporte', { texto_voz: textoVoz }).subscribe({
+    this.http.post(`${environment.apiUrl}/ia/generar-reporte`, { texto_voz: textoVoz }).subscribe({
       next: (res: any) => {
         // Convertimos el Markdown de Gemini a HTML para que se vea estético
         let textoFormateado = res.reporte
@@ -124,13 +129,13 @@ export class DashboardComponent implements OnInit {
       error: (err) => {
         console.error("Error de IA:", err);
         this.procesandoIA = false;
-        alert("Error al procesar el reporte con Gemini.");
+        this.notif.errorHttp(err, 'Error al procesar el reporte con IA.');
         this.cdr.detectChanges();
       }
     });
   }
   cargarVentas() {
-  this.http.get<any[]>('https://fashionstore-api-kedu.onrender.com/api/catalogo/ordenes/historial').subscribe({
+  this.http.get<any[]>(`${environment.apiUrl}/catalogo/ordenes/historial`).subscribe({
     next: (data) => {
       this.ventas = data;
       this.cdr.detectChanges();

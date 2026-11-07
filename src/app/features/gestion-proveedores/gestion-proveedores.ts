@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-gestion-proveedores',
@@ -9,6 +11,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './gestion-proveedores.html'
 })
 export class GestionProveedoresComponent implements OnInit {
+  private notif = inject(NotificacionService);
   proveedores: any[] = [];
   nuevoProveedor = { nombre: '' };
   cargando = false;
@@ -23,7 +26,7 @@ export class GestionProveedoresComponent implements OnInit {
   }
 
   cargarProveedores() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/proveedores').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/proveedores`).subscribe({
       next: (data: any) => {
         this.proveedores = data;
         this.cdr.detectChanges(); // 3. Despertar a Angular al cargar
@@ -36,7 +39,7 @@ export class GestionProveedoresComponent implements OnInit {
     if (!this.nuevoProveedor.nombre.trim()) return;
     
     this.cargando = true;
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/proveedores', this.nuevoProveedor).subscribe({
+    this.http.post(`${environment.apiUrl}/catalogo/proveedores`, this.nuevoProveedor).subscribe({
       next: () => {
         this.nuevoProveedor.nombre = ''; 
         this.cargarProveedores();         
@@ -44,7 +47,7 @@ export class GestionProveedoresComponent implements OnInit {
         this.cdr.detectChanges(); 
       },
       error: (err) => {
-        alert('Error al guardar');
+        this.notif.errorHttp(err, 'Error al guardar el proveedor.');
         this.cargando = false;
         this.cdr.detectChanges(); 
       }

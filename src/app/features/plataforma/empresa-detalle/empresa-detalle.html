@@ -1,0 +1,125 @@
+<div class="mx-auto max-w-6xl">
+  <a routerLink="/plataforma/empresas" class="text-sm text-gray-600 hover:text-black">← Empresas</a>
+
+  @if (cargando() && !empresa()) {
+    <p class="py-16 text-center text-gray-500">Cargando…</p>
+  } @else if (empresa(); as e) {
+    <div class="mb-6 mt-2 flex flex-col gap-2 border-b border-gray-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">{{ e.razon_social }}</h1>
+        <p class="mt-1 text-sm text-gray-500">NIT {{ e.nit }} · tienda <span class="font-mono">{{ e.slug }}</span> · registrada el {{ fecha(e.fecha_registro) }}</p>
+      </div>
+      <div class="flex items-center gap-2 text-sm">Empresa: <app-estado-badge [estado]="e.estado" /></div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <!-- Suscripción vigente -->
+      <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2" aria-labelledby="h-sus">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 id="h-sus" class="text-lg font-bold text-gray-900">Suscripción vigente</h2>
+          @if (suscripcion(); as s) { <app-estado-badge [estado]="s.estado" /> }
+        </div>
+        @if (suscripcion(); as s) {
+          <dl class="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+            <div><dt class="text-gray-500">Plan</dt><dd class="font-semibold text-gray-900">{{ s.plan?.nombre ?? '—' }}</dd></div>
+            <div><dt class="text-gray-500">Periodicidad</dt><dd class="font-semibold text-gray-900">{{ s.periodicidad ?? '—' }}</dd></div>
+            <div><dt class="text-gray-500">Desde</dt><dd class="font-semibold text-gray-900">{{ fecha(s.fecha_inicio) }}</dd></div>
+            <div><dt class="text-gray-500">Vence</dt>
+              <dd class="font-semibold text-gray-900">{{ fecha(s.fecha_fin) }}
+                @if (s.dias_restantes !== null) { <span class="block text-xs font-normal text-gray-500">{{ s.dias_restantes }} días restantes</span> }
+              </dd>
+            </div>
+          </dl>
+          <div class="mt-6 space-y-4">
+            <app-barra-uso etiqueta="Sucursales activas" [usado]="s.uso.sucursales_activas" [maximo]="s.plan?.max_sucursales ?? null" />
+            <app-barra-uso etiqueta="Usuarios internos" [usado]="s.uso.usuarios_internos" [maximo]="s.plan?.max_usuarios ?? null" />
+          </div>
+          <ul class="mt-6 flex flex-wrap gap-4 text-sm">
+            <li>{{ s.funciones.reportes_ia ? '✓' : '✕' }} Reportes con IA</li>
+            <li>{{ s.funciones.offline ? '✓' : '✕' }} Operación offline</li>
+          </ul>
+          <div class="mt-6 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
+            <button type="button" (click)="renovar()" [disabled]="!!procesando() || !s.plan"
+                    class="rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:bg-gray-400">
+              {{ procesando() === 'renovar' ? 'Renovando…' : 'Renovar' }}
+            </button>
+            @if (s.estado !== 'SIN_SUSCRIPCION') {
+              <button type="button" (click)="cambiarEstadoSuscripcion()" [disabled]="!!procesando()"
+                      class="rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-50"
+                      [class.border-red-300]="s.estado !== 'SUSPENDIDA'" [class.text-red-700]="s.estado !== 'SUSPENDIDA'"
+                      [class.border-green-300]="s.estado === 'SUSPENDIDA'" [class.text-green-700]="s.estado === 'SUSPENDIDA'">
+                {{ s.estado === 'SUSPENDIDA' ? 'Reactivar suscripción' : 'Suspender suscripción' }}
+              </button>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- Asignar / cambiar plan -->
+      <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm" aria-labelledby="h-plan">
+        <h2 id="h-plan" class="mb-4 text-lg font-bold text-gray-900">{{ suscripcion()?.plan ? 'Cambiar plan' : 'Asignar plan' }}</h2>
+        <form (ngSubmit)="asignarPlan()" class="space-y-4">
+          <label class="block text-sm">
+            <span class="font-medium text-gray-700">Plan</span>
+            <select name="plan" [ngModel]="cambio.plan_codigo" (ngModelChange)="elegirPlan($event)" required
+                    class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-black focus:ring-black">
+              @for (p of planes(); track p.id) { <option [value]="p.codigo">{{ p.nombre }}</option> }
+            </select>
+          </label>
+          @if (planElegido(); as p) {
+            <p class="rounded bg-gray-50 p-3 text-xs text-gray-600">
+              Bs {{ num(p.precio_mensual) }}/mes · hasta {{ p.max_sucursales ?? '∞' }} sucursales ·
+              {{ p.permite_reportes_ia ? 'con' : 'sin' }} IA · {{ p.permite_offline ? 'con' : 'sin' }} offline
+            </p>
+          }
+          <label class="block text-sm">
+            <span class="font-medium text-gray-700">Periodicidad</span>
+            <select name="periodicidad" [(ngModel)]="cambio.periodicidad" required
+                    class="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-black focus:ring-black">
+              <option value="MENSUAL">Mensual</option>
+              <option value="ANUAL">Anual</option>
+            </select>
+          </label>
+          <label class="block text-sm">
+            <span class="font-medium text-gray-700">Fecha de inicio (opcional)</span>
+            <input type="date" name="fecha_inicio" [(ngModel)]="cambio.fecha_inicio"
+                   class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-black focus:ring-black">
+            <span class="mt-1 block text-xs text-gray-500">Vacío: empieza hoy. Una fecha futura deja la suscripción PROGRAMADA.</span>
+          </label>
+          <button type="submit" [disabled]="!!procesando() || !cambio.plan_codigo"
+                  class="w-full rounded-md bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:bg-gray-400">
+            {{ procesando() === 'plan' ? 'Guardando…' : (suscripcion()?.plan ? 'Cambiar plan' : 'Asignar plan') }}
+          </button>
+          <p class="text-xs text-gray-500">Si la empresa usa más sucursales de las que permite el nuevo plan, el cambio se rechaza.</p>
+        </form>
+      </section>
+    </div>
+
+    <!-- Historial -->
+    <section class="mt-6 overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm" aria-labelledby="h-hist">
+      <h2 id="h-hist" class="border-b border-gray-100 px-6 py-4 text-lg font-bold text-gray-900">Historial de suscripciones</h2>
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
+          <tr>
+            <th class="px-6 py-3">#</th><th class="px-6 py-3">Plan</th><th class="px-6 py-3">Periodicidad</th>
+            <th class="px-6 py-3">Inicio</th><th class="px-6 py-3">Fin</th><th class="px-6 py-3">Estado</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (h of historial(); track h.id) {
+            <tr>
+              <td class="px-6 py-3 text-gray-500">{{ h.id }}</td>
+              <td class="px-6 py-3 font-medium text-gray-900">{{ h.plan.nombre }}</td>
+              <td class="px-6 py-3">{{ h.periodicidad }}</td>
+              <td class="px-6 py-3">{{ fecha(h.fecha_inicio) }}</td>
+              <td class="px-6 py-3">{{ fecha(h.fecha_fin) }}</td>
+              <td class="px-6 py-3"><app-estado-badge [estado]="h.estado" /></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="px-6 py-6 text-center text-gray-500">Sin suscripciones.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+</div>

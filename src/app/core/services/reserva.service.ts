@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface DetalleReservaCreate {
   variante_id: number;
@@ -19,7 +20,7 @@ export interface ReservaCreate {
 })
 export class ReservaService {
   private http = inject(HttpClient);
-  private API_URL = 'https://fashionstore-api-kedu.onrender.com/api/reservas';
+  private API_URL = `${environment.apiUrl}/reservas`;
 
   crearReserva(reserva: ReservaCreate): Observable<any> {
     return this.http.post(this.API_URL, reserva);

@@ -1,9 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Necesario para los inputs (ngModel)
 import { Router} from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CarritoService, ItemCarrito } from '../../shared/services/carrito.service'; 
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-checkout',
@@ -12,6 +14,7 @@ import { CarritoService, ItemCarrito } from '../../shared/services/carrito.servi
   templateUrl: './checkout.html'
 })
 export class CheckoutComponent implements OnInit {
+  private notif = inject(NotificacionService);
   items: ItemCarrito[] = [];
   total: number = 0;
   procesando: boolean = false;
@@ -37,14 +40,14 @@ simulando: boolean = false;
     if (!this.ordenId) return;
     this.simulando = true;
     
-    this.http.post(`https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/${this.ordenId}/simular-pago`, {})
+    this.http.post(`${environment.apiUrl}/catalogo/checkout/${this.ordenId}/simular-pago`, {})
       .subscribe({
         next: () => {
           alert('¡Pago confirmado! El stock ha sido descontado y tu orden está en preparación.');
           window.location.href = '/'; 
         },
         error: (err) => {
-          alert('Error al simular pago: ' + (err.error?.detail || 'Error desconocido'));
+          this.notif.errorHttp(err, 'Error al simular el pago.');
           this.simulando = false;
         }
       });
@@ -54,14 +57,14 @@ simulando: boolean = false;
     if (!this.ordenId) return;
     this.simulando = true;
 
-    this.http.post(`https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/${this.ordenId}/simular-rechazo`, {})
+    this.http.post(`${environment.apiUrl}/catalogo/checkout/${this.ordenId}/simular-rechazo`, {})
       .subscribe({
         next: () => {
           alert('El pago ha sido rechazado. La orden fue cancelada.');
           window.location.href = '/'; // Volvemos al inicio
         },
         error: (err) => {
-          alert('Error al simular rechazo: ' + (err.error?.detail || 'Error desconocido'));
+          this.notif.errorHttp(err, 'Error al simular el rechazo.');
           this.simulando = false;
         }
       });
@@ -99,7 +102,7 @@ simulando: boolean = false;
       }))
     };
 
-    const API_URL = 'https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout';
+    const API_URL = `${environment.apiUrl}/catalogo/checkout`;
 
     this.http.post(API_URL, payload)
       .subscribe({
@@ -121,7 +124,7 @@ simulando: boolean = false;
         },
         error: (err) => {
           console.error("Error en la compra:", err);
-          alert('Error al generar el pago: ' + (err.error?.detail || 'Intenta de nuevo.'));
+          this.notif.errorHttp(err, 'Error al generar el pago. Intenta de nuevo.');
           this.procesando = false;
           this.cdr.detectChanges();
         }
@@ -149,7 +152,7 @@ simulando: boolean = false;
       }))
     };
 
-    const STRIPE_API_URL = 'https://fashionstore-api-kedu.onrender.com/api/catalogo/checkout/stripe'; 
+    const STRIPE_API_URL = `${environment.apiUrl}/catalogo/checkout/stripe`; 
 
     this.http.post(STRIPE_API_URL, payload)
       .subscribe({
@@ -162,7 +165,7 @@ simulando: boolean = false;
         },
         error: (err) => {
           console.error("Error en Stripe:", err);
-          alert('Error al conectar con la pasarela de tarjetas.');
+          this.notif.errorHttp(err, 'Error al conectar con la pasarela de tarjetas.');
           this.procesando = false;
           this.cdr.detectChanges();
         }

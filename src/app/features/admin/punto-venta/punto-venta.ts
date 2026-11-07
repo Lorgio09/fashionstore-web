@@ -3,6 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth';
+import { environment } from '../../../../environments/environment';
+import { NotificacionService } from '../../../core/services/notificacion.service';
+import { SelectorSucursalComponent } from '../../../shared/components/selector-sucursal/selector-sucursal';
 
 export interface ItemCarrito {
   prenda_id: number;
@@ -15,10 +18,11 @@ export interface ItemCarrito {
 @Component({
   selector: 'app-punto-venta',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SelectorSucursalComponent],
   templateUrl: './punto-venta.html'
 })
 export class PuntoVentaComponent implements OnInit {
+  private notif = inject(NotificacionService);
   private http = inject(HttpClient);
   private authService = inject(AuthService);
   private platformId = inject(PLATFORM_ID);
@@ -35,17 +39,12 @@ export class PuntoVentaComponent implements OnInit {
   sucursalId: number = 0;
   qrGenerado: string | null = null; 
 
-  private API_URL = 'https://fashionstore-api-kedu.onrender.com/api';
+  private API_URL = `${environment.apiUrl}`;
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      const usuario = this.authService.getUsuarioActual();
-      
-      if (usuario && usuario.sucursal_id) {
-        this.sucursalId = usuario.sucursal_id;
-      } else {
-        this.sucursalId = 1; 
-      }
+      // La sucursal la fija <app-selector-sucursal> (asignada al usuario o elegida por el Administrador).
+      this.sucursalId = this.authService.usuario()?.sucursal_id ?? 0;
       this.cargarProductosStock();
     }
   }
@@ -159,7 +158,7 @@ export class PuntoVentaComponent implements OnInit {
           this.procesando = false;
         },
         error: (err) => {
-          alert('Error al registrar la venta en efectivo.');
+          this.notif.errorHttp(err, 'Error al registrar la venta en efectivo.');
           console.error(err);
           this.procesando = false;
         }
@@ -186,7 +185,7 @@ export class PuntoVentaComponent implements OnInit {
           this.cdr.detectChanges(); // <-- OBLIGAMOS A MOSTRAR EL QR Y QUITAR "PROCESANDO"
         },
         error: (err) => {
-          alert('Error al generar el QR con el BCP.');
+          this.notif.errorHttp(err, 'Error al generar el QR con el BCP.');
           console.error(err);
           this.procesando = false;
           this.cdr.detectChanges(); // <-- LIBERAMOS EL BOTÓN SI HAY ERROR

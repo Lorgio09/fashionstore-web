@@ -43,12 +43,23 @@
         </div>
         </div>
 
+        <!-- Error del backend (detail en español) -->
+        @if (error()) {
+        <div role="alert" class="flex items-start gap-2 border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <span aria-hidden="true" class="font-bold">✕</span>
+            <span>{{ error() }}</span>
+        </div>
+        }
+
         <!-- Botón de acceso -->
         <div>
-        <button type="submit" 
-            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-none text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors">
-            Entrar
+        <button type="submit" [disabled]="cargando()"
+            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-none text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors disabled:opacity-60 disabled:cursor-wait">
+            {{ cargando() ? 'Entrando…' : 'Entrar' }}
         </button>
+        @if (cargando()) {
+        <p class="mt-2 text-center text-xs text-gray-500">Si el servidor estaba dormido, la primera vez puede tardar hasta 1 minuto.</p>
+        }
         </div>
     </form>
 

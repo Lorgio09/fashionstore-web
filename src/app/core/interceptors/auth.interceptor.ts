@@ -1,27 +1,20 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { inject } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../services/auth';
+import { TiendaService } from '../services/tienda.service';
 
+/**
+ * Llamadas a nuestra API:
+ * - con sesión → `Authorization: Bearer <token>` (la empresa la decide el servidor);
+ * - sin sesión → `X-Empresa: <slug>` para la tienda pública (contrato §2).
+ */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const platformId = inject(PLATFORM_ID);
+  if (!req.url.startsWith(environment.apiUrl)) return next(req);
 
-  // 1. Verificamos que estemos en el navegador (para que SSR no falle)
-  if (isPlatformBrowser(platformId)) {
-    // 2. Buscamos la llave maestra que guardaste en el login
-    const token = localStorage.getItem('token');
-
-    // 3. Si existe el token, clonamos la petición y se lo pegamos en la cabecera
-    if (token) {
-      const peticionAutorizada = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      // Dejamos que la petición continúe su viaje hacia FastAPI
-      return next(peticionAutorizada);
-    }
+  const token = inject(AuthService).token();
+  if (token) {
+    return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }));
   }
-
-  // Si no hay token (ej. el usuario apenas se va a loguear), la dejamos pasar normal
-  return next(req);
+  return next(req.clone({ setHeaders: { 'X-Empresa': inject(TiendaService).slug() } }));
 };

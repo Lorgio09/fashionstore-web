@@ -1,7 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
+import { NotificacionService } from '../../core/services/notificacion.service';
 
 @Component({
   selector: 'app-colecciones',
@@ -10,6 +12,7 @@ import { CommonModule } from '@angular/common';
   templateUrl: './colecciones.html'
 })
 export class ColeccionesComponent implements OnInit {
+  private notif = inject(NotificacionService);
   colecciones: any[] = [];
   nuevaColeccion = { nombre: '', descripcion: '' };
   cargando = false;
@@ -21,7 +24,7 @@ export class ColeccionesComponent implements OnInit {
   }
 
   cargarColecciones() {
-    this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/colecciones').subscribe({
+    this.http.get(`${environment.apiUrl}/catalogo/colecciones`).subscribe({
       next: (data: any) => { 
         this.colecciones = data; 
         this.cdr.detectChanges(); 
@@ -34,14 +37,14 @@ export class ColeccionesComponent implements OnInit {
     if (!this.nuevaColeccion.nombre) return;
     
     this.cargando = true;
-    this.http.post('https://fashionstore-api-kedu.onrender.com/api/catalogo/colecciones', this.nuevaColeccion).subscribe({
+    this.http.post(`${environment.apiUrl}/catalogo/colecciones`, this.nuevaColeccion).subscribe({
       next: () => {
         this.cargarColecciones();
         this.nuevaColeccion = { nombre: '', descripcion: '' };
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: () => this.cargando = false
+      error: (err) => { this.cargando = false; this.notif.errorHttp(err, 'Error al guardar la colección.'); this.cdr.detectChanges(); }
     });
   }
 }

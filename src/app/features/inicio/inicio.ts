@@ -5,6 +5,8 @@ import { trigger, transition, style, animate, query, stagger } from '@angular/an
 import { ScrollRevealDirective } from '../../shared/scroll-reveal';
 import { CarritoService } from '../../shared/services/carrito.service';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
+import { environment } from '../../../environments/environment';
+import { AuthService } from '../../core/services/auth';
 
 @Component({
   selector: 'app-inicio',
@@ -34,6 +36,7 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 export class InicioComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
+  auth = inject(AuthService);
   
   nombreUsuario: string | null = null;
   cantidadCarrito: number = 0;
@@ -57,22 +60,13 @@ export class InicioComponent implements OnInit {
   }
 
   verificarSesion() {
-    if (typeof localStorage !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          this.nombreUsuario = payload.nombre; 
-        } catch (e) {
-          this.cerrarSesion();
-        }
-      }
-    }
+    // Sesión centralizada en AuthService (usuario y empresa del login)
+    this.nombreUsuario = this.auth.usuario()?.nombre ?? null;
   }
 
   cargarCatalogo() {
     if (isPlatformBrowser(this.platformId)) {
-      this.http.get('https://fashionstore-api-kedu.onrender.com/api/catalogo/agrupado/secciones').subscribe({
+      this.http.get(`${environment.apiUrl}/catalogo/agrupado/secciones`).subscribe({
         next: (datos: any) => {
           this.seccionesOriginales = datos; 
           this.seccionesAgrupadas = datos; 
@@ -139,11 +133,8 @@ export class InicioComponent implements OnInit {
   }
 
   cerrarSesion() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('token');
-    }
-    this.nombreUsuario = null; 
-    this.router.navigate(['/login']); 
+    this.nombreUsuario = null;
+    this.auth.cerrarSesion();
   }
 
   onImgLoad(event: Event) {

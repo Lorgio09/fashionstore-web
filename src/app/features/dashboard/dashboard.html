@@ -7,6 +7,8 @@
       <p class="text-sm text-gray-500 mt-1">Resumen en tiempo real de tu comercio electrónico.</p>
     </div>
     
+    <!-- Solo con plan que incluye Reportes IA (funciones.reportes_ia) -->
+    @if (auth.tieneFuncion('reportes_ia')) {
     <!-- Botón disparador de la API de voz / Gemini -->
     <button 
       (click)="iniciarReconocimientoVoz()" 
@@ -30,6 +32,7 @@
         Generar Reporte IA por Voz
       }
     </button>
+    }
   </div>
 
   @if (cargando) {
@@ -100,6 +103,7 @@
         </div>
       </div>
 
+      @if (auth.tieneFuncion('reportes_ia')) {
       <!-- Cuadro Dinámico de Resultados IA -->
       <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col min-h-[350px]">
         <div class="flex items-center gap-3 mb-4">
@@ -126,6 +130,13 @@
           }
         </div>
       </div>
+      } @else {
+      <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center min-h-[350px] text-gray-500">
+        <span aria-hidden="true" class="w-8 h-8 mb-3 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">i</span>
+        <p class="text-sm font-semibold text-gray-800">Reportes con IA no incluidos</p>
+        <p class="text-sm mt-1">Tu plan {{ auth.suscripcion()?.plan?.nombre ?? 'actual' }} no incluye reportes con IA ni analítica.</p>
+      </div>
+      }
     </div>
 
     <!-- HISTORIAL DE VENTAS (NUEVA SECCIÓN) -->
