@@ -23,6 +23,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((err: unknown) => {
       if (!esNavegador || esLogin || !(err instanceof HttpErrorResponse)) return throwError(() => err);
       if (!req.url.startsWith(environment.apiUrl)) return throwError(() => err);
+      // Descargas (blob): el `detail` viene dentro del Blob; lo lee y muestra el servicio que descarga.
+      if (req.responseType === 'blob' && err.status !== 401) return throwError(() => err);
 
       if (err.status === 401 && auth.autenticado()) {
         notif.marcarMostrado(err);

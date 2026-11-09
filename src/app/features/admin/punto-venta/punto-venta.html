@@ -2,13 +2,24 @@
   
   <!-- PANEL IZQUIERDO: Catálogo y Búsqueda -->
   <div class="flex-1 flex flex-col bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-    <div class="p-4 border-b border-gray-200 bg-gray-50">
-      <input type="text" placeholder="Buscar por código (SKU) o nombre de la prenda..." 
+    <div class="p-4 border-b border-gray-200 bg-gray-50 space-y-3">
+      @if (modoOffline()) {
+        @if (sinCatalogoLocal()) {
+          <div role="alert" class="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+            <span aria-hidden="true">✕</span> Sin conexión y sin datos guardados en este dispositivo.
+            Cuando vuelva la red, usa <a routerLink="/admin/sincronizacion" class="font-semibold underline">Preparar modo offline</a>.
+          </div>
+        } @else {
+          <app-aviso-datos-offline titulo="Venta sin conexión (solo efectivo)." [stockEstimado]="true" />
+        }
+      }
+      <label for="pos-buscar" class="sr-only">Buscar prenda</label>
+      <input id="pos-buscar" type="search" [(ngModel)]="busqueda" name="busqueda" placeholder="Buscar por código (SKU), nombre, talla o color..."
              class="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-black focus:border-black">
     </div>
     
     <div class="p-4 grid grid-cols-3 gap-4 overflow-y-auto">
-      @for (producto of productosDisponibles; track $index) {
+      @for (producto of productosFiltrados; track producto.variante_id) {
         <div class="border border-gray-200 p-3 rounded-lg hover:border-black cursor-pointer transition-colors relative flex flex-col"
              (click)="agregarAlCarrito(producto)">
 
@@ -28,11 +39,16 @@
           
           <div class="mt-auto">
             <p class="text-sm font-extrabold text-black">{{ producto.precio }} Bs.</p>
+            @if (producto.stock !== undefined) {
+              <p class="text-[10px] font-semibold" [class.text-gray-500]="producto.stock > 0" [class.text-red-700]="producto.stock <= 0">
+                {{ producto.stock > 0 ? "Stock estimado: " + producto.stock : "⚠ Sin stock estimado" }}
+              </p>
+            }
           </div>
         </div>
       } @empty {
         <div class="col-span-3 text-center text-gray-500 py-10 font-medium">
-          El catálogo está vacío.
+          {{ busqueda ? "No hay prendas que coincidan." : "El catálogo está vacío." }}
         </div>
       }
     </div>
@@ -44,7 +60,7 @@
       <h2 class="text-lg font-bold">Ticket de Venta</h2>
     </div>
     <div class="px-4 py-2 border-b border-gray-200 bg-gray-50">
-      <app-selector-sucursal (cambio)="sucursalId = $event" />
+      <app-selector-sucursal (cambio)="cambiarSucursal($event)" />
     </div>
 
     <!-- Lista de Items en el carrito -->
@@ -53,10 +69,11 @@
         <p class="text-center text-gray-400 text-sm mt-10">Agregue productos para comenzar</p>
       }
       
-      @for (item of carrito; track item.prenda_id; let i = $index) {
+      @for (item of carrito; track item.variante_id; let i = $index) {
         <div class="flex justify-between items-center border-b border-gray-100 pb-2">
           <div>
             <p class="text-sm font-bold text-gray-800">{{ item.nombre }}</p>
+            @if (item.talla) { <p class="text-xs text-gray-500">{{ item.talla }} / {{ item.color }}</p> }
             <p class="text-xs text-gray-500">{{ item.cantidad }} x {{ item.precio }} Bs.</p>
           </div>
           <div class="flex items-center gap-3">
@@ -84,11 +101,11 @@
                 class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors">
           Efectivo
         </button>
-        <button (click)="seleccionarMetodo('QR')" 
+        <button (click)="seleccionarMetodo('QR')" [disabled]="modoOffline()" [title]="modoOffline() ? 'El pago con QR necesita conexión' : ''"
                 [class.bg-black]="metodoPagoSeleccionado === 'QR'"
                 [class.text-white]="metodoPagoSeleccionado === 'QR'"
                 [class.bg-white]="metodoPagoSeleccionado !== 'QR'"
-                class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors">
+                class="py-2 border border-gray-300 rounded text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
           QR (Pantalla)
         </button>
       </div>
@@ -96,7 +113,7 @@
       <button (click)="confirmarVenta()" 
               [disabled]="carrito.length === 0 || procesando"
               class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-bold text-lg transition-colors disabled:bg-gray-300">
-        {{ procesando ? 'Procesando...' : 'CONFIRMAR E IMPRIMIR' }}
+        {{ procesando ? 'Procesando...' : (modoOffline() ? 'GUARDAR VENTA SIN CONEXIÓN' : 'CONFIRMAR E IMPRIMIR') }}
       </button>
       @if (qrGenerado) {
         <div class="mt-4 p-4 bg-white border border-gray-200 rounded-lg flex flex-col items-center">

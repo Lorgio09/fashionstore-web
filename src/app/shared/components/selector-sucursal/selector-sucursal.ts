@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth';
+import { CatalogoOfflineService } from '../../../core/services/catalogo-offline.service';
 
 interface Sucursal {
   id: number;
@@ -41,6 +42,7 @@ interface Sucursal {
 export class SelectorSucursalComponent implements OnInit {
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+  private catOffline = inject(CatalogoOfflineService);
   private esNavegador = isPlatformBrowser(inject(PLATFORM_ID));
 
   cambio = output<number>();
@@ -64,7 +66,13 @@ export class SelectorSucursalComponent implements OnInit {
         this.cargando.set(false);
         if (!asignada && this.sucursales().length) this.elegir(this.sucursales()[0].id);
       },
-      error: () => this.cargando.set(false),
+      // Sin red: sucursales del catálogo offline guardado en el dispositivo.
+      error: async () => {
+        const locales = await this.catOffline.sucursales();
+        this.sucursales.set(locales);
+        this.cargando.set(false);
+        if (!asignada && locales.length) this.elegir(locales[0].id);
+      },
     });
   }
 

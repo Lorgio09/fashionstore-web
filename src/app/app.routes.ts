@@ -23,34 +23,51 @@ import { CarritoComponent } from './features/carrito/carrito';
 import { CheckoutComponent } from './features/checkout/checkout';
 import { PuntoVentaComponent } from './features/admin/punto-venta/punto-venta';
 import { ReservasAdminComponent } from './features/reservas/reservas';
-import { MiPlanComponent } from './features/mi-plan/mi-plan';
-import { PlataformaLayoutComponent } from './features/plataforma/plataforma-layout/plataforma-layout';
-import { PlataformaEmpresasComponent } from './features/plataforma/empresas/empresas';
-import { PlataformaEmpresaDetalleComponent } from './features/plataforma/empresa-detalle/empresa-detalle';
-import { PlataformaPlanesComponent } from './features/plataforma/planes/planes';
+import { SincronizacionComponent } from './features/offline/sincronizacion/sincronizacion';
+import { ConflictosComponent } from './features/offline/conflictos/conflictos';
 
 export const routes: Routes = [
-    { path: '', component: InicioComponent }, 
+    { path: '', component: InicioComponent },
     { path: 'login', component: LoginComponent },
     { path: 'registro', component: RegistroComponent },
     { path: 'recuperar-password', component: RecuperarPasswordComponent },
     { path: 'prenda/:id', component: DetallePrendaComponent },
     { path: 'carrito', component: CarritoComponent },
     { path: 'checkout', component: CheckoutComponent },
-    
+    // Modo offline y pendientes del cliente (el personal lo tiene dentro de /admin)
+    { path: 'sincronizacion', component: SincronizacionComponent, canActivate: [rolGuard], data: { roles: [ROLES.CLIENTE] } },
+
     // ZONA DEL ADMINISTRADOR Y EMPLEADOS
-    { 
-        path: 'admin', 
+    {
+        path: 'admin',
         component: AdminLayoutComponent,
         canActivate: [rolGuard],
-        // 1. Permitimos que TANTO el Admin (2) COMO el Encargado (3) entren al contenedor principal
-        data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] }, 
+        // Personal de la empresa: Administrador, Encargado de sucursal y Cajero
+        data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] },
         children: [
+            {
+                path: 'sincronizacion',
+                component: SincronizacionComponent,
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] }
+            },
+            {
+                path: 'conflictos',
+                component: ConflictosComponent,
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO] }
+            },
             { 
                 path: 'punto-venta', 
                 component: PuntoVentaComponent,
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] } // Caja: Cajero, Encargado y Admin
+            },
+            {
+                path: 'reportes-ia',
+                loadComponent: () => import('./features/reportes-ia/reportes-ia').then(m => m.ReportesIaComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO], funcion: 'reportes_ia' } // Plan Profesional
             },
             { 
                 path: 'dashboard', 
@@ -133,7 +150,7 @@ export const routes: Routes = [
             },
             {
                 path: 'mi-plan',
-                component: MiPlanComponent,
+                loadComponent: () => import('./features/mi-plan/mi-plan').then(m => m.MiPlanComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
@@ -152,13 +169,13 @@ export const routes: Routes = [
     // ZONA DEL ADMINISTRADOR DE PLATAFORMA (SaaS)
     {
         path: 'plataforma',
-        component: PlataformaLayoutComponent,
+        loadComponent: () => import('./features/plataforma/plataforma-layout/plataforma-layout').then(m => m.PlataformaLayoutComponent),
         canActivate: [rolGuard],
         data: { roles: [ROLES.PLATAFORMA] },
         children: [
-            { path: 'empresas', component: PlataformaEmpresasComponent },
-            { path: 'empresas/:id', component: PlataformaEmpresaDetalleComponent },
-            { path: 'planes', component: PlataformaPlanesComponent },
+            { path: 'empresas', loadComponent: () => import('./features/plataforma/empresas/empresas').then(m => m.PlataformaEmpresasComponent) },
+            { path: 'empresas/:id', loadComponent: () => import('./features/plataforma/empresa-detalle/empresa-detalle').then(m => m.PlataformaEmpresaDetalleComponent) },
+            { path: 'planes', loadComponent: () => import('./features/plataforma/planes/planes').then(m => m.PlataformaPlanesComponent) },
             { path: '', redirectTo: 'empresas', pathMatch: 'full' }
         ]
     },

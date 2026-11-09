@@ -1,0 +1,130 @@
+<div class="mx-auto max-w-6xl" [class.px-4]="!auth.esPersonal()" [class.py-8]="!auth.esPersonal()">
+  @if (!auth.esPersonal()) {
+    <a routerLink="/" class="text-sm text-gray-600 hover:text-black">← Volver a la tienda</a>
+  }
+  <div class="mb-6 mt-1 border-b border-gray-200 pb-5">
+    <h1 class="text-2xl font-bold text-gray-900">Sincronización y modo offline</h1>
+    <p class="mt-1 text-sm text-gray-500">Prepara el dispositivo para trabajar sin conexión y revisa lo que falta enviar al servidor.</p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <!-- Modo offline -->
+    <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm" aria-labelledby="h-offline">
+      <h2 id="h-offline" class="text-lg font-bold text-gray-900">Modo offline</h2>
+      @if (!ofreceOffline()) {
+        <p class="mt-3 text-sm text-gray-600"><span aria-hidden="true">✕</span> Tu plan no incluye operación offline.</p>
+      } @else {
+        @if (cat.meta() && cat.esDeLaSesion()) {
+          <div class="mt-3"><app-aviso-datos-offline titulo="Catálogo guardado." /></div>
+          <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+            <div><dt class="text-gray-500">Prendas</dt><dd class="font-semibold">{{ cat.meta()!.totales.prendas }}</dd></div>
+            <div><dt class="text-gray-500">Variantes</dt><dd class="font-semibold">{{ cat.meta()!.totales.variantes }}</dd></div>
+            <div><dt class="text-gray-500">Sucursales</dt><dd class="font-semibold">{{ cat.meta()!.totales.sucursales }}</dd></div>
+            @if (auth.esPersonal()) {
+              <div><dt class="text-gray-500">Clientes</dt><dd class="font-semibold">{{ cat.meta()!.totales.clientes }}</dd></div>
+            }
+          </dl>
+        } @else if (cat.meta()) {
+          <p class="mt-3 text-sm text-amber-800"><span aria-hidden="true">⚠</span> El catálogo guardado es de otra sesión. Prepáralo de nuevo.</p>
+        } @else {
+          <p class="mt-3 text-sm text-gray-600">Este dispositivo todavía no tiene datos para trabajar sin conexión.</p>
+        }
+        <button type="button" (click)="preparar()" [disabled]="cat.preparando() || !conexion.enLinea()"
+                class="mt-5 w-full rounded-md bg-black px-4 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:bg-gray-400">
+          {{ cat.preparando() ? 'Descargando catálogo…' : (cat.meta() ? 'Actualizar datos offline' : 'Preparar modo offline') }}
+        </button>
+        @if (!conexion.enLinea()) {
+          <p class="mt-2 text-xs text-gray-500">Necesitas conexión para preparar o actualizar.</p>
+        } @else {
+          <p class="mt-2 text-xs text-gray-500">Descarga prendas, stock{{ auth.esPersonal() ? ', clientes' : '' }} y sucursales. Hazlo antes de quedarte sin red.</p>
+        }
+      }
+    </section>
+
+    <!-- Resumen y sincronización -->
+    <section class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2" aria-labelledby="h-sync">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 id="h-sync" class="text-lg font-bold text-gray-900">Pendientes de sincronización</h2>
+          <p class="mt-1 text-sm text-gray-500">
+            Se sincroniza solo al volver la conexión y cada 60 s.
+            @if (sync.ultimaSync()) { Última: {{ hace(sync.ultimaSync()) }}. }
+          </p>
+        </div>
+        <button type="button" (click)="sincronizar()" [disabled]="sync.sincronizando()"
+                class="rounded-md bg-black px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-800 disabled:bg-gray-400">
+          <span aria-hidden="true">↻</span> {{ sync.sincronizando() ? 'Sincronizando…' : 'Sincronizar ahora' }}
+        </button>
+      </div>
+
+      <dl class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="rounded border border-gray-200 p-3"><dt class="text-xs text-gray-500">◷ Por enviar</dt><dd class="text-2xl font-black">{{ ops.pendientes() }}</dd></div>
+        <div class="rounded border border-gray-200 p-3"><dt class="text-xs text-gray-500">✓ Confirmadas</dt><dd class="text-2xl font-black">{{ ops.porEstado().CONFIRMADA }}</dd></div>
+        <div class="rounded border p-3" [class.border-amber-300]="ops.conflictos() > 0" [class.bg-amber-50]="ops.conflictos() > 0" [class.border-gray-200]="ops.conflictos() === 0">
+          <dt class="text-xs text-gray-500">⚠ En conflicto</dt><dd class="text-2xl font-black">{{ ops.conflictos() }}</dd>
+        </div>
+        <div class="rounded border border-gray-200 p-3"><dt class="text-xs text-gray-500">✕ Rechazadas</dt><dd class="text-2xl font-black">{{ ops.porEstado().RECHAZADA }}</dd></div>
+      </dl>
+
+      @if (ops.conflictos() > 0) {
+        <p class="mt-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          <span aria-hidden="true">⚠</span> Hay operaciones en conflicto: el stock central no alcanzó y no se descontó nada.
+          @if (puedeResolver()) {
+            <a routerLink="/admin/conflictos" class="font-semibold underline">Resolver conflictos</a>
+          } @else {
+            Un Encargado o Administrador las resolverá; su estado se actualizará aquí.
+          }
+        </p>
+      }
+    </section>
+  </div>
+
+  <!-- Lista -->
+  <section class="mt-6 rounded-lg border border-gray-200 bg-white shadow-sm" aria-label="Operaciones registradas en este dispositivo">
+    <div class="flex flex-wrap gap-2 border-b border-gray-100 p-4" role="tablist">
+      @for (f of filtros; track f.id) {
+        <button type="button" role="tab" [attr.aria-selected]="filtro() === f.id" (click)="filtro.set(f.id)"
+                class="rounded-full border px-3 py-1 text-sm"
+                [class.bg-black]="filtro() === f.id" [class.text-white]="filtro() === f.id" [class.border-black]="filtro() === f.id"
+                [class.border-gray-300]="filtro() !== f.id" [class.text-gray-700]="filtro() !== f.id">
+          {{ f.texto }} ({{ contar(f.id) }})
+        </button>
+      }
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
+          <tr>
+            <th class="px-4 py-3">Fecha</th><th class="px-4 py-3">Tipo</th><th class="px-4 py-3">Detalle</th>
+            <th class="px-4 py-3 text-right">Total</th><th class="px-4 py-3">Estado</th><th class="px-4 py-3">Servidor</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (o of filtradas(); track o.uuid) {
+            <tr class="align-top">
+              <td class="whitespace-nowrap px-4 py-3">{{ fecha(o.creado_en) }}<span class="block text-xs text-gray-500">{{ nombreSucursal(o.sucursal_id) }}</span></td>
+              <td class="px-4 py-3 font-medium">{{ o.tipo === 'VENTA' ? 'Venta' : 'Reserva' }}</td>
+              <td class="px-4 py-3">
+                <p class="text-gray-900">{{ resumenItems(o) }}</p>
+                <p class="text-xs text-gray-500">{{ cliente(o) }}</p>
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-right">{{ total(o) !== null ? 'Bs ' + num(total(o)) : '—' }}</td>
+              <td class="px-4 py-3">
+                <app-estado-badge [estado]="o.estado" />
+                @if (o.intentos > 0) { <span class="mt-1 block text-xs text-gray-500">{{ o.intentos }} intento{{ o.intentos === 1 ? '' : 's' }}</span> }
+              </td>
+              <td class="px-4 py-3 text-xs">
+                @if (o.servidor_id) { <p class="font-semibold text-gray-900">#{{ o.servidor_id }}</p> }
+                @if (o.mensaje_servidor) { <p class="text-gray-700">{{ o.mensaje_servidor }}</p> }
+                @if (o.ultimo_error && (o.estado === 'LOCAL' || o.estado === 'ENVIADA')) { <p class="text-red-700"><span aria-hidden="true">✕</span> {{ o.ultimo_error }}</p> }
+                <p class="mt-1 font-mono text-[10px] text-gray-400" title="uuid de la operación">{{ o.uuid.slice(0, 8) }}</p>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="px-4 py-10 text-center text-gray-500">No hay operaciones {{ filtro() === 'TODAS' ? 'registradas sin conexión en este dispositivo' : 'en este estado' }}.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

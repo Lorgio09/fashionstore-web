@@ -7,11 +7,14 @@ import { CarritoService } from '../../shared/services/carrito.service';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth';
+import { ConexionService } from '../../core/services/conexion.service';
+import { CatalogoOfflineService } from '../../core/services/catalogo-offline.service';
+import { AvisoDatosOfflineComponent } from '../../shared/components/aviso-datos-offline/aviso-datos-offline';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [RouterLink, ScrollRevealDirective, CommonModule],
+  imports: [RouterLink, ScrollRevealDirective, CommonModule, AvisoDatosOfflineComponent],
   styleUrl: './inicio.scss',
   templateUrl: './inicio.html',
   animations: [
@@ -37,7 +40,13 @@ export class InicioComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private cdr = inject(ChangeDetectorRef);
   auth = inject(AuthService);
-  
+  private conexion = inject(ConexionService);
+  private catOffline = inject(CatalogoOfflineService);
+  /** El catálogo mostrado viene del dispositivo (sin red). */
+  desdeDispositivo = false;
+  /** Sin red y sin catálogo guardado. */
+  sinDatosOffline = false;
+
   nombreUsuario: string | null = null;
   cantidadCarrito: number = 0;
 
@@ -66,29 +75,51 @@ export class InicioComponent implements OnInit {
 
   cargarCatalogo() {
     if (isPlatformBrowser(this.platformId)) {
+      if (!this.conexion.enLinea()) {
+        this.cargarCatalogoLocal();
+        return;
+      }
       this.http.get(`${environment.apiUrl}/catalogo/agrupado/secciones`).subscribe({
         next: (datos: any) => {
-          this.seccionesOriginales = datos; 
-          this.seccionesAgrupadas = datos; 
-          
-          // Extraemos los colores únicos automáticamente
-          const coloresSet = new Set<string>();
-          datos.forEach((seccion: any) => {
-            seccion.prendas.forEach((prenda: any) => {
-              prenda.variantes?.forEach((variante: any) => {
-                if (variante.color) coloresSet.add(variante.color);
-              });
-            });
-          });
-          
-          this.coloresDisponibles = ['Todos', ...Array.from(coloresSet).sort()];
-          this.cdr.detectChanges(); 
+          this.desdeDispositivo = false;
+          this.mostrarSecciones(datos);
         },
         error: (error) => {
-          console.error("Error al cargar las secciones:", error.message);
+          // Sin respuesta del servidor: catálogo guardado en el dispositivo (si la sesión lo preparó).
+          if (error?.status === 0) this.cargarCatalogoLocal();
+          else console.error("Error al cargar las secciones:", error.message);
         }
       });
     }
+  }
+
+  /** Catálogo offline (§6.1): solo existe si el usuario con sesión preparó el dispositivo. */
+  private async cargarCatalogoLocal() {
+    if (!(await this.catOffline.disponible())) {
+      this.sinDatosOffline = true;
+      this.cdr.detectChanges();
+      return;
+    }
+    this.desdeDispositivo = true;
+    this.mostrarSecciones(await this.catOffline.seccionesTienda());
+  }
+
+  private mostrarSecciones(datos: any[]) {
+    this.seccionesOriginales = datos;
+    this.seccionesAgrupadas = datos;
+
+    // Extraemos los colores únicos automáticamente
+    const coloresSet = new Set<string>();
+    datos.forEach((seccion: any) => {
+      seccion.prendas.forEach((prenda: any) => {
+        prenda.variantes?.forEach((variante: any) => {
+          if (variante.color) coloresSet.add(variante.color);
+        });
+      });
+    });
+
+    this.coloresDisponibles = ['Todos', ...Array.from(coloresSet).sort()];
+    this.cdr.detectChanges();
   }
 
   // --- MOTOR MATEMÁTICO DE FILTRADO ---

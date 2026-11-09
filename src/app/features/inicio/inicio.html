@@ -30,6 +30,8 @@
             </span>
             @if (auth.esPersonal()) {
               <a [routerLink]="auth.rutaInicio()" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">Ir al panel</a>
+            } @else {
+              <a routerLink="/sincronizacion" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">Sincronización</a>
             }
             <button (click)="cerrarSesion()" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors">
               Cerrar sesión
@@ -150,10 +152,25 @@
       </div>
     </div>
 
+    <!-- Catálogo sin conexión (§6.1) -->
+    @if (desdeDispositivo) {
+      <div class="mb-6"><app-aviso-datos-offline titulo="Estás viendo el catálogo guardado en tu dispositivo." [stockEstimado]="true" /></div>
+    }
+    @if (sinDatosOffline && seccionesAgrupadas.length === 0) {
+      <div role="alert" class="mb-6 rounded border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+        <span aria-hidden="true">⚠</span> Estás sin conexión y este dispositivo no tiene el catálogo guardado.
+        @if (auth.autenticado()) {
+          Cuando vuelva la red, entra a <a [routerLink]="auth.esPersonal() ? '/admin/sincronizacion' : '/sincronizacion'" class="font-semibold underline">Sincronización</a> y usa "Preparar modo offline".
+        } @else {
+          Inicia sesión con red y prepara el modo offline para ver el catálogo sin conexión.
+        }
+      </div>
+    }
+
     <div [@staggerCards]="seccionesAgrupadas.length">
-      
+
       <!-- Mensaje si no hay datos aún -->
-      @if (seccionesAgrupadas.length === 0) {
+      @if (seccionesAgrupadas.length === 0 && !sinDatosOffline) {
         <div class="col-span-full text-center py-20 text-gray-500 bg-white border border-gray-100">
           <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
           <p class="text-xl font-medium text-gray-900">Preparando la nueva temporada</p>

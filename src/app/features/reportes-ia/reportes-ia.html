@@ -1,0 +1,362 @@
+<div class="p-6 bg-gray-50 min-h-screen space-y-6">
+
+  <!-- CABECERA -->
+  <div>
+    <h1 class="text-2xl font-black text-gray-900 tracking-tight">Reportes con IA</h1>
+    <p class="text-sm text-gray-500 mt-1">Pide un reporte con tus palabras, por texto o por voz. La IA solo interpreta el pedido: los datos los calcula el sistema.</p>
+  </div>
+
+  <!-- PEDIDO -->
+  <section class="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
+    <form (ngSubmit)="generar()" class="flex flex-col md:flex-row gap-3">
+      <label for="pedido" class="sr-only">¿Qué reporte necesitas?</label>
+      <div class="relative flex-1">
+        <input id="pedido" name="pedido" type="text" [(ngModel)]="texto" autocomplete="off"
+          [disabled]="generando()"
+          placeholder="Ej.: Mostrame las ventas de septiembre agrupadas por sucursal"
+          class="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-black focus:ring-black disabled:bg-gray-50" />
+        @if (vozDisponible()) {
+          <button type="button" (click)="dictar()" [disabled]="generando()"
+            [attr.aria-pressed]="voz.escuchando()"
+            [title]="voz.escuchando() ? 'Detener el dictado' : 'Dictar el pedido'"
+            [ngClass]="voz.escuchando() ? 'bg-red-600 text-white animate-pulse' : 'text-gray-500 hover:bg-gray-100 hover:text-black'"
+            class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 transition-colors disabled:opacity-50">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+            </svg>
+            <span class="sr-only">{{ voz.escuchando() ? 'Detener el dictado' : 'Dictar el pedido' }}</span>
+          </button>
+        }
+      </div>
+      <button type="submit" [disabled]="generando() || !texto.trim()"
+        class="rounded-lg bg-black px-6 py-3 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-50">
+        Generar reporte
+      </button>
+    </form>
+
+    @if (voz.escuchando()) {
+      <p class="mt-2 flex items-center gap-2 text-sm font-medium text-red-700" role="status">
+        <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span><span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600"></span></span>
+        Escuchando… habla ahora.
+      </p>
+    }
+
+    @if (catalogo(); as cat) {
+      @if (!cat.ia_disponible) {
+        <p class="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <span aria-hidden="true" class="font-bold">⚠</span>
+          La IA no está disponible en este momento: los pedidos se interpretan con reglas.
+        </p>
+      }
+      @if (!reporte() && !generando()) {
+        <div class="mt-4">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Prueba con</p>
+          <div class="flex flex-wrap gap-2">
+            @for (ej of cat.ejemplos; track ej) {
+              <button type="button" (click)="usarEjemplo(ej)"
+                class="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:border-black hover:text-black">
+                {{ ej }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </section>
+
+  <!-- CARGANDO -->
+  @if (generando()) {
+    <section class="bg-white p-10 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center" role="status" aria-live="polite">
+      <svg class="animate-spin h-9 w-9 text-indigo-600 mb-3" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+      <p class="font-semibold text-gray-900">
+        {{ segundos() < 4 ? 'Interpretando el pedido…' : segundos() < 9 ? 'Calculando el reporte…' : 'Redactando el resumen…' }}
+      </p>
+      <p class="mt-1 text-sm text-gray-500">Puede tardar entre 3 y 15 segundos · {{ segundos() }} s</p>
+    </section>
+  }
+
+  <!-- ACLARACIÓN / NO SOPORTADO -->
+  @if (!generando() && respuesta(); as r) {
+    @if (r.estado !== 'OK') {
+      <section class="bg-white p-5 rounded-xl shadow-sm border border-amber-200">
+        <div class="flex items-start gap-3">
+          <span aria-hidden="true" class="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 font-bold text-amber-800">?</span>
+          <div class="flex-1">
+            <p class="font-semibold text-gray-900">{{ r.estado === 'ACLARACION' ? 'Necesito una aclaración' : 'Ese reporte no está disponible' }}</p>
+            <p class="mt-1 text-sm text-gray-700">{{ r.mensaje }}</p>
+            @if (r.sugerencias.length) {
+              <p class="mt-3 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Puedes pedir</p>
+              <div class="flex flex-wrap gap-2">
+                @for (s of r.sugerencias; track s) {
+                  <button type="button" (click)="usarEjemplo(s)"
+                    class="rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-700 hover:border-black hover:text-black">{{ s }}</button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+    }
+  }
+
+  <!-- RESULTADO -->
+  @if (!generando() && reporte(); as rep) {
+    <section class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <!-- Encabezado del reporte -->
+      <div class="flex flex-col gap-4 border-b border-gray-100 p-5 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-xl font-bold text-gray-900">{{ rep.titulo }}</h2>
+            @if (filtrosEditados()) {
+              <span class="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-700" title="Se volvió a ejecutar con los filtros editados, sin usar IA">Filtros editados</span>
+            } @else if (respuesta()?.interprete === 'gemini') {
+              <span class="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-bold text-indigo-800" title="Pedido interpretado por la IA (Gemini)">IA</span>
+            } @else if (respuesta()?.interprete === 'reglas') {
+              <span class="rounded-full bg-gray-200 px-2.5 py-0.5 text-xs font-bold text-gray-800" title="Pedido interpretado por reglas (IA no disponible)">Reglas</span>
+            }
+          </div>
+          <p class="mt-1 text-sm text-gray-500">{{ rep.subtitulo }}</p>
+          @if (!filtrosEditados() && respuesta()?.texto) {
+            <p class="mt-1 text-xs text-gray-400">Pedido: “{{ respuesta()?.texto }}”</p>
+          }
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            @for (f of rep.filtros; track f.campo) {
+              <span class="rounded bg-gray-50 border border-gray-200 px-2 py-0.5 text-xs text-gray-600"><span class="font-semibold">{{ f.campo }}:</span> {{ f.valor }}</span>
+            }
+          </div>
+        </div>
+        <div class="flex flex-shrink-0 flex-wrap items-center gap-2">
+          <button type="button" (click)="mostrarFiltros.set(!mostrarFiltros())" [attr.aria-expanded]="mostrarFiltros()"
+            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-800 hover:border-black">
+            {{ mostrarFiltros() ? 'Ocultar filtros' : 'Editar filtros' }}
+          </button>
+          <button type="button" (click)="exportar('pdf')" [disabled]="!!exportando()"
+            class="rounded-lg bg-red-700 px-4 py-2 text-sm font-bold text-white hover:bg-red-800 disabled:opacity-60">
+            {{ exportando() === 'pdf' ? 'Generando…' : 'PDF' }}
+          </button>
+          <button type="button" (click)="exportar('xlsx')" [disabled]="!!exportando()"
+            class="rounded-lg bg-green-700 px-4 py-2 text-sm font-bold text-white hover:bg-green-800 disabled:opacity-60">
+            {{ exportando() === 'xlsx' ? 'Generando…' : 'Excel' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTROS EDITABLES -->
+      @if (mostrarFiltros() && filtros; as f) {
+        <form (ngSubmit)="aplicarFiltros()" class="border-b border-gray-100 bg-gray-50 p-5">
+          <p class="mb-3 text-xs text-gray-500">Los cambios se aplican sin volver a usar la IA.</p>
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <label class="block text-sm">
+              <span class="font-semibold text-gray-700">Reporte</span>
+              <select name="tipo" [ngModel]="f.tipo" (ngModelChange)="cambiarTipo($event)"
+                class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+                @for (t of catalogo()?.tipos ?? []; track t.codigo) {
+                  <option [ngValue]="t.codigo">{{ t.nombre }}</option>
+                }
+              </select>
+            </label>
+
+            @if (usaFechas) {
+              <label class="block text-sm">
+                <span class="font-semibold text-gray-700">Desde</span>
+                <input type="date" name="desde" [(ngModel)]="f.fecha_desde"
+                  class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+              </label>
+              <label class="block text-sm">
+                <span class="font-semibold text-gray-700">Hasta</span>
+                <input type="date" name="hasta" [(ngModel)]="f.fecha_hasta"
+                  class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+              </label>
+            }
+
+            @if (admite('agrupacion')) {
+              <label class="block text-sm">
+                <span class="font-semibold text-gray-700">Agrupación</span>
+                <select name="agrupacion" [(ngModel)]="f.agrupacion"
+                  class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+                  @for (a of agrupaciones; track a.nombre) { <option [ngValue]="a.valor">{{ a.nombre }}</option> }
+                </select>
+              </label>
+            }
+
+            @if (admite('canal')) {
+              <label class="block text-sm">
+                <span class="font-semibold text-gray-700">Canal</span>
+                <select name="canal" [(ngModel)]="f.canal"
+                  class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+                  @for (c of canales; track c.nombre) { <option [ngValue]="c.valor">{{ c.nombre }}</option> }
+                </select>
+              </label>
+            }
+
+            @if (admite('limite')) {
+              <label class="block text-sm">
+                <span class="font-semibold text-gray-700">Cantidad de filas</span>
+                <input type="number" name="limite" min="1" max="100" [(ngModel)]="f.limite" placeholder="Por defecto"
+                  class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+              </label>
+            }
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+            @if (admite('sucursales')) {
+              <fieldset class="text-sm">
+                <legend class="font-semibold text-gray-700">Sucursales <span class="font-normal text-gray-500">({{ esEncargado() ? 'la tuya' : nombres(sucursales, f.sucursal_ids) }})</span></legend>
+                @if (esEncargado()) {
+                  <p class="mt-1 text-xs text-gray-500">Como Encargado ves solo tu sucursal.</p>
+                } @else {
+                  <div class="mt-1 max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 space-y-1">
+                    @for (s of sucursales; track s.id) {
+                      <label class="flex items-center gap-2"><input type="checkbox" [checked]="marcado(f.sucursal_ids, s.id)" (change)="alternar('sucursal_ids', s.id)" class="rounded border-gray-300 text-black focus:ring-black" /> {{ s.nombre }}</label>
+                    }
+                  </div>
+                }
+              </fieldset>
+            }
+            @if (admite('categorias')) {
+              <fieldset class="text-sm">
+                <legend class="font-semibold text-gray-700">Categorías <span class="font-normal text-gray-500">({{ nombres(categorias, f.categoria_ids) }})</span></legend>
+                <div class="mt-1 max-h-40 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 space-y-1">
+                  @for (c of categorias; track c.id) {
+                    <label class="flex items-center gap-2"><input type="checkbox" [checked]="marcado(f.categoria_ids, c.id)" (change)="alternar('categoria_ids', c.id)" class="rounded border-gray-300 text-black focus:ring-black" /> {{ c.nombre }}</label>
+                  }
+                </div>
+              </fieldset>
+            }
+            @if (admite('productos')) {
+              <fieldset class="text-sm">
+                <legend class="font-semibold text-gray-700">Productos <span class="font-normal text-gray-500">({{ f.prenda_ids.length ? f.prenda_ids.length + ' elegidos' : 'Todos' }})</span></legend>
+                <input type="search" name="buscarPrenda" [(ngModel)]="buscarPrenda" placeholder="Buscar producto"
+                  class="mt-1 w-full rounded-lg border-gray-300 text-xs focus:border-black focus:ring-black" />
+                <div class="mt-1 max-h-32 overflow-y-auto rounded-lg border border-gray-200 bg-white p-2 space-y-1">
+                  @for (p of prendasFiltradas; track p.id) {
+                    <label class="flex items-center gap-2"><input type="checkbox" [checked]="marcado(f.prenda_ids, p.id)" (change)="alternar('prenda_ids', p.id)" class="rounded border-gray-300 text-black focus:ring-black" /> {{ p.nombre }}</label>
+                  }
+                </div>
+              </fieldset>
+            }
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button type="submit" [disabled]="ejecutando()"
+              class="rounded-lg bg-black px-5 py-2 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-60">
+              {{ ejecutando() ? 'Aplicando…' : 'Aplicar filtros' }}
+            </button>
+            <button type="button" (click)="restablecerFiltros()" class="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:border-black">Deshacer cambios</button>
+          </div>
+        </form>
+      }
+
+      <div class="space-y-5 p-5">
+        <!-- Supuestos -->
+        @if (supuestos().length) {
+          <ul class="space-y-1.5">
+            @for (s of supuestos(); track s) {
+              <li class="flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-900">
+                <span aria-hidden="true" class="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-blue-200 text-[10px] font-bold">i</span>
+                <span><span class="sr-only">Nota: </span>{{ s }}</span>
+              </li>
+            }
+          </ul>
+        }
+
+        <!-- Resumen narrativo -->
+        @if (narrativa()) {
+          <div class="rounded-lg border border-indigo-100 bg-indigo-50/50 p-4">
+            <p class="mb-1 text-xs font-bold uppercase tracking-wider text-indigo-700">
+              Resumen {{ respuesta()?.narrativa_origen === 'gemini' ? 'redactado por la IA' : 'automático' }}
+            </p>
+            <p class="whitespace-pre-line text-sm leading-relaxed text-gray-800">{{ narrativa() }}</p>
+          </div>
+        } @else if (filtrosEditados()) {
+          <p class="text-xs text-gray-500">El resumen narrativo se genera solo con un pedido a la IA; con filtros editados no se incluye.</p>
+        }
+
+        @if (rep.vacio) {
+          <div class="rounded-lg border border-dashed border-gray-300 p-10 text-center text-sm text-gray-500">
+            No hay datos para estos filtros. Prueba con otro período o quita filtros.
+          </div>
+        } @else {
+          <!-- Gráfico -->
+          @if (graficable()) {
+            <div>
+              <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-sm font-semibold text-gray-700">Gráfico</h3>
+                <div class="inline-flex rounded-lg border border-gray-300 p-0.5" role="group" aria-label="Tipo de gráfico">
+                  @for (t of tiposGrafico; track t.valor) {
+                    <button type="button" (click)="cambiarGrafico(t.valor)" [attr.aria-pressed]="tipoGrafico() === t.valor"
+                      [ngClass]="tipoGrafico() === t.valor ? 'bg-black text-white' : 'text-gray-700 hover:bg-gray-100'"
+                      class="rounded-md px-3 py-1 text-xs font-semibold">{{ t.nombre }}</button>
+                  }
+                </div>
+              </div>
+              @if (grafico(); as g) {
+                @if (g.soloPrimera) {
+                  <p class="mb-2 text-xs text-gray-500">La torta muestra solo «{{ g.soloPrimera }}».</p>
+                }
+                @for (k of [claveGrafico()]; track k) {
+                  <div class="w-full" [style.height.px]="g.alto">
+                    <canvas baseChart [type]="g.config.type" [data]="g.config.data" [options]="g.config.options"></canvas>
+                  </div>
+                }
+              }
+            </div>
+          }
+
+          <!-- Tabla -->
+          <div class="overflow-x-auto rounded-lg border border-gray-100">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                <tr>
+                  @for (c of rep.columnas; track c.clave) {
+                    <th scope="col" class="px-4 py-3 font-semibold" [class.text-right]="esNumerica(c)" [class.text-left]="!esNumerica(c)">{{ c.titulo }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (fila of rep.filas; track $index) {
+                  <tr class="hover:bg-gray-50">
+                    @for (c of rep.columnas; track c.clave) {
+                      <td class="px-4 py-2.5 text-gray-700" [class.text-right]="esNumerica(c)" [class.tabular-nums]="esNumerica(c)">
+                        @if (esAlerta(c)) {
+                          @switch (nivelAlerta(fila[c.clave])) {
+                            @case ('critico') {
+                              <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800"><span aria-hidden="true">⛔</span> {{ fila[c.clave] }}</span>
+                            }
+                            @case ('atencion') {
+                              <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900"><span aria-hidden="true">⚠</span> {{ fila[c.clave] }}</span>
+                            }
+                            @case ('ninguna') {
+                              <span class="text-gray-400" title="Sin stock físico para calcular la cobertura">{{ fila[c.clave] || '—' }}</span>
+                            }
+                            @default {
+                              <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800"><span aria-hidden="true">✓</span> {{ fila[c.clave] }}</span>
+                            }
+                          }
+                        } @else {
+                          {{ celda(c, fila[c.clave]) }}
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+              @if (rep.totales; as tot) {
+                <tfoot class="border-t-2 border-gray-200 bg-gray-50">
+                  <tr>
+                    @for (c of rep.columnas; track c.clave) {
+                      <td class="px-4 py-2.5 font-bold text-gray-900" [class.text-right]="esNumerica(c)" [class.tabular-nums]="esNumerica(c)">
+                        {{ tot[c.clave] === undefined || tot[c.clave] === null ? '' : celda(c, tot[c.clave]) }}
+                      </td>
+                    }
+                  </tr>
+                </tfoot>
+              }
+            </table>
+          </div>
+          <p class="text-xs text-gray-400">{{ rep.empresa }} · Generado por {{ rep.generado_por }}</p>
+        }
+      </div>
+    </section>
+  }
+</div>

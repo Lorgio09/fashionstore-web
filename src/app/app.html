@@ -1,8 +1,12 @@
 <router-outlet></router-outlet>
 <app-notificaciones></app-notificaciones>
+<!-- Indicador online/offline siempre visible (§6) -->
+<app-indicador-conexion />
+
+
 
 @if (pwa.actualizacionLista()) {
-  <div role="status" class="fixed bottom-4 left-4 right-4 z-[90] flex items-center justify-between gap-3 rounded-lg bg-black p-4 text-sm text-white shadow-lg sm:left-auto sm:w-96">
+  <div role="status" class="fixed bottom-4 left-4 right-4 z-[90] flex items-center justify-between gap-3 rounded-lg bg-black p-4 text-sm text-white shadow-lg sm:right-auto sm:w-96">
     <span><span aria-hidden="true">↻</span> Hay una nueva versión de FashionStore.</span>
     <button type="button" (click)="pwa.aplicarActualizacion()" class="rounded bg-white px-3 py-1.5 font-semibold text-black hover:bg-gray-200">Actualizar</button>
   </div>

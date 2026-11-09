@@ -203,6 +203,22 @@ export class OfflineRepository {
     });
   }
 
+  /** Devuelve al stock estimado lo que descontó una operación que el servidor rechazó. */
+  async devolverStockEstimado(op: OperacionLocal): Promise<void> {
+    const db = this.db;
+    if (!db) return;
+    await db.transaction('rw', [db.inventario], async () => {
+      for (const it of op.datos.items) {
+        const fila = await db.inventario.get([it.variante_id, op.sucursal_id]);
+        if (fila) {
+          await db.inventario.update([it.variante_id, op.sucursal_id], {
+            stock_estimado: Math.min(fila.stock_disponible, fila.stock_estimado + it.cantidad),
+          });
+        }
+      }
+    });
+  }
+
   async operacion(uuid: string): Promise<OperacionLocal | undefined> {
     return this.db?.operaciones.get(uuid);
   }

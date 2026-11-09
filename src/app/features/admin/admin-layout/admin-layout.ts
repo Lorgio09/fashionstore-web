@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
 import { ROLES } from '../../../core/models/sesion';
+import { OperacionesOfflineService } from '../../../core/services/operaciones-offline.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -12,6 +13,7 @@ import { ROLES } from '../../../core/models/sesion';
 })
 export class AdminLayoutComponent {
   public authService = inject(AuthService);
+  readonly ops = inject(OperacionesOfflineService);
   /** Nombres de rol para el menú (permisos por rol_nombre, no por rol_id). */
   readonly R = ROLES;
 

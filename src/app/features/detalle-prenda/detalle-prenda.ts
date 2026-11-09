@@ -1,19 +1,27 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { CarritoService } from '../../shared/services/carrito.service';
 import { environment } from '../../../environments/environment';
+import { ConexionService } from '../../core/services/conexion.service';
+import { CatalogoOfflineService } from '../../core/services/catalogo-offline.service';
+import { AvisoDatosOfflineComponent } from '../../shared/components/aviso-datos-offline/aviso-datos-offline';
 
 @Component({
   selector: 'app-detalle-prenda',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, AvisoDatosOfflineComponent],
   templateUrl: './detalle-prenda.html'
 })
 export class DetallePrendaComponent implements OnInit {
+  private conexion = inject(ConexionService);
+  private catOffline = inject(CatalogoOfflineService);
+
   prenda: any = null;
   cargando = true;
+  /** Datos tomados del catálogo guardado (sin red). */
+  desdeDispositivo = false;
 
   // Nuevas variables para los datos reales
   variantes: any[] = [];
@@ -39,6 +47,10 @@ export class DetallePrendaComponent implements OnInit {
   }
 
   cargarDetalle(id: string) {
+    if (!this.conexion.enLinea()) {
+      this.cargarDetalleLocal(id);
+      return;
+    }
     // 1. Cargar la info base de la prenda
     this.http.get(`${environment.apiUrl}/catalogo/${id}`).subscribe({
       next: (data: any) => {
@@ -46,11 +58,29 @@ export class DetallePrendaComponent implements OnInit {
         this.cargarVariantes(id); // Llamamos al paso 2
       },
       error: (err) => {
+        if (err?.status === 0) {
+          this.cargarDetalleLocal(id); // sin respuesta del servidor: datos guardados
+          return;
+        }
         console.error("Error al cargar la prenda", err);
         this.cargando = false;
         this.cdr.detectChanges();
       }
     });
+  }
+
+  /** Sin red: prenda y stock estimado desde el catálogo guardado en el dispositivo (§6.1). */
+  private async cargarDetalleLocal(id: string) {
+    const local = (await this.catOffline.disponible()) ? await this.catOffline.detallePrenda(Number(id)) : null;
+    if (local) {
+      this.prenda = local.prenda;
+      this.variantes = local.variantes;
+      this.coloresUnicos = [...new Set(this.variantes.map(v => v.color))];
+      this.tallasUnicas = [...new Set(this.variantes.map(v => v.talla))];
+      this.desdeDispositivo = true;
+    }
+    this.cargando = false;
+    this.cdr.detectChanges();
   }
 
   cargarVariantes(id: string) {
@@ -66,7 +96,10 @@ export class DetallePrendaComponent implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error("Error al cargar variantes", err)
+      error: (err) => {
+        if (err?.status === 0) this.cargarDetalleLocal(id);
+        else console.error("Error al cargar variantes", err);
+      }
     });
   }
 
