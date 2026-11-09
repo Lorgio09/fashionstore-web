@@ -1,0 +1,347 @@
+<div class="p-6 bg-gray-50 min-h-screen space-y-6">
+
+  <!-- CABECERA -->
+  <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div>
+      <h1 class="text-2xl font-black text-gray-900 tracking-tight">Analítica</h1>
+      <p class="text-sm text-gray-500 mt-1">Indicadores, predicción de demanda y segmentos de clientes con modelos de Machine Learning entrenados con los datos de tu empresa.</p>
+    </div>
+    <div class="flex flex-wrap items-end gap-3">
+      @if (esAdmin()) {
+        <label class="text-sm">
+          <span class="block text-xs font-semibold text-gray-600">Sucursal</span>
+          <select name="sucursal" [(ngModel)]="sucursalId" (ngModelChange)="cargar()"
+            class="mt-1 rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+            <option [ngValue]="null">Todas</option>
+            @for (s of sucursales; track s.id) { <option [ngValue]="s.id">{{ s.nombre }}</option> }
+          </select>
+        </label>
+      } @else {
+        <span class="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700">Datos de tu sucursal</span>
+      }
+    </div>
+  </div>
+
+  <!-- PESTAÑAS -->
+  <div class="flex gap-1 border-b border-gray-200" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="pestana() === 'resumen'" (click)="pestana.set('resumen')"
+      [ngClass]="pestana() === 'resumen' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-800'"
+      class="-mb-px border-b-2 px-4 py-2 text-sm font-semibold">Resumen</button>
+    <button type="button" role="tab" [attr.aria-selected]="pestana() === 'modelos'" (click)="pestana.set('modelos')"
+      [ngClass]="pestana() === 'modelos' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-800'"
+      class="-mb-px border-b-2 px-4 py-2 text-sm font-semibold">Modelos</button>
+  </div>
+
+  @if (cargando() && !datos()) {
+    <div class="flex flex-col items-center py-20 text-gray-500" role="status">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-black mb-3"></div>
+      <p class="text-sm">Calculando la analítica… si es la primera vez, los modelos se entrenan (unos 7 s).</p>
+    </div>
+  }
+
+  @if (datos(); as d) {
+    @for (a of d.avisos; track a) {
+      <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+        <span aria-hidden="true" class="font-bold">⚠</span><span><span class="sr-only">Aviso: </span>{{ a }}</span>
+      </p>
+    }
+
+    <div [class.opacity-60]="cargando()" class="space-y-6 transition-opacity">
+
+    <!-- =================== RESUMEN =================== -->
+    @if (pestana() === 'resumen') {
+      <!-- 1. Indicadores -->
+      <section>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          @for (k of kpis; track k.clave) {
+            @if (indicador(k.clave); as ind) {
+              <div class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+                <p class="text-sm font-medium text-gray-500">{{ k.titulo }}</p>
+                <p class="mt-1 text-2xl font-black tabular-nums text-gray-900">{{ k.prefijo }}{{ numero(ind.valor, k.decimales) }}</p>
+                @if (variacion(ind); as v) {
+                  <p class="mt-2 flex items-center gap-1 text-sm font-semibold"
+                    [ngClass]="v.sube === true ? 'text-green-700' : v.sube === false ? 'text-red-700' : 'text-gray-500'">
+                    <span aria-hidden="true">{{ v.sube === true ? '▲' : v.sube === false ? '▼' : '■' }}</span>
+                    <span class="sr-only">{{ v.sube === true ? 'Sube' : v.sube === false ? 'Baja' : 'Sin cambio' }}</span>
+                    {{ v.texto }}
+                  </p>
+                }
+                <p class="mt-0.5 text-xs text-gray-400">Antes: {{ k.prefijo }}{{ numero(ind.anterior, k.decimales) }}</p>
+              </div>
+            }
+          }
+        </div>
+        <p class="mt-2 text-xs text-gray-500">Variación del mes en curso contra el mismo tramo del mes anterior: {{ d.comparacion }}.</p>
+      </section>
+
+      <!-- 2. Real + predicción -->
+      <section class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900">Ventas diarias y predicción</h2>
+        <p class="mb-4 text-sm text-gray-500">Últimos 60 días reales (línea continua) y los próximos 14 días estimados por el modelo (línea punteada), con la banda del rango probable.</p>
+        @if (graficoSerie(); as g) {
+          <div class="h-80 w-full">
+            <canvas baseChart [type]="g.type" [data]="g.data" [options]="g.options" [plugins]="g.plugins ?? []"></canvas>
+          </div>
+        }
+      </section>
+
+      <div class="grid grid-cols-1 gap-6 xl:grid-cols-5">
+        <!-- 3. Segmentos -->
+        <section class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm xl:col-span-3">
+          <h2 class="text-lg font-bold text-gray-900">Segmentos de clientes</h2>
+          <p class="mb-4 text-sm text-gray-500">Grupos descubiertos por K-Means según recencia, frecuencia y gasto (toda la empresa).</p>
+          @if (d.segmentos.length) {
+            <div class="grid grid-cols-1 gap-5 md:grid-cols-5">
+              @if (graficoSegmentos(); as g) {
+                <div class="h-64 md:col-span-2">
+                  <canvas baseChart [type]="g.type" [data]="g.data" [options]="g.options"></canvas>
+                </div>
+              }
+              <div class="space-y-3 md:col-span-3">
+                @for (s of d.segmentos; track s.segmento; let i = $index) {
+                  <article class="rounded-lg border border-gray-200 p-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <h3 class="flex items-center gap-2 font-bold text-gray-900">
+                        <span class="inline-block h-3 w-3 rounded-sm" [style.background]="colorSegmento(i)" aria-hidden="true"></span>
+                        {{ s.segmento }}
+                      </h3>
+                      <span class="text-xs text-gray-500">{{ s.clientes }} clientes · {{ numero(s.porcentaje, 1) }} %</span>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-600">{{ s.descripcion }}</p>
+                    <p class="mt-1 text-xs text-gray-500">
+                      Última compra hace {{ numero(s.recencia_dias, 0) }} días · {{ numero(s.frecuencia, 1) }} compras · ticket Bs {{ numero(s.ticket_promedio) }} · gasto Bs {{ numero(s.monto_total) }}
+                    </p>
+                    <p class="mt-2 rounded bg-indigo-50 px-2 py-1 text-sm text-indigo-900"><span class="font-semibold">Acción sugerida:</span> {{ s.accion_sugerida }}</p>
+                  </article>
+                }
+              </div>
+            </div>
+          } @else {
+            <p class="text-sm text-gray-500">Todavía no hay segmentos (faltan clientes con compras).</p>
+          }
+        </section>
+
+        <!-- 4. Alertas de reposición -->
+        <section class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm xl:col-span-2">
+          <h2 class="text-lg font-bold text-gray-900">Alertas de reposición</h2>
+          <p class="mb-4 text-sm text-gray-500">Variantes que se agotarían antes de 14 días según la demanda estimada.</p>
+          @if (d.alertas_reposicion.length) {
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-xs uppercase text-gray-500">
+                  <tr>
+                    <th scope="col" class="px-3 py-2 text-left">Producto</th>
+                    <th scope="col" class="px-3 py-2 text-left">Alerta</th>
+                    <th scope="col" class="px-3 py-2 text-right">Stock</th>
+                    <th scope="col" class="px-3 py-2 text-right">Cobertura</th>
+                    <th scope="col" class="px-3 py-2 text-right">Reponer</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  @for (a of d.alertas_reposicion; track $index) {
+                    <tr>
+                      <td class="px-3 py-2">
+                        <p class="font-medium text-gray-900">{{ a.producto }} <span class="text-gray-500">({{ a.talla }}/{{ a.color }})</span></p>
+                        <p class="text-xs text-gray-500">{{ a.sucursal }}</p>
+                      </td>
+                      <td class="px-3 py-2">
+                        @if (esCritico(a.alerta)) {
+                          <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800"><span aria-hidden="true">⛔</span> {{ a.alerta }}</span>
+                        } @else {
+                          <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900"><span aria-hidden="true">⚠</span> {{ a.alerta }}</span>
+                        }
+                      </td>
+                      <td class="px-3 py-2 text-right tabular-nums">{{ a.stock }}</td>
+                      <td class="px-3 py-2 text-right tabular-nums whitespace-nowrap">{{ numero(a.cobertura_dias, 1) }} días</td>
+                      <td class="px-3 py-2 text-right font-bold tabular-nums">{{ a.sugerido_reponer }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <p class="flex items-center gap-2 text-sm text-green-800"><span aria-hidden="true">✓</span> Ninguna variante se agotaría en los próximos 14 días.</p>
+          }
+        </section>
+      </div>
+    }
+
+    <!-- =================== MODELOS =================== -->
+    @if (pestana() === 'modelos') {
+      <div class="flex flex-col gap-3 rounded-xl border border-gray-100 bg-white p-5 shadow-sm md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-gray-900">Modelos de la empresa</h2>
+          <p class="text-sm text-gray-500">Cada empresa entrena con sus propios datos. Las métricas se miden con datos que el modelo no vio al entrenar.</p>
+        </div>
+        @if (esAdmin()) {
+          <button type="button" (click)="reentrenar()" [disabled]="entrenando()"
+            class="inline-flex items-center gap-2 rounded-lg bg-black px-5 py-2.5 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-60">
+            @if (entrenando()) {
+              <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              Entrenando… (unos 7 s)
+            } @else {
+              Reentrenar
+            }
+          </button>
+        }
+      </div>
+
+      <!-- Demanda -->
+      @if (demanda(); as m) {
+        <section class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-indigo-700">Supervisado · Predicción de demanda</p>
+            @if (m.error) {
+              <p class="mt-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> {{ m.error }}</p>
+            } @else {
+              <h3 class="text-lg font-bold text-gray-900">{{ m.algoritmo }} <span class="text-sm font-normal text-gray-500">versión {{ m.version }}</span></h3>
+              <p class="text-sm text-gray-500">
+                Entrenado el {{ fechaHora(m.entrenado_en) }} con {{ numero(m.datos['ventas'], 0) }} ventas
+                del {{ fechaCorta(m.datos['desde']) }} al {{ fechaCorta(m.datos['hasta']) }}
+                ({{ m.datos['dias'] }} días, {{ m.datos['series'] }} series sucursal-categoría, {{ numero(m.datos['filas_entrenamiento'], 0) }} filas).
+                Predice las unidades por día, sucursal y categoría.
+              </p>
+            }
+          </div>
+
+          @if (!m.error && m.metricas['prueba']; as p) {
+            <div>
+              <h4 class="mb-2 text-sm font-semibold text-gray-700">Métricas con los últimos {{ m.parametros['horizonte_prueba_dias'] ?? 28 }} días como prueba</h4>
+              <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-lg bg-gray-50 p-3">
+                  <dt class="text-xs font-semibold text-gray-500">MAE (error absoluto medio)</dt>
+                  <dd class="text-xl font-black tabular-nums">{{ numero(p['mae'], 2) }} <span class="text-sm font-normal">unid./día</span></dd>
+                  <dd class="mt-1 text-xs text-gray-600">En promedio se equivoca por esas unidades al día en cada sucursal-categoría.</dd>
+                </div>
+                <div class="rounded-lg bg-gray-50 p-3">
+                  <dt class="text-xs font-semibold text-gray-500">Mejora contra el método simple</dt>
+                  <dd class="text-xl font-black tabular-nums" [class.text-green-700]="p['mejora_vs_simple_pct'] > 0">{{ p['mejora_vs_simple_pct'] > 0 ? '+' : '' }}{{ numero(p['mejora_vs_simple_pct'], 1) }} %</dd>
+                  <dd class="mt-1 text-xs text-gray-600">El método simple (promedio del mismo día de la semana) tiene MAE {{ numero(p['mae_metodo_simple'], 2) }}.</dd>
+                </div>
+                <div class="rounded-lg bg-gray-50 p-3">
+                  <dt class="text-xs font-semibold text-gray-500">Error en el total del período</dt>
+                  <dd class="text-xl font-black tabular-nums">{{ numero(p['error_total_pct'], 1) }} %</dd>
+                  <dd class="mt-1 text-xs text-gray-600">Predijo {{ numero(p['unidades_predichas'], 0) }} unidades contra {{ numero(p['unidades_reales'], 0) }} reales.</dd>
+                </div>
+                <div class="rounded-lg bg-gray-50 p-3">
+                  <dt class="text-xs font-semibold text-gray-500">RMSE · R²</dt>
+                  <dd class="text-xl font-black tabular-nums">{{ numero(p['rmse'], 2) }} · {{ numero(p['r2'], 2) }}</dd>
+                  <dd class="mt-1 text-xs text-gray-600">RMSE castiga más los errores grandes. R² es la parte de la variación diaria que explica el modelo (1 = perfecto); con ventas diarias tan pequeñas, un valor moderado es esperable.</dd>
+                </div>
+              </dl>
+              @if (m.metricas['validacion_cruzada']; as cv) {
+                <p class="mt-3 text-sm text-gray-600">
+                  <span class="font-semibold">Validación cruzada temporal ({{ cv['pliegues']?.length }} bloques):</span>
+                  MAE {{ numero(cv['mae_promedio'], 2) }} ± {{ numero(cv['mae_desvio'], 2) }}, mejora promedio {{ numero(cv['mejora_promedio_pct'], 1) }} % sobre el método simple.
+                  El resultado es estable entre bloques, así que no depende de un período en particular.
+                </p>
+              }
+            </div>
+          }
+
+          @if (!m.error) {
+            <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <div>
+                <h4 class="mb-1 text-sm font-semibold text-gray-700">Importancia de variables</h4>
+                <p class="mb-2 text-xs text-gray-500">Por permutación: cuánto empeora el error si se mezcla esa variable.</p>
+                @if (graficoImportancias(); as g) {
+                  <div class="h-72"><canvas baseChart [type]="g.type" [data]="g.data" [options]="g.options"></canvas></div>
+                }
+              </div>
+              <div>
+                <h4 class="mb-1 text-sm font-semibold text-gray-700">Variables usadas</h4>
+                <div class="mb-4 flex flex-wrap gap-1.5">
+                  @for (v of m.parametros.variables ?? []; track v) {
+                    <span class="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{{ v }}</span>
+                  }
+                </div>
+                <h4 class="mb-1 text-sm font-semibold text-gray-700">Variables descartadas</h4>
+                <ul class="space-y-2">
+                  @for (v of m.parametros.variables_descartadas ?? []; track v.variable) {
+                    <li class="rounded-lg border border-gray-200 p-2 text-sm"><span class="font-semibold text-gray-900">{{ v.variable }}:</span> <span class="text-gray-600">{{ v.motivo }}</span></li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+        </section>
+      }
+
+      <!-- Segmentación -->
+      @if (segmentacion(); as m) {
+        <section class="rounded-xl border border-gray-100 bg-white p-5 shadow-sm space-y-5">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-indigo-700">No supervisado · Segmentación de clientes</p>
+            @if (m.error) {
+              <p class="mt-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> {{ m.error }}</p>
+            } @else {
+              <h3 class="text-lg font-bold text-gray-900">{{ m.algoritmo }} <span class="text-sm font-normal text-gray-500">versión {{ m.version }}</span></h3>
+              <p class="text-sm text-gray-500">
+                Entrenado el {{ fechaHora(m.entrenado_en) }} con {{ m.datos['clientes'] }} clientes.
+                Transformación: {{ m.parametros['transformacion'] }}.
+              </p>
+            }
+          </div>
+
+          @if (!m.error) {
+            <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div class="rounded-lg bg-gray-50 p-3">
+                <dt class="text-xs font-semibold text-gray-500">Cantidad de grupos (k)</dt>
+                <dd class="text-xl font-black">{{ m.metricas['k'] }}</dd>
+                <dd class="mt-1 text-xs text-gray-600">Se probó k de {{ m.parametros['k_probados'] }} y se eligió el de mayor silueta.</dd>
+              </div>
+              <div class="rounded-lg bg-gray-50 p-3">
+                <dt class="text-xs font-semibold text-gray-500">Coeficiente de silueta</dt>
+                <dd class="text-xl font-black tabular-nums">{{ numero(m.metricas['silueta'], 2) }}</dd>
+                <dd class="mt-1 text-xs text-gray-600">De −1 a 1: qué tan separados están los grupos. Sobre 0,25 hay estructura razonable; sobre 0,5, fuerte.</dd>
+              </div>
+              <div class="rounded-lg bg-gray-50 p-3">
+                <dt class="text-xs font-semibold text-gray-500">Davies-Bouldin</dt>
+                <dd class="text-xl font-black tabular-nums">{{ numero(m.metricas['davies_bouldin'], 2) }}</dd>
+                <dd class="mt-1 text-xs text-gray-600">Menor es mejor: compara qué tan compacto es cada grupo con su distancia a los demás.</dd>
+              </div>
+              @if (m.metricas['ari_perfiles_sinteticos'] !== undefined && m.metricas['ari_perfiles_sinteticos'] !== null) {
+                <div class="rounded-lg bg-gray-50 p-3">
+                  <dt class="text-xs font-semibold text-gray-500">ARI contra perfiles conocidos</dt>
+                  <dd class="text-xl font-black tabular-nums">{{ numero(m.metricas['ari_perfiles_sinteticos'], 2) }}</dd>
+                  <dd class="mt-1 text-xs text-gray-600">Coincidencia con los perfiles con que se generaron los datos de demo (1 = idéntico, 0 = al azar).</dd>
+                </div>
+              }
+            </dl>
+
+            <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <div>
+                <h4 class="mb-1 text-sm font-semibold text-gray-700">Curva de silueta por k</h4>
+                <p class="mb-2 text-xs text-gray-500">El punto grande es el k elegido. La inercia siempre baja al subir k; por eso se decide con la silueta.</p>
+                @if (graficoSilueta(); as g) {
+                  <div class="h-64"><canvas baseChart [type]="g.type" [data]="g.data" [options]="g.options"></canvas></div>
+                }
+              </div>
+              <div>
+                <h4 class="mb-1 text-sm font-semibold text-gray-700">Variables usadas</h4>
+                <div class="mb-4 flex flex-wrap gap-1.5">
+                  @for (v of m.parametros.variables ?? []; track v) {
+                    <span class="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">{{ v }}</span>
+                  }
+                </div>
+                <h4 class="mb-1 text-sm font-semibold text-gray-700">Variables descartadas</h4>
+                <ul class="space-y-2">
+                  @for (v of m.parametros.variables_descartadas ?? []; track v.variable) {
+                    <li class="rounded-lg border border-gray-200 p-2 text-sm"><span class="font-semibold text-gray-900">{{ v.variable }}:</span> <span class="text-gray-600">{{ v.motivo }}</span></li>
+                  } @empty {
+                    <li class="text-sm text-gray-500">Ninguna.</li>
+                  }
+                </ul>
+              </div>
+            </div>
+          }
+        </section>
+      }
+
+      @if (!demanda() && !segmentacion()) {
+        <p class="text-sm text-gray-500">Todavía no hay modelos entrenados.</p>
+      }
+    }
+    </div>
+  }
+</div>

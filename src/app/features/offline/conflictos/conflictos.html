@@ -3,7 +3,7 @@
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Conflictos de sincronización</h1>
       <p class="mt-1 text-sm text-gray-500">
-        Ventas y reservas hechas sin conexión que no se pudieron aplicar porque el stock central no alcanzó. No se descontó nada.
+        Ventas, reservas y cambios de prenda hechos sin conexión que no se pudieron aplicar porque el stock central no alcanzó. No se descontó nada.
       </p>
     </div>
     <div class="flex items-center gap-3">
@@ -33,12 +33,20 @@
           <header class="flex flex-col gap-2 border-b border-amber-200 bg-amber-50 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p class="font-semibold text-gray-900">
-                {{ c.tipo === 'VENTA' ? 'Venta' : 'Reserva' }} sin conexión · {{ c.sucursal.nombre }}
+                {{ titulo(c) }} sin conexión · {{ c.sucursal.nombre }}
               </p>
               <p class="text-sm text-gray-700">
                 Registró {{ c.usuario.nombre }} el {{ fecha(c.creado_en) }} · recibida {{ fecha(c.recibido_en) }}
                 @if (c.datos.nombre_cliente) { · cliente: {{ c.datos.nombre_cliente }} }
               </p>
+              @if (c.tipo === 'CAMBIO') {
+                <p class="text-sm text-gray-700">
+                  @if (c.datos.orden_id) { Venta #{{ c.datos.orden_id }} · } @else { Venta sin conexión aún no sincronizada · }
+                  motivo: {{ motivoCambio(c.datos.motivo) }} · devuelve {{ unidadesDevueltas(c) }} {{ unidadesDevueltas(c) === 1 ? 'prenda' : 'prendas' }}
+                  @if ((c.datos.diferencia ?? 0) > 0) { · el cliente pagó Bs {{ num(c.datos.diferencia ?? 0) }} en efectivo }
+                  @else if ((c.datos.diferencia ?? 0) < 0) { · a favor del cliente Bs {{ num(-(c.datos.diferencia ?? 0)) }} }
+                </p>
+              }
               <p class="mt-1 text-sm font-medium text-amber-900"><span aria-hidden="true">⚠</span> {{ c.mensaje }}</p>
             </div>
             <app-estado-badge estado="CONFLICTO" />
@@ -48,7 +56,7 @@
             <table class="min-w-full text-sm">
               <thead class="text-left text-xs uppercase text-gray-500">
                 <tr>
-                  <th class="px-5 py-2">Prenda</th><th class="px-5 py-2 text-right">Pedido</th>
+                  <th class="px-5 py-2">{{ c.tipo === 'CAMBIO' ? 'Prenda a entregar' : 'Prenda' }}</th><th class="px-5 py-2 text-right">{{ c.tipo === 'CAMBIO' ? 'Cantidad' : 'Pedido' }}</th>
                   <th class="px-5 py-2 text-right">Stock actual</th>
                   @if (c.tipo === 'VENTA') { <th class="px-5 py-2 text-right">Precio</th> }
                   @if (e.modo === 'AJUSTAR') { <th class="px-5 py-2 text-right">Ajustar a</th> }
@@ -77,7 +85,15 @@
           </div>
 
           <footer class="border-t border-gray-100 px-5 py-4">
-            @if (e.modo === 'NINGUNO') {
+            @if (e.modo === 'NINGUNO' && c.tipo === 'CAMBIO') {
+              <p class="mb-3 text-sm text-gray-600">Un cambio no se ajusta por cantidades: repón el stock de la prenda a entregar y reintenta, o recházalo y resuélvelo con el cliente en tienda.</p>
+              <div class="flex flex-wrap gap-3">
+                <button type="button" (click)="reintentar(c)" [disabled]="e.enviando" class="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:bg-gray-400">
+                  {{ e.enviando ? 'Reintentando…' : 'Reintentar' }}
+                </button>
+                <button type="button" (click)="modo(c.uuid, 'RECHAZAR')" class="rounded-md border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Rechazar</button>
+              </div>
+            } @else if (e.modo === 'NINGUNO') {
               <div class="flex flex-wrap gap-3">
                 <button type="button" (click)="modo(c.uuid, 'AJUSTAR')" class="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800">Ajustar cantidades</button>
                 <button type="button" (click)="modo(c.uuid, 'RECHAZAR')" class="rounded-md border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50">Rechazar</button>

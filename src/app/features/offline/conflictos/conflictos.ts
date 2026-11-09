@@ -110,6 +110,27 @@ export class ConflictosComponent implements OnInit {
     this.enviar(c, this.svc.ajustar(c.uuid, items), 'Operación ajustada y confirmada.');
   }
 
+  /** CAMBIO: reintenta tal cual después de reponer stock. */
+  reintentar(c: Conflicto): void {
+    this.enviar(c, this.svc.reintentarCambio(c.uuid), 'Cambio aplicado y confirmado.');
+  }
+
+  titulo(c: Conflicto): string {
+    return c.tipo === 'VENTA' ? 'Venta' : c.tipo === 'RESERVA' ? 'Reserva' : 'Cambio de prenda';
+  }
+
+  motivoCambio(m: string | undefined): string {
+    const nombres: Record<string, string> = {
+      TALLA: 'Talla', AJUSTE_MEDIDA: 'Ajuste de medida', COLOR: 'Color', DEFECTO: 'Defecto',
+      PRODUCTO_EQUIVOCADO: 'Producto equivocado', YA_NO_LO_DESEA: 'Ya no lo desea',
+    };
+    return m ? (nombres[m] ?? m) : '—';
+  }
+
+  unidadesDevueltas(c: Conflicto): number {
+    return (c.datos.devueltos ?? []).reduce((s, d) => s + (d.cantidad ?? 0), 0);
+  }
+
   rechazar(c: Conflicto): void {
     const motivo = this.ed(c.uuid).motivo.trim();
     if (!motivo) return;

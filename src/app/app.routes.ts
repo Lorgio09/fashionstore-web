@@ -64,6 +64,12 @@ export const routes: Routes = [
                 data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] } // Caja: Cajero, Encargado y Admin
             },
             {
+                path: 'analitica',
+                loadComponent: () => import('./features/analitica/analitica').then(m => m.AnaliticaComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO], funcion: 'reportes_ia' } // Plan Profesional
+            },
+            {
                 path: 'reportes-ia',
                 loadComponent: () => import('./features/reportes-ia/reportes-ia').then(m => m.ReportesIaComponent),
                 canActivate: [rolGuard],
