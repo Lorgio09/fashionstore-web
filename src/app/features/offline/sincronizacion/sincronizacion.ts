@@ -1,4 +1,5 @@
 import { Component, OnInit, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { TiendaService } from '../../../core/services/tienda.service';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
@@ -24,6 +25,9 @@ type Filtro = 'TODAS' | 'PENDIENTES' | EstadoOperacion;
   templateUrl: './sincronizacion.html',
 })
 export class SincronizacionComponent implements OnInit {
+  /** Tienda actual: nombre y enlaces relativos a /tienda/:slug. */
+  tienda = inject(TiendaService);
+  private _asegurarTienda = this.tienda.asegurar();
   auth = inject(AuthService);
   conexion = inject(ConexionService);
   cat = inject(CatalogoOfflineService);

@@ -127,8 +127,11 @@ export class AuthService {
         return '/admin/punto-venta';
       case ROLES.PLATAFORMA:
         return '/plataforma/empresas';
-      default:
-        return '/';
+      default: {
+        // Cliente: vuelve a la tienda de su empresa (§2.1).
+        const slug = this.empresa()?.slug;
+        return slug ? `/tienda/${slug}` : '/';
+      }
     }
   }
 

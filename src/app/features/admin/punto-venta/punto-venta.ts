@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef, computed, effect, signal } from '@angular/core';
+import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef, computed, effect, signal, viewChild } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,7 @@ import { OperacionesOfflineService } from '../../../core/services/operaciones-of
 import { SelectorSucursalComponent } from '../../../shared/components/selector-sucursal/selector-sucursal';
 import { AvisoDatosOfflineComponent } from '../../../shared/components/aviso-datos-offline/aviso-datos-offline';
 import { numero } from '../../../shared/utils/formato';
+import { PanelCajaComponent } from '../../caja/panel-caja/panel-caja';
 import { DevolucionesService } from '../../../core/services/devoluciones.service';
 import { NotaCredito } from '../../../core/models/devoluciones';
 
@@ -28,7 +29,7 @@ export interface ItemCarrito {
 @Component({
   selector: 'app-punto-venta',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SelectorSucursalComponent, AvisoDatosOfflineComponent],
+  imports: [CommonModule, FormsModule, RouterLink, SelectorSucursalComponent, AvisoDatosOfflineComponent, PanelCajaComponent],
   templateUrl: './punto-venta.html'
 })
 export class PuntoVentaComponent implements OnInit {
@@ -42,6 +43,8 @@ export class PuntoVentaComponent implements OnInit {
   private opsOffline = inject(OperacionesOfflineService);
   private devoluciones = inject(DevolucionesService);
   readonly num = numero;
+  /** Arqueo en vivo: se refresca después de cada venta. */
+  private panelCaja = viewChild(PanelCajaComponent);
 
   /** Nota de crédito usada como pago (§9.4): pago mixto con efectivo. */
   codigoNota = '';
@@ -256,6 +259,7 @@ export class PuntoVentaComponent implements OnInit {
             ? `${comprobante} de Bs ${numero(this.total)}: Bs ${numero(conNota)} con nota de crédito y Bs ${numero(Number(res?.a_pagar ?? 0))} en efectivo.`
             : `${comprobante} en efectivo de Bs ${numero(this.total)} registrada.`);
           this.limpiarCaja();
+          this.panelCaja()?.refrescar();
           this.procesando = false;
           this.cdr.detectChanges();
         },

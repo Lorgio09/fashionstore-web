@@ -1,0 +1,90 @@
+<div class="mx-auto max-w-7xl space-y-5">
+  <div class="flex flex-wrap items-end justify-between gap-3 border-b border-gray-200 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Turnos de caja</h1>
+      <p class="mt-1 text-sm text-gray-500">Aperturas, arqueos y cierres de caja. La caja se abre y cierra desde el punto de venta.</p>
+    </div>
+    <div class="flex items-end gap-2">
+      @if (esAdmin()) {
+        <label class="text-sm"><span class="block text-xs font-semibold text-gray-600">Sucursal</span>
+          <select name="sucursal" [(ngModel)]="sucursalId" (ngModelChange)="cargar()" class="mt-1 rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+            <option [ngValue]="null">Todas</option>
+            @for (s of sucursales(); track s.id) { <option [ngValue]="s.id">{{ s.nombre }}</option> }
+          </select>
+        </label>
+      }
+      <button type="button" (click)="cargar()" class="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:border-black"><span aria-hidden="true">↻</span> Actualizar</button>
+    </div>
+  </div>
+
+  @if (pendientes() > 0 && puedeAutorizar()) {
+    <p class="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+      <span aria-hidden="true">⚠</span> {{ pendientes() }} cierre{{ pendientes() > 1 ? 's' : '' }} con diferencia sobre el umbral esperan tu autorización.
+    </p>
+  }
+
+  <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm" [class.opacity-60]="cargando()">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500">
+        <tr>
+          <th scope="col" class="px-4 py-3">Sucursal</th><th scope="col" class="px-4 py-3">Apertura</th><th scope="col" class="px-4 py-3">Cierre</th>
+          <th scope="col" class="px-4 py-3 text-right">Fondo</th><th scope="col" class="px-4 py-3 text-right">Esperado</th>
+          <th scope="col" class="px-4 py-3 text-right">Contado</th><th scope="col" class="px-4 py-3 text-right">Diferencia</th>
+          <th scope="col" class="px-4 py-3">Estado</th><th class="px-4 py-3"><span class="sr-only">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        @for (t of turnos(); track t.id) {
+          <tr>
+            <td class="px-4 py-2">{{ t.sucursal.nombre }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ fechaHora(t.abierto_en) }}<br /><span class="text-xs text-gray-500">{{ t.abierto_por }}</span></td>
+            <td class="px-4 py-2 whitespace-nowrap">@if (t.cerrado_en) { {{ fechaHora(t.cerrado_en) }}<br /><span class="text-xs text-gray-500">{{ t.cerrado_por }}</span> } @else { <span class="text-gray-400">—</span> }</td>
+            <td class="px-4 py-2 text-right tabular-nums">Bs {{ numero(t.fondo_inicial) }}</td>
+            <td class="px-4 py-2 text-right tabular-nums">{{ t.efectivo_esperado !== null ? 'Bs ' + numero(t.efectivo_esperado) : '—' }}</td>
+            <td class="px-4 py-2 text-right tabular-nums">{{ t.efectivo_contado !== null ? 'Bs ' + numero(t.efectivo_contado) : '—' }}</td>
+            <td class="px-4 py-2 text-right tabular-nums font-semibold" [class.text-red-700]="(t.diferencia ?? 0) < 0" [class.text-amber-800]="(t.diferencia ?? 0) > 0">
+              {{ t.diferencia !== null ? 'Bs ' + numero(t.diferencia) : '—' }}
+            </td>
+            <td class="px-4 py-2"><app-estado-badge [estado]="t.estado" /></td>
+            <td class="px-4 py-2 text-right whitespace-nowrap">
+              @if (t.estado === 'PENDIENTE_AUTORIZACION' && puedeAutorizar()) {
+                <button type="button" (click)="autorizar(t)" [disabled]="autorizando() === t.id" class="mr-2 rounded bg-black px-3 py-1 text-xs font-bold text-white disabled:opacity-50">
+                  {{ autorizando() === t.id ? 'Autorizando…' : 'Autorizar' }}
+                </button>
+              }
+              <button type="button" (click)="alternar(t.id)" [attr.aria-expanded]="abierto() === t.id" class="text-xs font-semibold text-gray-700 hover:underline">
+                {{ abierto() === t.id ? 'Ocultar' : 'Detalle' }}
+              </button>
+            </td>
+          </tr>
+          @if (abierto() === t.id) {
+            <tr class="bg-gray-50">
+              <td colspan="9" class="px-6 py-3 text-sm text-gray-700">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                  <div>
+                    @if (t.arqueo; as a) {
+                      <p>Ventas en efectivo: Bs {{ numero(a.ventas_efectivo) }}</p>
+                      <p>Cobros de cambios: Bs {{ numero(a.cobros_cambios_efectivo) }} · Reembolsos: Bs {{ numero(a.reembolsos_efectivo) }}</p>
+                      <p>Ventas: {{ a.ventas.cantidad }} (Bs {{ numero(a.ventas.total) }}) · sin conexión sincronizadas: {{ a.ventas.offline_sincronizadas }}</p>
+                    } @else { <p class="text-gray-500">Sin arqueo guardado.</p> }
+                  </div>
+                  <div>
+                    <p><span class="font-semibold">Observación:</span> {{ t.observacion || '—' }}</p>
+                    @if (t.autorizado_por) { <p><span class="font-semibold">Autorizó:</span> {{ t.autorizado_por }}</p> }
+                  </div>
+                  <div>
+                    @if (t.pendientes_locales?.cantidad) {
+                      <p><span aria-hidden="true">◷</span> Al cerrar quedaban {{ t.pendientes_locales!.cantidad }} venta(s) sin sincronizar por Bs {{ numero(t.pendientes_locales!.monto_efectivo) }}.</p>
+                    } @else { <p class="text-gray-500">Sin ventas pendientes de sincronizar al cerrar.</p> }
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        } @empty {
+          <tr><td colspan="9" class="px-4 py-10 text-center text-gray-500">No hay turnos de caja.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

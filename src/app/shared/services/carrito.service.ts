@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, effect, inject, untracked } from '@angular/core';
+import { TiendaService } from '../../core/services/tienda.service';
 import { BehaviorSubject } from 'rxjs';
 
 export interface ItemCarrito {
@@ -20,8 +21,24 @@ export class CarritoService {
   private carrito = new BehaviorSubject<ItemCarrito[]>([]);
   carrito$ = this.carrito.asObservable();
 
+  private tienda = inject(TiendaService);
+
   constructor() {
-    this.cargarDelStorage();
+    // Un carrito por tienda: al cambiar de tienda se carga el de esa tienda.
+    effect(() => {
+      this.tienda.slug();
+      untracked(() => this.cargarDelStorage());
+    });
+  }
+
+  private get clave(): string {
+    return `carrito_compras:${this.tienda.slug()}`;
+  }
+
+  /** Vacía el carrito de la tienda actual (después de comprar o reservar). */
+  vaciar() {
+    this.carrito.next([]);
+    if (typeof localStorage !== 'undefined') localStorage.removeItem(this.clave);
   }
 
   agregarItem(item: ItemCarrito) {
@@ -46,16 +63,14 @@ export class CarritoService {
 
   private guardarEnStorage() {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('carrito_compras', JSON.stringify(this.carrito.getValue()));
+      localStorage.setItem(this.clave, JSON.stringify(this.carrito.getValue()));
     }
   }
 
   private cargarDelStorage() {
     if (typeof localStorage !== 'undefined') {
-      const guardado = localStorage.getItem('carrito_compras');
-      if (guardado) {
-        this.carrito.next(JSON.parse(guardado));
-      }
+      const guardado = localStorage.getItem(this.clave);
+      this.carrito.next(guardado ? JSON.parse(guardado) : []);
     }
   }
 }

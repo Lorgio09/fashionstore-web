@@ -3,37 +3,37 @@ import { ROLES } from './core/models/sesion';
 
 import { InicioComponent } from './features/inicio/inicio';
 import { LoginComponent } from './features/auth/login/login'; 
-import { RegistroComponent } from './features/auth/registro/registro';
-import { RecuperarPasswordComponent } from './features/auth/recuperar-password/recuperar-password';
-import { CrearPrendaComponent } from './features/admin/crear-prenda/crear-prenda';
 import { rolGuard, inicioPorRolGuard } from './core/guards/admin-guard';
+import { portadaGuard, redirigirATienda, tiendaGuard } from './core/guards/tienda.guard';
 import { AdminLayoutComponent } from './features/admin/admin-layout/admin-layout'; 
-import { ListarPrendasComponent } from './features/admin/listar-prenda/listar-prenda';
-import { GestionCategoriasComponent } from './features/gestion-categorias/gestion-categorias';
-import { GestionProveedoresComponent } from './features/gestion-proveedores/gestion-proveedores';
-import { GestionSucursalesComponent } from './features/gestion-sucursales/gestion-sucursales';
-import { EntradaInventarioComponent } from './features/entrada-inventario/entrada-inventario';
-import { GestionUsuariosComponent } from './features/gestion-usuarios/gestion-usuarios';
-import { BitacoraComponent } from './features/bitacora/bitacora';
-import { TemporadasComponent } from './features/temporadas/temporadas';
-import { DashboardComponent } from './features/dashboard/dashboard';
-import { ColeccionesComponent } from './features/colecciones/colecciones';
 import { DetallePrendaComponent } from './features/detalle-prenda/detalle-prenda';
 import { CarritoComponent } from './features/carrito/carrito';
 import { CheckoutComponent } from './features/checkout/checkout';
 import { PuntoVentaComponent } from './features/admin/punto-venta/punto-venta';
-import { ReservasAdminComponent } from './features/reservas/reservas';
 import { SincronizacionComponent } from './features/offline/sincronizacion/sincronizacion';
 import { ConflictosComponent } from './features/offline/conflictos/conflictos';
 
 export const routes: Routes = [
-    { path: '', component: InicioComponent },
+    // Portada de la plataforma FashionStore: planes y directorio de tiendas (§2.1)
+    { path: '', pathMatch: 'full', canActivate: [portadaGuard], loadComponent: () => import('./features/portada/portada').then(m => m.PortadaComponent) },
+    // Cada empresa es una tienda con su nombre: el catálogo y la compra viven dentro de /tienda/:slug
+    {
+        path: 'tienda/:slug',
+        canActivate: [tiendaGuard],
+        children: [
+            { path: '', component: InicioComponent },
+            { path: 'prenda/:id', component: DetallePrendaComponent },
+            { path: 'carrito', component: CarritoComponent },
+            { path: 'checkout', component: CheckoutComponent },
+        ]
+    },
     { path: 'login', component: LoginComponent },
-    { path: 'registro', component: RegistroComponent },
-    { path: 'recuperar-password', component: RecuperarPasswordComponent },
-    { path: 'prenda/:id', component: DetallePrendaComponent },
-    { path: 'carrito', component: CarritoComponent },
-    { path: 'checkout', component: CheckoutComponent },
+    { path: 'registro', loadComponent: () => import('./features/auth/registro/registro').then(m => m.RegistroComponent) },
+    { path: 'recuperar-password', loadComponent: () => import('./features/auth/recuperar-password/recuperar-password').then(m => m.RecuperarPasswordComponent) },
+    // Rutas antiguas de la tienda: llevan a la última tienda visitada
+    { path: 'prenda/:id', canActivate: [redirigirATienda('prenda/:id')], children: [] },
+    { path: 'carrito', canActivate: [redirigirATienda('carrito')], children: [] },
+    { path: 'checkout', canActivate: [redirigirATienda('checkout')], children: [] },
     // Modo offline y pendientes del cliente (el personal lo tiene dentro de /admin)
     { path: 'sincronizacion', component: SincronizacionComponent, canActivate: [rolGuard], data: { roles: [ROLES.CLIENTE] } },
 
@@ -74,6 +74,12 @@ export const routes: Routes = [
                 component: PuntoVentaComponent,
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] } // Caja: Cajero, Encargado y Admin
+            },
+            {
+                path: 'caja',
+                loadComponent: () => import('./features/caja/turnos-caja/turnos-caja').then(m => m.TurnosCajaComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] }
             },
             // --- Posventa: devoluciones, cambios y notas de crédito (§9) ---
             {
@@ -120,7 +126,7 @@ export const routes: Routes = [
             },
             { 
                 path: 'dashboard', 
-                component: DashboardComponent,
+                loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] } // Solo Admin
             },
@@ -128,37 +134,37 @@ export const routes: Routes = [
             // --- Módulo de Inventario ---
             { 
                 path: 'prendas', 
-                component: ListarPrendasComponent,
+                loadComponent: () => import('./features/admin/listar-prenda/listar-prenda').then(m => m.ListarPrendasComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] } // Solo Admin
             },
             { 
                 path: 'nueva-prenda', 
-                component: CrearPrendaComponent,
+                loadComponent: () => import('./features/admin/crear-prenda/crear-prenda').then(m => m.CrearPrendaComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
             { 
                 path: 'editar-prenda/:id', 
-                component: CrearPrendaComponent,
+                loadComponent: () => import('./features/admin/crear-prenda/crear-prenda').then(m => m.CrearPrendaComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
             { 
                 path: 'categorias-tallas', 
-                component: GestionCategoriasComponent,
+                loadComponent: () => import('./features/gestion-categorias/gestion-categorias').then(m => m.GestionCategoriasComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
             { 
                 path: 'temporadas', 
-                component: TemporadasComponent,
+                loadComponent: () => import('./features/temporadas/temporadas').then(m => m.TemporadasComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
             { 
                 path: 'colecciones', 
-                component: ColeccionesComponent,
+                loadComponent: () => import('./features/colecciones/colecciones').then(m => m.ColeccionesComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
@@ -166,14 +172,14 @@ export const routes: Routes = [
             // --- Operaciones Operativas (Aquí entra el Encargado) ---
             { 
                 path: 'entrada-inventario', 
-                component: EntradaInventarioComponent,
+                loadComponent: () => import('./features/entrada-inventario/entrada-inventario').then(m => m.EntradaInventarioComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO] } // Admin Y Encargado de sucursal
             },
 
             { 
                 path: 'reservas', 
-                component: ReservasAdminComponent,
+                loadComponent: () => import('./features/reservas/reservas').then(m => m.ReservasAdminComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO] } // Admin Y Encargado de sucursal
             },
@@ -181,19 +187,19 @@ export const routes: Routes = [
             // --- Módulo Estructural ---
             { 
                 path: 'proveedores', 
-                component: GestionProveedoresComponent,
+                loadComponent: () => import('./features/gestion-proveedores/gestion-proveedores').then(m => m.GestionProveedoresComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
             { 
                 path: 'sucursales', 
-                component: GestionSucursalesComponent,
+                loadComponent: () => import('./features/gestion-sucursales/gestion-sucursales').then(m => m.GestionSucursalesComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
             { 
                 path: 'gestion-usuarios', 
-                component: GestionUsuariosComponent,
+                loadComponent: () => import('./features/gestion-usuarios/gestion-usuarios').then(m => m.GestionUsuariosComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] }
             },
@@ -205,7 +211,7 @@ export const routes: Routes = [
             },
             { 
                 path: 'auditoria', 
-                component: BitacoraComponent,
+                loadComponent: () => import('./features/bitacora/bitacora').then(m => m.BitacoraComponent),
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN] } // Solo Admin
             },

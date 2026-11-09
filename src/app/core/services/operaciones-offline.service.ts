@@ -46,6 +46,19 @@ export class OperacionesOfflineService {
     this._operaciones.set(await this.repo.operacionesDe(e.id, u.id));
   }
 
+  /**
+   * Ventas que este dispositivo todavía tiene en LOCAL para una sucursal (cierre de caja, §9.5 `pendientes_locales`).
+   * Lee IndexedDB en el momento, para no depender de la última recarga de la lista.
+   */
+  async ventasLocalesDe(sucursalId: number): Promise<{ cantidad: number; monto_efectivo: number }> {
+    await this.refrescar();
+    const ventas = this._operaciones().filter((o) => o.tipo === 'VENTA' && o.estado === 'LOCAL' && o.sucursal_id === sucursalId);
+    return {
+      cantidad: ventas.length,
+      monto_efectivo: redondear(ventas.reduce((s, o) => s + ((o.datos as DatosVenta).total ?? 0), 0)),
+    };
+  }
+
   /** Venta de contado sin red. Solo EFECTIVO (§6.2). */
   async registrarVenta(params: {
     sucursal_id: number;

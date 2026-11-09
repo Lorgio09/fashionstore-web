@@ -2,7 +2,7 @@
   
   <!-- Botón de volver (Aquí está el RouterLink que Angular pedía) -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
-    <a routerLink="/" class="text-sm font-medium text-gray-500 hover:text-black transition-colors flex items-center cursor-pointer">
+    <a [routerLink]="tienda.ruta()" class="text-sm font-medium text-gray-500 hover:text-black transition-colors flex items-center cursor-pointer">
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
       Volver al catálogo
     </a>

@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { TiendaService } from '../../core/services/tienda.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Necesario para los inputs (ngModel)
 import { Router} from '@angular/router';
@@ -14,6 +15,8 @@ import { NotificacionService } from '../../core/services/notificacion.service';
   templateUrl: './checkout.html'
 })
 export class CheckoutComponent implements OnInit {
+  /** Tienda actual: nombre y enlaces relativos a /tienda/:slug. */
+  tienda = inject(TiendaService);
   private notif = inject(NotificacionService);
   items: ItemCarrito[] = [];
   total: number = 0;
@@ -77,7 +80,7 @@ simulando: boolean = false;
     });
 
     if (this.items.length === 0 && !this.qrBase64) {
-      this.router.navigate(['/']);
+      this.router.navigateByUrl(this.tienda.ruta());
     }
   }
 
@@ -115,9 +118,7 @@ simulando: boolean = false;
             this.ordenId = respuesta.orden_id;
             
             // Limpiamos el carrito local
-            if (typeof localStorage !== 'undefined') {
-              localStorage.removeItem('carrito_compras');
-            }
+            this.carritoService.vaciar();
 
             this.cdr.detectChanges();
           }
@@ -157,9 +158,7 @@ simulando: boolean = false;
     this.http.post(STRIPE_API_URL, payload)
       .subscribe({
         next: (respuesta: any) => {
-          if (typeof localStorage !== 'undefined') {
-            localStorage.removeItem('carrito_compras');
-          }
+          this.carritoService.vaciar();
           // Stripe nos devuelve una URL segura, redirigimos físicamente al cliente allí
           window.location.href = respuesta.url_pago;
         },

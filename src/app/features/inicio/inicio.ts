@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
-import { RouterLink, Router } from '@angular/router'; 
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
+import { TiendaService } from '../../core/services/tienda.service';
 import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 import { ScrollRevealDirective } from '../../shared/scroll-reveal';
@@ -42,6 +43,9 @@ export class InicioComponent implements OnInit {
   auth = inject(AuthService);
   private conexion = inject(ConexionService);
   private catOffline = inject(CatalogoOfflineService);
+  private ruta = inject(ActivatedRoute);
+  /** Tienda (empresa) de la URL /tienda/:slug: nombre en el encabezado y enlaces relativos. */
+  tienda = inject(TiendaService);
   /** El catálogo mostrado viene del dispositivo (sin red). */
   desdeDispositivo = false;
   /** Sin red y sin catálogo guardado. */
@@ -62,7 +66,12 @@ export class InicioComponent implements OnInit {
 
   ngOnInit() {
     this.verificarSesion(); 
-    this.cargarCatalogo();
+    // Se recarga al pasar de una tienda a otra (el componente se reutiliza entre /tienda/a y /tienda/b).
+    this.ruta.paramMap.subscribe(() => {
+      this.categoriaSeleccionada = 'Todas';
+      this.colorSeleccionado = 'Todos';
+      this.cargarCatalogo();
+    });
     this.carritoService.carrito$.subscribe(items => {
       this.cantidadCarrito = items.reduce((total, item) => total + item.cantidad, 0);
     });

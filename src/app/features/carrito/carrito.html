@@ -47,7 +47,7 @@
 
         <!-- Botones de Acción -->
         <div class="flex flex-col gap-3">
-          <button routerLink="/checkout" class="w-full bg-black text-white py-3.5 rounded-md text-sm font-bold tracking-wide hover:bg-gray-800 transition-colors">
+          <button [routerLink]="tienda.ruta() + '/checkout'" class="w-full bg-black text-white py-3.5 rounded-md text-sm font-bold tracking-wide hover:bg-gray-800 transition-colors">
             Comprar en línea
           </button>
           
@@ -56,7 +56,7 @@
           </button>
         </div>
 
-        <a routerLink="/" class="block text-center mt-6 text-sm font-medium text-gray-500 hover:text-black transition-colors">
+        <a [routerLink]="tienda.ruta()" class="block text-center mt-6 text-sm font-medium text-gray-500 hover:text-black transition-colors">
           Seguir comprando
         </a>
       </div>
@@ -70,7 +70,7 @@
       </svg>
       <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight mb-2">Tu carrito está vacío</h2>
       <p class="text-gray-500 mb-8">Parece que aún no has agregado nada a tu carrito.</p>
-      <a routerLink="/" class="inline-block bg-black text-white px-8 py-3 rounded-md text-sm font-bold tracking-wide hover:bg-gray-800 transition-colors">
+      <a [routerLink]="tienda.ruta()" class="inline-block bg-black text-white px-8 py-3 rounded-md text-sm font-bold tracking-wide hover:bg-gray-800 transition-colors">
         Explorar Catálogo
       </a>
     </div>

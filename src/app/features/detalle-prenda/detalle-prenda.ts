@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { TiendaService } from '../../core/services/tienda.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -15,6 +16,8 @@ import { AvisoDatosOfflineComponent } from '../../shared/components/aviso-datos-
   templateUrl: './detalle-prenda.html'
 })
 export class DetallePrendaComponent implements OnInit {
+  /** Tienda actual: nombre y enlaces relativos a /tienda/:slug. */
+  tienda = inject(TiendaService);
   private conexion = inject(ConexionService);
   private catOffline = inject(CatalogoOfflineService);
 

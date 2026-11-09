@@ -5,15 +5,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-20 items-center">
         <!-- Logo -->
-        <div class="flex-shrink-0 flex items-center cursor-pointer" routerLink="/">
-          <h1 class="text-2xl font-extrabold tracking-tight text-gray-900">
-            FASHION<span class="text-gray-400">STORE</span>
-          </h1>
+        <div class="flex-shrink-0 flex flex-col">
+          <a [routerLink]="tienda.ruta()" class="text-2xl font-extrabold tracking-tight text-gray-900">{{ tienda.nombre() || ' ' }}</a>
+          <a routerLink="/" class="text-xs font-medium text-gray-500 hover:text-black">← Cambiar de tienda</a>
         </div>
         
         <!-- Menú Dinámico conectado a inicio.ts -->
         <div class="flex items-center space-x-6">
-          <a routerLink="/carrito" class="relative text-gray-600 hover:text-black transition-colors cursor-pointer mr-2">
+          <a [routerLink]="tienda.ruta() + '/carrito'" class="relative text-gray-600 hover:text-black transition-colors cursor-pointer mr-2">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
             </svg>
@@ -50,6 +49,15 @@
     </div>
   </nav>
 
+  @if (tienda.estado() === 'no_existe') {
+    <div class="mx-auto max-w-xl px-4 py-24 text-center">
+      <p class="text-5xl" aria-hidden="true">🏬</p>
+      <h1 class="mt-4 text-2xl font-bold text-gray-900">Esta tienda no está disponible</h1>
+      <p class="mt-2 text-gray-600">La tienda «{{ tienda.slug() }}» no existe o está suspendida.</p>
+      <a routerLink="/" class="mt-6 inline-block rounded-md bg-black px-6 py-3 text-sm font-bold text-white hover:bg-gray-800">Ver las tiendas de FashionStore</a>
+    </div>
+  } @else {
+
   <!-- 2. HERO SECTION - INTACTA -->
   <div class="relative bg-black text-white overflow-hidden">
     <div class="absolute inset-0 z-0">
@@ -58,6 +66,7 @@
     </div>
     
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 flex flex-col items-center text-center" @fadeSlideIn>
+      <p class="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-gray-300">{{ tienda.nombre() }}</p>
       <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
         Descubre tu Estilo Ideal
       </h1>
@@ -211,7 +220,7 @@
                   <!-- Ajuste de botones al final de la tarjeta -->
                   <div class="mt-auto pt-6 flex justify-between items-center">
                     <span class="text-xl font-black text-gray-900">Bs. {{ prenda.precio }}</span>
-                    <a [routerLink]="['/prenda', prenda.prenda_id]" class="bg-white text-black border-2 border-black px-4 py-2 text-sm font-bold hover:bg-black hover:text-white transition-all duration-300 ease-out rounded-full text-center cursor-pointer">
+                    <a [routerLink]="[tienda.ruta(), 'prenda', prenda.prenda_id]" class="bg-white text-black border-2 border-black px-4 py-2 text-sm font-bold hover:bg-black hover:text-white transition-all duration-300 ease-out rounded-full text-center cursor-pointer">
                       Ver detalles
                     </a>
                   </div>
@@ -227,4 +236,9 @@
     </div>
   </div>
 
+
+  <footer class="border-t border-gray-100 py-8 text-center text-sm text-gray-500">
+    {{ tienda.nombre() }} · <a routerLink="/" class="hover:text-black">con tecnología de <span class="font-semibold">FashionStore</span></a>
+  </footer>
+  }
 </div>

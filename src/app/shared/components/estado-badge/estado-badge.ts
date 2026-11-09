@@ -24,6 +24,8 @@ export class EstadoBadgeComponent {
       EN_INSPECCION: 'En inspección', INSPECCIONADA: 'Inspeccionada', PENDIENTE_STOCK: 'Pendiente de stock',
       CAMBIO_REALIZADO: 'Cambio realizado', REEMBOLSADA: 'Reembolsada', CERRADA_CON_NOTA: 'Cerrada con nota',
       VIGENTE: 'Vigente', USADA: 'Usada',
+      // Caja (§9.5)
+      ABIERTA: 'Abierta', CERRADA: 'Cerrada', PENDIENTE_AUTORIZACION: 'Pendiente de autorización',
     };
     return t[e] ?? e.charAt(0) + e.slice(1).toLowerCase().replace(/_/g, ' ');
   });
@@ -42,6 +44,11 @@ export class EstadoBadgeComponent {
         return { icono: '🔍', clase: 'bg-blue-100 text-blue-800' };
       case 'INSPECCIONADA':
         return { icono: '◷', clase: 'bg-indigo-100 text-indigo-800' };
+      case 'ABIERTA':
+        return { icono: '●', clase: 'bg-green-100 text-green-800' };
+      case 'CERRADA':
+        return { icono: '■', clase: 'bg-gray-200 text-gray-800' };
+      case 'PENDIENTE_AUTORIZACION':
       case 'PENDIENTE_STOCK':
         return { icono: '⚠', clase: 'bg-amber-100 text-amber-900' };
       case 'USADA':

@@ -1,0 +1,117 @@
+<section class="rounded-lg border border-gray-200 bg-white shadow" aria-label="Caja">
+  @if (!conexion.enLinea()) {
+    <p class="flex items-center gap-2 px-4 py-3 text-sm text-gray-600">
+      <span aria-hidden="true">◷</span> La caja necesita conexión. Las ventas sin conexión se suman al arqueo cuando se sincronizan.
+    </p>
+  } @else if (!sucursalId()) {
+    <p class="px-4 py-3 text-sm text-gray-600">Elige la sucursal para ver su caja.</p>
+  } @else if (cargando() && !turno()) {
+    <p class="px-4 py-3 text-sm text-gray-500" role="status">Consultando la caja…</p>
+  } @else if (!turno()) {
+    <!-- SIN CAJA ABIERTA -->
+    <form (ngSubmit)="abrir()" class="flex flex-wrap items-center gap-3 px-4 py-3">
+      <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-900"><span aria-hidden="true">■</span> Caja cerrada</span>
+      @if (ultimoCierre(); as c) {
+        <span class="text-sm text-gray-600">
+          Último cierre: esperado Bs {{ numero(c.efectivo_esperado) }}, contado Bs {{ numero(c.efectivo_contado) }},
+          diferencia <strong [class.text-red-700]="(c.diferencia ?? 0) !== 0">Bs {{ numero(c.diferencia) }}</strong>
+          @if (c.estado === 'PENDIENTE_AUTORIZACION') { · <span class="font-semibold text-amber-900"><span aria-hidden="true">⚠</span> pendiente de autorización</span> }
+        </span>
+      }
+      <label class="ml-auto flex items-center gap-2 text-sm">
+        <span class="font-semibold text-gray-700">Fondo inicial (Bs)</span>
+        <input type="number" name="fondo" min="0" step="0.5" required [(ngModel)]="fondoInicial" placeholder="0,00"
+          class="w-28 rounded border border-gray-300 px-2 py-1.5 text-right focus:border-black focus:ring-black" />
+      </label>
+      <button type="submit" [disabled]="enviando() || fondoInicial === null" class="rounded bg-black px-4 py-1.5 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-50">
+        {{ enviando() ? 'Abriendo…' : 'Abrir caja' }}
+      </button>
+    </form>
+  } @else {
+    @let t = turno()!;
+    @let a = t.arqueo;
+    <!-- CAJA ABIERTA -->
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+      <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-800"><span aria-hidden="true">✓</span> Caja abierta</span>
+      <span class="text-sm text-gray-600">{{ t.sucursal.nombre }} · desde {{ fechaHora(t.abierto_en) }} · {{ t.abierto_por }}</span>
+      <span class="text-sm">Efectivo esperado: <strong class="tabular-nums">Bs {{ numero(a?.efectivo_esperado) }}</strong></span>
+      <div class="ml-auto flex gap-2">
+        <button type="button" (click)="verArqueo.set(!verArqueo()); refrescar()" [attr.aria-expanded]="verArqueo()"
+          class="rounded border border-gray-300 px-3 py-1.5 text-sm font-semibold hover:border-black">Arqueo</button>
+        <button type="button" (click)="iniciarCierre()" [attr.aria-expanded]="cerrando()"
+          class="rounded bg-black px-3 py-1.5 text-sm font-bold text-white hover:bg-gray-800">Cerrar caja</button>
+      </div>
+    </div>
+
+    @if ((verArqueo() || cerrando()) && a) {
+      <div class="grid grid-cols-1 gap-4 border-t border-gray-100 px-4 py-3 md:grid-cols-2">
+        <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
+          <dt class="text-gray-600">Fondo inicial</dt><dd class="text-right tabular-nums">Bs {{ numero(a.fondo_inicial) }}</dd>
+          <dt class="text-gray-600">+ Ventas en efectivo</dt><dd class="text-right tabular-nums">Bs {{ numero(a.ventas_efectivo) }}</dd>
+          <dt class="text-gray-600">+ Cobros de cambios en efectivo</dt><dd class="text-right tabular-nums">Bs {{ numero(a.cobros_cambios_efectivo) }}</dd>
+          <dt class="text-gray-600">− Reembolsos en efectivo</dt><dd class="text-right tabular-nums">Bs {{ numero(a.reembolsos_efectivo) }}</dd>
+          <dt class="border-t border-gray-200 pt-1 font-bold">= Efectivo esperado</dt><dd class="border-t border-gray-200 pt-1 text-right font-bold tabular-nums">Bs {{ numero(a.efectivo_esperado) }}</dd>
+        </dl>
+        <div class="text-sm text-gray-600">
+          <p class="font-semibold text-gray-700">Ventas del turno: {{ a.ventas.cantidad }} · Bs {{ numero(a.ventas.total) }}</p>
+          <ul class="mt-1 space-y-0.5">
+            @for (m of a.ventas.por_metodo; track m.metodo_pago) {
+              <li>{{ m.metodo_pago }}: {{ m.ventas }} · Bs {{ numero(m.total) }} @if (m.metodo_pago !== 'EFECTIVO') { <span class="text-xs text-gray-400">(informativo)</span> }</li>
+            }
+          </ul>
+          @if (a.ventas.pagado_con_nota_credito > 0) { <p>Pagado con nota de crédito: Bs {{ numero(a.ventas.pagado_con_nota_credito) }} (no es efectivo)</p> }
+          <p>Ventas sin conexión ya sincronizadas: {{ a.ventas.offline_sincronizadas }} · devoluciones atendidas: {{ a.devoluciones_atendidas }}</p>
+        </div>
+      </div>
+    }
+
+    @if (cerrando()) {
+      <form (ngSubmit)="cerrar()" class="space-y-3 border-t border-gray-100 bg-gray-50 px-4 py-3">
+        <div class="flex flex-wrap items-end gap-4">
+          <label class="text-sm">
+            <span class="block font-semibold text-gray-700">Efectivo contado (Bs)</span>
+            <input type="number" name="contado" min="0" step="0.1" required [ngModel]="contado()" (ngModelChange)="contado.set($event)"
+              class="mt-1 w-36 rounded border border-gray-300 px-2 py-1.5 text-right focus:border-black focus:ring-black" />
+          </label>
+          @if (diferencia(); as d) {
+            <p class="text-sm font-semibold" [class.text-red-700]="d < 0" [class.text-amber-800]="d > 0" role="status">
+              <span aria-hidden="true">⚠</span> {{ d < 0 ? 'Falta' : 'Sobra' }} Bs {{ numero(d < 0 ? -d : d) }}
+            </p>
+          } @else if (diferencia() === 0) {
+            <p class="text-sm font-semibold text-green-700" role="status"><span aria-hidden="true">✓</span> Cuadra con lo esperado</p>
+          }
+        </div>
+
+        @if (pendientes().cantidad > 0) {
+          <p class="flex items-start gap-2 rounded bg-blue-50 px-3 py-2 text-sm text-blue-900">
+            <span aria-hidden="true">◷</span>
+            <span>Este dispositivo tiene {{ pendientes().cantidad }} venta{{ pendientes().cantidad > 1 ? 's' : '' }} sin sincronizar por Bs {{ numero(pendientes().monto_efectivo) }}.
+              Se informan con el cierre y se concilian al sincronizar (no están en el efectivo esperado).</span>
+          </p>
+        }
+
+        <label class="block text-sm">
+          <span class="font-semibold text-gray-700">Observación {{ (diferencia() ?? 0) !== 0 ? '(obligatoria: hay diferencia)' : '(opcional)' }}</span>
+          <input type="text" name="observacion" maxlength="255" [(ngModel)]="observacion"
+            class="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 focus:border-black focus:ring-black" />
+        </label>
+
+        @if (superaUmbral()) {
+          <p class="flex items-start gap-2 rounded bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <span aria-hidden="true">⚠</span>
+            @if (esCajero()) { La diferencia supera el umbral de Bs {{ numero(umbral()) }}: el cierre quedará pendiente de autorización del Encargado. }
+            @else { La diferencia supera el umbral de Bs {{ numero(umbral()) }}: al cerrar, queda autorizada por ti. }
+          </p>
+        }
+
+        <div class="flex flex-wrap gap-2">
+          <button type="submit" [disabled]="!cierreValido || enviando()" class="rounded bg-black px-4 py-2 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-50">
+            {{ enviando() ? 'Cerrando…' : 'Confirmar cierre' }}
+          </button>
+          <button type="button" (click)="cerrando.set(false)" class="rounded border border-gray-300 px-4 py-2 text-sm">Cancelar</button>
+          <a routerLink="/admin/caja" class="ml-auto self-center text-sm text-gray-600 underline">Historial de turnos</a>
+        </div>
+      </form>
+    }
+  }
+</section>

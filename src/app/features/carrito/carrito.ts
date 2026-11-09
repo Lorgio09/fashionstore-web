@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { TiendaService } from '../../core/services/tienda.service';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms'; // Necesario para ngModel en el modal
@@ -21,6 +22,8 @@ import { fechaHoraLocalSinZona } from '../../shared/utils/fechas';
   templateUrl: './carrito.html'
 })
 export class CarritoComponent implements OnInit {
+  /** Tienda actual: nombre y enlaces relativos a /tienda/:slug. */
+  tienda = inject(TiendaService);
   private notif = inject(NotificacionService);
   private http = inject(HttpClient);
   private carritoService = inject(CarritoService);
@@ -63,10 +66,7 @@ export class CarritoComponent implements OnInit {
   }
 
   private limpiarDatosCarrito() {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('carrito_compras');
-    }
-    window.location.reload();
+    this.carritoService.vaciar();
   }
 
   // --- LÓGICA DE RESERVAS ---

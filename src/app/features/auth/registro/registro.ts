@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { TiendaService } from '../../../core/services/tienda.service';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +14,9 @@ import { NotificacionService } from '../../../core/services/notificacion.service
   templateUrl: './registro.html',
 })
 export class RegistroComponent {
+  /** Tienda actual: nombre y enlaces relativos a /tienda/:slug. */
+  tienda = inject(TiendaService);
+  private _asegurarTienda = this.tienda.asegurar();
   private notif = inject(NotificacionService);
   // 1. Alineado exactamente con el esquema ClienteCreate de FastAPI (sin rol_id)
   datosRegistro = {
