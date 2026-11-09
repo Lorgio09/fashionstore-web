@@ -14,6 +14,7 @@ import { EstadoBadgeComponent } from '../../../shared/components/estado-badge/es
 import { AvisoDatosOfflineComponent } from '../../../shared/components/aviso-datos-offline/aviso-datos-offline';
 import { fechaHora, haceCuanto } from '../../../shared/utils/fechas';
 import { numero } from '../../../shared/utils/formato';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 type Filtro = 'TODAS' | 'PENDIENTES' | EstadoOperacion;
 
@@ -21,7 +22,7 @@ type Filtro = 'TODAS' | 'PENDIENTES' | EstadoOperacion;
 @Component({
   selector: 'app-sincronizacion',
   standalone: true,
-  imports: [RouterLink, EstadoBadgeComponent, AvisoDatosOfflineComponent],
+  imports: [IconoComponent, RouterLink, EstadoBadgeComponent, AvisoDatosOfflineComponent],
   templateUrl: './sincronizacion.html',
 })
 export class SincronizacionComponent implements OnInit {

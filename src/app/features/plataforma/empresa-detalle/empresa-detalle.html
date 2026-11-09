@@ -35,8 +35,8 @@
             <app-barra-uso etiqueta="Usuarios internos" [usado]="s.uso.usuarios_internos" [maximo]="s.plan?.max_usuarios ?? null" />
           </div>
           <ul class="mt-6 flex flex-wrap gap-4 text-sm">
-            <li>{{ s.funciones.reportes_ia ? '✓' : '✕' }} Reportes con IA</li>
-            <li>{{ s.funciones.offline ? '✓' : '✕' }} Operación offline</li>
+            <li class="flex items-center gap-1.5"><app-icono [nombre]="s.funciones.reportes_ia ? 'ok' : 'cerrar'" /> Reportes con IA</li>
+            <li class="flex items-center gap-1.5"><app-icono [nombre]="s.funciones.offline ? 'ok' : 'cerrar'" /> Operación offline</li>
           </ul>
           <div class="mt-6 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
             <button type="button" (click)="renovar()" [disabled]="!!procesando() || !s.plan"

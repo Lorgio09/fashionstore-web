@@ -35,19 +35,19 @@
 
       <div class="mt-3 space-y-2">
         @if (s.requiere_autorizacion && !s.autorizada) {
-          <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> El cliente superó el máximo mensual de devoluciones: necesita autorización del Encargado o del Administrador.</p>
+          <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><app-icono nombre="alerta" /> El cliente superó el máximo mensual de devoluciones: necesita autorización del Encargado o del Administrador.</p>
         } @else if (s.requiere_autorizacion && s.autorizada) {
-          <p class="flex items-start gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-900"><span aria-hidden="true">✓</span> Autorizada (superaba el máximo mensual).</p>
+          <p class="flex items-start gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-900"><app-icono nombre="ok" /> Autorizada (superaba el máximo mensual).</p>
         }
         @if (s.fuera_de_plazo) {
-          <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> Fuera de plazo: se aplicó un recargo de Bs {{ numero(s.recargo) }}.</p>
+          <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><app-icono nombre="alerta" /> Fuera de plazo: se aplicó un recargo de Bs {{ numero(s.recargo) }}.</p>
         }
         @if (s.reembolso_pendiente_procesador) {
-          <p class="flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-900"><span aria-hidden="true">◷</span> Reembolso al medio original pendiente en el procesador de pagos (QR, tarjeta o Stripe).</p>
+          <p class="flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-900"><app-icono nombre="reloj" /> Reembolso al medio original pendiente en el procesador de pagos (QR, tarjeta o Stripe).</p>
         }
         @if (s.nota_credito; as n) {
           <p class="flex items-start gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-900">
-            <span aria-hidden="true">🧾</span>
+            <app-icono nombre="recibo" />
             <span>Nota de crédito <strong>{{ n.codigo }}</strong>: Bs {{ numero(n.monto) }} (saldo Bs {{ numero(n.saldo) }}), vence el {{ fechaCorta(n.vence_en) }}.</span>
           </p>
         }
@@ -179,7 +179,7 @@
                     <li>
                       <button type="button" (click)="agregarEntrega(v)" class="flex w-full justify-between px-3 py-2 text-left text-sm hover:bg-gray-50">
                         <span>{{ v.prenda }} <span class="text-gray-500">({{ v.talla }} / {{ v.color }})</span></span>
-                        <span class="tabular-nums">Bs {{ numero(v.precio) }} <span aria-hidden="true">＋</span></span>
+                        <span class="tabular-nums">Bs {{ numero(v.precio) }} <app-icono nombre="mas" /></span>
                       </button>
                     </li>
                   }

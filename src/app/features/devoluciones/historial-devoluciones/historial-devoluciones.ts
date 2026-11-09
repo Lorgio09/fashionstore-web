@@ -12,12 +12,13 @@ import { SucursalEmpresa } from '../../../core/models/saas';
 import { EstadoBadgeComponent } from '../../../shared/components/estado-badge/estado-badge';
 import { numero } from '../../../shared/utils/formato';
 import { fechaHora } from '../../../shared/utils/fechas';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 /** CU-11: historial de solicitudes con filtros e indicadores. Cajero y Encargado ven solo su sucursal. */
 @Component({
   selector: 'app-historial-devoluciones',
   standalone: true,
-  imports: [FormsModule, RouterLink, KeyValuePipe, EstadoBadgeComponent],
+  imports: [IconoComponent, FormsModule, RouterLink, KeyValuePipe, EstadoBadgeComponent],
   templateUrl: './historial-devoluciones.html',
 })
 export class HistorialDevolucionesComponent implements OnInit {

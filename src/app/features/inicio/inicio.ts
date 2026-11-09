@@ -11,11 +11,12 @@ import { AuthService } from '../../core/services/auth';
 import { ConexionService } from '../../core/services/conexion.service';
 import { CatalogoOfflineService } from '../../core/services/catalogo-offline.service';
 import { AvisoDatosOfflineComponent } from '../../shared/components/aviso-datos-offline/aviso-datos-offline';
+import { IconoComponent } from '../../shared/components/icono/icono';
 
 @Component({
   selector: 'app-inicio',
   standalone: true,
-  imports: [RouterLink, ScrollRevealDirective, CommonModule, AvisoDatosOfflineComponent],
+  imports: [IconoComponent, RouterLink, ScrollRevealDirective, CommonModule, AvisoDatosOfflineComponent],
   styleUrl: './inicio.scss',
   templateUrl: './inicio.html',
   animations: [

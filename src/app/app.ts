@@ -4,11 +4,12 @@ import { NotificacionesComponent } from './shared/components/notificaciones/noti
 import { IndicadorConexionComponent } from './shared/components/indicador-conexion/indicador-conexion';
 import { PwaService } from './core/services/pwa.service';
 import { SincronizacionService } from './core/sync/sincronizacion.service';
+import { IconoComponent } from './shared/components/icono/icono';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NotificacionesComponent, IndicadorConexionComponent],
+  imports: [IconoComponent, RouterOutlet, NotificacionesComponent, IndicadorConexionComponent],
   styleUrl: './app.scss',
   templateUrl: './app.html',
 })

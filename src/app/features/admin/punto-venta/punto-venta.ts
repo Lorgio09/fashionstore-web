@@ -15,6 +15,7 @@ import { numero } from '../../../shared/utils/formato';
 import { PanelCajaComponent } from '../../caja/panel-caja/panel-caja';
 import { DevolucionesService } from '../../../core/services/devoluciones.service';
 import { NotaCredito } from '../../../core/models/devoluciones';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 export interface ItemCarrito {
   prenda_id: number;
@@ -29,7 +30,7 @@ export interface ItemCarrito {
 @Component({
   selector: 'app-punto-venta',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SelectorSucursalComponent, AvisoDatosOfflineComponent, PanelCajaComponent],
+  imports: [IconoComponent, CommonModule, FormsModule, RouterLink, SelectorSucursalComponent, AvisoDatosOfflineComponent, PanelCajaComponent],
   templateUrl: './punto-venta.html'
 })
 export class PuntoVentaComponent implements OnInit {

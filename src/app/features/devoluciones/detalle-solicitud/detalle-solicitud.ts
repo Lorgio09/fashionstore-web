@@ -14,6 +14,7 @@ import {
 import { EstadoBadgeComponent } from '../../../shared/components/estado-badge/estado-badge';
 import { fechaCorta, numero } from '../../../shared/utils/formato';
 import { fechaHora } from '../../../shared/utils/fechas';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 interface VarianteCatalogo { variante_id: number; prenda: string; talla: string; color: string; precio: number; }
 interface Entrega extends VarianteCatalogo { cantidad: number; }
@@ -22,7 +23,7 @@ interface Entrega extends VarianteCatalogo { cantidad: number; }
 @Component({
   selector: 'app-detalle-solicitud',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, EstadoBadgeComponent],
+  imports: [IconoComponent, CommonModule, FormsModule, RouterLink, EstadoBadgeComponent],
   templateUrl: './detalle-solicitud.html',
 })
 export class DetalleSolicitudComponent implements OnInit {

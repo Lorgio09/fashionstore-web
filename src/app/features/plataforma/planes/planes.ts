@@ -6,6 +6,7 @@ import { NotificacionService } from '../../../core/services/notificacion.service
 import { Plan, PlanForm } from '../../../core/models/saas';
 import { EstadoBadgeComponent } from '../../../shared/components/estado-badge/estado-badge';
 import { numero } from '../../../shared/utils/formato';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 const VACIO = (): PlanForm => ({
   codigo: '', nombre: '', precio_mensual: 0, max_sucursales: 1, max_usuarios: null,
@@ -16,7 +17,7 @@ const VACIO = (): PlanForm => ({
 @Component({
   selector: 'app-plataforma-planes',
   standalone: true,
-  imports: [FormsModule, EstadoBadgeComponent],
+  imports: [IconoComponent, FormsModule, EstadoBadgeComponent],
   templateUrl: './planes.html',
 })
 export class PlataformaPlanesComponent implements OnInit {

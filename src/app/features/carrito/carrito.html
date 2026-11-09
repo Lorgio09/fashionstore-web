@@ -83,13 +83,13 @@
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
       <div class="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
         <h3 class="text-lg font-bold text-gray-800">Probar prendas en tienda</h3>
-        <button (click)="cerrarModalReserva()" class="text-gray-500 hover:text-red-500 font-bold text-xl leading-none">✕</button>
+        <button (click)="cerrarModalReserva()" class="text-gray-500 hover:text-black" aria-label="Cerrar"><app-icono nombre="cerrar" clase="h-5 w-5" /></button>
       </div>
       
       <div class="p-6 space-y-5">
         @if (reservaOffline) {
           <p role="status" class="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-            <span aria-hidden="true">⚠</span> Estás sin conexión. La reserva se guardará en tu dispositivo y se enviará a la tienda cuando vuelva la red.
+            <app-icono nombre="alerta" /> Estás sin conexión. La reserva se guardará en tu dispositivo y se enviará a la tienda cuando vuelva la red.
             Las sucursales se calculan con el <strong>stock estimado</strong> de los datos guardados.
           </p>
         } @else {

@@ -44,7 +44,7 @@
     @if (catalogo(); as cat) {
       @if (!cat.ia_disponible) {
         <p class="mt-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          <span aria-hidden="true" class="font-bold">⚠</span>
+          <app-icono nombre="alerta" clase="mt-0.5 h-4 w-4" />
           La IA no está disponible en este momento: los pedidos se interpretan con reglas.
         </p>
       }
@@ -321,16 +321,16 @@
                         @if (esAlerta(c)) {
                           @switch (nivelAlerta(fila[c.clave])) {
                             @case ('critico') {
-                              <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800"><span aria-hidden="true">⛔</span> {{ fila[c.clave] }}</span>
+                              <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800"><app-icono nombre="bloqueo" /> {{ fila[c.clave] }}</span>
                             }
                             @case ('atencion') {
-                              <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900"><span aria-hidden="true">⚠</span> {{ fila[c.clave] }}</span>
+                              <span class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900"><app-icono nombre="alerta" /> {{ fila[c.clave] }}</span>
                             }
                             @case ('ninguna') {
                               <span class="text-gray-400" title="Sin stock físico para calcular la cobertura">{{ fila[c.clave] || '—' }}</span>
                             }
                             @default {
-                              <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800"><span aria-hidden="true">✓</span> {{ fila[c.clave] }}</span>
+                              <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-800"><app-icono nombre="ok" /> {{ fila[c.clave] }}</span>
                             }
                           }
                         } @else {

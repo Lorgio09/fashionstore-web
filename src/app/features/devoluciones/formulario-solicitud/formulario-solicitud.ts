@@ -10,12 +10,13 @@ import {
 } from '../../../core/models/devoluciones';
 import { fechaCorta, numero } from '../../../shared/utils/formato';
 import { fechaHora } from '../../../shared/utils/fechas';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 /** Registrar una solicitud de devolución o cambio a partir de una venta (CU-01 / CU-02). Lo usan el personal y el cliente. */
 @Component({
   selector: 'app-formulario-solicitud',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [IconoComponent, CommonModule, FormsModule],
   templateUrl: './formulario-solicitud.html',
 })
 export class FormularioSolicitudComponent implements OnChanges {

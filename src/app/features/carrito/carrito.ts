@@ -14,11 +14,12 @@ import { CatalogoOfflineService } from '../../core/services/catalogo-offline.ser
 import { OperacionesOfflineService } from '../../core/services/operaciones-offline.service';
 import { ROLES } from '../../core/models/sesion';
 import { fechaHoraLocalSinZona } from '../../shared/utils/fechas';
+import { IconoComponent } from '../../shared/components/icono/icono';
 
 @Component({
   selector: 'app-carrito',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [IconoComponent, CommonModule, RouterLink, FormsModule],
   templateUrl: './carrito.html'
 })
 export class CarritoComponent implements OnInit {

@@ -13,13 +13,13 @@
           </select>
         </label>
       }
-      <button type="button" (click)="cargar()" class="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:border-black"><span aria-hidden="true">↻</span> Actualizar</button>
+      <button type="button" (click)="cargar()" class="rounded-lg border border-gray-300 px-3 py-2 text-sm hover:border-black"><app-icono nombre="recargar" /> Actualizar</button>
     </div>
   </div>
 
   @if (pendientes() > 0 && puedeAutorizar()) {
     <p class="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-      <span aria-hidden="true">⚠</span> {{ pendientes() }} cierre{{ pendientes() > 1 ? 's' : '' }} con diferencia sobre el umbral esperan tu autorización.
+      <app-icono nombre="alerta" /> {{ pendientes() }} cierre{{ pendientes() > 1 ? 's' : '' }} con diferencia sobre el umbral esperan tu autorización.
     </p>
   }
 
@@ -74,7 +74,7 @@
                   </div>
                   <div>
                     @if (t.pendientes_locales?.cantidad) {
-                      <p><span aria-hidden="true">◷</span> Al cerrar quedaban {{ t.pendientes_locales!.cantidad }} venta(s) sin sincronizar por Bs {{ numero(t.pendientes_locales!.monto_efectivo) }}.</p>
+                      <p><app-icono nombre="reloj" /> Al cerrar quedaban {{ t.pendientes_locales!.cantidad }} venta(s) sin sincronizar por Bs {{ numero(t.pendientes_locales!.monto_efectivo) }}.</p>
                     } @else { <p class="text-gray-500">Sin ventas pendientes de sincronizar al cerrar.</p> }
                   </div>
                 </div>

@@ -4,12 +4,13 @@ import { AuthService } from '../../core/services/auth';
 import { EstadoBadgeComponent } from '../../shared/components/estado-badge/estado-badge';
 import { BarraUsoComponent } from '../../shared/components/barra-uso/barra-uso';
 import { fechaCorta } from '../../shared/utils/formato';
+import { IconoComponent } from '../../shared/components/icono/icono';
 
 /** Administrador de empresa: plan contratado, vencimiento y uso frente a los límites. */
 @Component({
   selector: 'app-mi-plan',
   standalone: true,
-  imports: [RouterLink, EstadoBadgeComponent, BarraUsoComponent],
+  imports: [IconoComponent, RouterLink, EstadoBadgeComponent, BarraUsoComponent],
   template: `
     <div class="mx-auto max-w-4xl">
       <div class="mb-6 border-b border-gray-200 pb-5">
@@ -35,7 +36,7 @@ import { fechaCorta } from '../../shared/utils/formato';
             <div><dt class="text-gray-500">Días restantes</dt>
               <dd class="font-semibold" [class.text-gray-900]="(s.dias_restantes ?? 0) > 30" [class.text-amber-700]="(s.dias_restantes ?? 0) <= 30">
                 {{ s.dias_restantes ?? '—' }}
-                @if (s.dias_restantes !== null && s.dias_restantes <= 30) { <span class="text-xs">⚠ renovar pronto</span> }
+                @if (s.dias_restantes !== null && s.dias_restantes <= 30) { <span class="inline-flex items-center gap-1 text-xs"><app-icono nombre="alerta" /> renovar pronto</span> }
               </dd>
             </div>
           </dl>
@@ -50,11 +51,11 @@ import { fechaCorta } from '../../shared/utils/formato';
           <h2 class="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-gray-500">Funciones incluidas</h2>
           <ul class="space-y-2 text-sm">
             <li [class.text-gray-900]="s.funciones.reportes_ia" [class.text-gray-500]="!s.funciones.reportes_ia">
-              <span aria-hidden="true">{{ s.funciones.reportes_ia ? '✓' : '✕' }}</span>
+              <app-icono [nombre]="s.funciones.reportes_ia ? 'ok' : 'cerrar'" />
               Reportes con IA y analítica {{ s.funciones.reportes_ia ? '' : '(no incluido)' }}
             </li>
             <li [class.text-gray-900]="s.funciones.offline" [class.text-gray-500]="!s.funciones.offline">
-              <span aria-hidden="true">{{ s.funciones.offline ? '✓' : '✕' }}</span>
+              <app-icono [nombre]="s.funciones.offline ? 'ok' : 'cerrar'" />
               Operación offline {{ s.funciones.offline ? '' : '(no incluido)' }}
             </li>
           </ul>

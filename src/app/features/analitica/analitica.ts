@@ -13,6 +13,7 @@ import { ReportesIaService } from '../../core/services/reportes-ia.service';
 import { DashboardML, Indicador, IndicadoresML, ModeloML } from '../../core/models/analitica';
 import { fechaCorta, numero } from '../../shared/utils/formato';
 import { fechaHora } from '../../shared/utils/fechas';
+import { IconoComponent } from '../../shared/components/icono/icono';
 
 interface GraficoListo {
   type: ChartType;
@@ -34,7 +35,7 @@ const PALETA_RESPALDO = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', 
 @Component({
   selector: 'app-analitica',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective],
+  imports: [IconoComponent, CommonModule, FormsModule, BaseChartDirective],
   templateUrl: './analitica.html',
 })
 export class AnaliticaComponent implements OnInit {

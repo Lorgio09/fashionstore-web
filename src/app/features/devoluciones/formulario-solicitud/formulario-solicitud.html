@@ -25,7 +25,7 @@
           <tr [class.text-gray-400]="i.elegible === 0">
             <td class="px-5 py-2">
               {{ i.prenda }} <span class="text-gray-500">({{ i.talla }} / {{ i.color }})</span>
-              @if (!i.retornable) { <span class="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-900"><span aria-hidden="true">⚠</span> Solo por defecto</span> }
+              @if (!i.retornable) { <span class="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-900"><app-icono nombre="alerta" /> Solo por defecto</span> }
               @if (i.devuelto > 0) { <span class="ml-1 text-xs text-gray-500">({{ i.devuelto }} ya devuelta{{ i.devuelto > 1 ? 's' : '' }})</span> }
               @if (i.cambios_realizados > 0) { <span class="ml-1 text-xs text-gray-500">· {{ i.cambios_realizados }} cambio{{ i.cambios_realizados > 1 ? 's' : '' }}</span> }
             </td>
@@ -77,7 +77,7 @@
 
   @if (avisoNoRetornable) {
     <p class="mx-5 mb-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-      <span aria-hidden="true">⚠</span> Hay prendas de una categoría no retornable: solo se aceptan por defecto.
+      <app-icono nombre="alerta" /> Hay prendas de una categoría no retornable: solo se aceptan por defecto.
     </p>
   }
 

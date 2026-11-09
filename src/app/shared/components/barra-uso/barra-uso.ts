@@ -1,9 +1,11 @@
 import { Component, computed, input } from '@angular/core';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 /** Uso frente al límite del plan: "3 de 10". Sin límite (null) muestra "ilimitado". */
 @Component({
   selector: 'app-barra-uso',
   standalone: true,
+  imports: [IconoComponent],
   host: { class: 'block' },
   template: `
     <div>
@@ -11,7 +13,7 @@ import { Component, computed, input } from '@angular/core';
         <span class="font-medium text-gray-700">{{ etiqueta() }}</span>
         <span class="text-gray-900">
           <strong>{{ usado() }}</strong> {{ maximo() === null ? '(ilimitado)' : 'de ' + maximo() }}
-          @if (lleno()) { <span class="ml-1 text-xs font-semibold text-amber-700">⚠ límite alcanzado</span> }
+          @if (lleno()) { <span class="ml-1 inline-flex items-center gap-1 text-xs font-semibold text-amber-700"><app-icono nombre="alerta" /> límite alcanzado</span> }
         </span>
       </div>
       @if (maximo() !== null) {

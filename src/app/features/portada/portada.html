@@ -36,7 +36,7 @@
     <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
       @for (f of funciones; track f.titulo) {
         <article class="rounded-xl border border-gray-200 p-5">
-          <span class="text-2xl" aria-hidden="true">{{ f.icono }}</span>
+          <span class="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-900"><app-icono [nombre]="f.icono" clase="h-5 w-5" /></span>
           <h3 class="mt-3 font-bold text-gray-900">{{ f.titulo }}</h3>
           <p class="mt-1 text-sm text-gray-600">{{ f.texto }}</p>
         </article>
@@ -96,10 +96,10 @@
             <h3 class="text-lg font-bold text-gray-900">{{ p.nombre }}</h3>
             <p class="mt-2"><span class="text-3xl font-black tabular-nums">Bs {{ numero(p.precio_mensual, 0) }}</span> <span class="text-sm text-gray-500">/ mes</span></p>
             <ul class="mt-4 space-y-2 text-sm">
-              <li><span aria-hidden="true">✓</span> {{ p.max_sucursales === null ? 'Sucursales ilimitadas' : 'Hasta ' + p.max_sucursales + ' sucursales' }}</li>
-              <li><span aria-hidden="true">✓</span> {{ p.max_usuarios === null ? 'Usuarios ilimitados' : 'Hasta ' + p.max_usuarios + ' usuarios' }}</li>
-              <li [class.text-gray-400]="!p.permite_offline"><span aria-hidden="true">{{ p.permite_offline ? '✓' : '✕' }}</span> {{ p.permite_offline ? 'Venta sin conexión' : 'Sin venta sin conexión' }}</li>
-              <li [class.text-gray-400]="!p.permite_reportes_ia"><span aria-hidden="true">{{ p.permite_reportes_ia ? '✓' : '✕' }}</span> {{ p.permite_reportes_ia ? 'Reportes con IA y analítica con ML' : 'Sin reportes con IA ni analítica' }}</li>
+              <li class="flex items-center gap-1.5"><app-icono nombre="ok" /> {{ p.max_sucursales === null ? 'Sucursales ilimitadas' : 'Hasta ' + p.max_sucursales + ' sucursales' }}</li>
+              <li class="flex items-center gap-1.5"><app-icono nombre="ok" /> {{ p.max_usuarios === null ? 'Usuarios ilimitados' : 'Hasta ' + p.max_usuarios + ' usuarios' }}</li>
+              <li class="flex items-center gap-1.5" [class.text-gray-400]="!p.permite_offline"><app-icono [nombre]="p.permite_offline ? 'ok' : 'cerrar'" /> {{ p.permite_offline ? 'Venta sin conexión' : 'Sin venta sin conexión' }}</li>
+              <li class="flex items-center gap-1.5" [class.text-gray-400]="!p.permite_reportes_ia"><app-icono [nombre]="p.permite_reportes_ia ? 'ok' : 'cerrar'" /> {{ p.permite_reportes_ia ? 'Reportes con IA y analítica con ML' : 'Sin reportes con IA ni analítica' }}</li>
             </ul>
           </article>
         }

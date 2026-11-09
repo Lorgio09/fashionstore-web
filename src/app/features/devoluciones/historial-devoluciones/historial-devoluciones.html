@@ -86,7 +86,7 @@
               <td class="px-4 py-2">{{ s.motivo_texto }}</td>
               <td class="px-4 py-2">
                 <span class="rounded px-1.5 py-0.5 text-xs font-semibold" [class]="s.canal === 'OFFLINE' ? 'bg-amber-100 text-amber-900' : 'bg-gray-100 text-gray-700'">
-                  @if (s.canal === 'OFFLINE') { <span aria-hidden="true">⚡</span> } {{ canal(s.canal) }}
+                  @if (s.canal === 'OFFLINE') { <app-icono nombre="rayo" /> } {{ canal(s.canal) }}
                 </span>
               </td>
               <td class="px-4 py-2"><app-estado-badge [estado]="s.estado" /></td>

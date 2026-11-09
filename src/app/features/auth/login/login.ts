@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth';
 import { NotificacionService } from '../../../core/services/notificacion.service';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [IconoComponent, RouterLink, FormsModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })

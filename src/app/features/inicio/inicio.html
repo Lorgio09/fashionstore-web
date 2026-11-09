@@ -51,7 +51,7 @@
 
   @if (tienda.estado() === 'no_existe') {
     <div class="mx-auto max-w-xl px-4 py-24 text-center">
-      <p class="text-5xl" aria-hidden="true">🏬</p>
+      <app-icono nombre="tienda" clase="mx-auto h-12 w-12 text-gray-400" />
       <h1 class="mt-4 text-2xl font-bold text-gray-900">Esta tienda no está disponible</h1>
       <p class="mt-2 text-gray-600">La tienda «{{ tienda.slug() }}» no existe o está suspendida.</p>
       <a routerLink="/" class="mt-6 inline-block rounded-md bg-black px-6 py-3 text-sm font-bold text-white hover:bg-gray-800">Ver las tiendas de FashionStore</a>
@@ -168,7 +168,7 @@
     }
     @if (sinDatosOffline && seccionesAgrupadas.length === 0) {
       <div role="alert" class="mb-6 rounded border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-        <span aria-hidden="true">⚠</span> Estás sin conexión y este dispositivo no tiene el catálogo guardado.
+        <app-icono nombre="alerta" /> Estás sin conexión y este dispositivo no tiene el catálogo guardado.
         @if (auth.autenticado()) {
           Cuando vuelva la red, entra a <a [routerLink]="auth.esPersonal() ? '/admin/sincronizacion' : '/sincronizacion'" class="font-semibold underline">Sincronización</a> y usa "Preparar modo offline".
         } @else {

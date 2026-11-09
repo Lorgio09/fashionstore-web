@@ -11,12 +11,13 @@ import { SucursalEmpresa } from '../../../core/models/saas';
 import { EstadoBadgeComponent } from '../../../shared/components/estado-badge/estado-badge';
 import { numero } from '../../../shared/utils/formato';
 import { fechaHora } from '../../../shared/utils/fechas';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 /** Historial de turnos de caja (CU-20). Encargado y Administrador autorizan los cierres con diferencia sobre el umbral. */
 @Component({
   selector: 'app-turnos-caja',
   standalone: true,
-  imports: [FormsModule, EstadoBadgeComponent],
+  imports: [IconoComponent, FormsModule, EstadoBadgeComponent],
   templateUrl: './turnos-caja.html',
 })
 export class TurnosCajaComponent implements OnInit {

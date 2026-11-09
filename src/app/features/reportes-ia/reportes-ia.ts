@@ -15,6 +15,7 @@ import {
   RespuestaReporteIA, TipoGrafico, TipoReporte, TipoReporteInfo,
 } from '../../core/models/reportes';
 import { numero } from '../../shared/utils/formato';
+import { IconoComponent } from '../../shared/components/icono/icono';
 
 interface Opcion { id: number; nombre: string; }
 
@@ -35,7 +36,7 @@ const HORIZONTALES: TipoReporte[] = ['productos_mas_vendidos', 'stock_bajo', 'pr
 @Component({
   selector: 'app-reportes-ia',
   standalone: true,
-  imports: [CommonModule, FormsModule, BaseChartDirective],
+  imports: [IconoComponent, CommonModule, FormsModule, BaseChartDirective],
   templateUrl: './reportes-ia.html',
 })
 export class ReportesIaComponent implements OnInit {

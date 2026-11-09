@@ -13,6 +13,7 @@ import { OperacionesOfflineService } from '../../../core/services/operaciones-of
 import { PendientesLocales, TurnoCaja } from '../../../core/models/caja';
 import { numero } from '../../../shared/utils/formato';
 import { fechaHora } from '../../../shared/utils/fechas';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 /**
  * Caja del punto de venta (CU-20): abrir con fondo inicial, arqueo en vivo y cierre con el efectivo contado.
@@ -21,7 +22,7 @@ import { fechaHora } from '../../../shared/utils/fechas';
 @Component({
   selector: 'app-panel-caja',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [IconoComponent, FormsModule, RouterLink],
   templateUrl: './panel-caja.html',
 })
 export class PanelCajaComponent {

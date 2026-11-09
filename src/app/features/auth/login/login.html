@@ -46,7 +46,7 @@
         <!-- Error del backend (detail en español) -->
         @if (error()) {
         <div role="alert" class="flex items-start gap-2 border border-red-300 bg-red-50 p-3 text-sm text-red-800">
-            <span aria-hidden="true" class="font-bold">✕</span>
+            <app-icono nombre="alerta" />
             <span>{{ error() }}</span>
         </div>
         }

@@ -10,12 +10,13 @@ import { Suscripcion } from '../../../core/models/sesion';
 import { EstadoBadgeComponent } from '../../../shared/components/estado-badge/estado-badge';
 import { BarraUsoComponent } from '../../../shared/components/barra-uso/barra-uso';
 import { fechaCorta, numero } from '../../../shared/utils/formato';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 /** Suscripción de una empresa: asignar/cambiar plan, renovar, suspender/reactivar e historial. */
 @Component({
   selector: 'app-plataforma-empresa-detalle',
   standalone: true,
-  imports: [FormsModule, RouterLink, EstadoBadgeComponent, BarraUsoComponent],
+  imports: [IconoComponent, FormsModule, RouterLink, EstadoBadgeComponent, BarraUsoComponent],
   templateUrl: './empresa-detalle.html',
 })
 export class PlataformaEmpresaDetalleComponent implements OnInit {

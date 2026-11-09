@@ -63,10 +63,10 @@
           </div>
           <p class="mt-4 text-3xl font-black text-gray-900">Bs {{ num(p.precio_mensual) }}<span class="text-sm font-normal text-gray-500"> /mes</span></p>
           <ul class="mt-4 flex-1 space-y-1.5 text-sm text-gray-700">
-            <li>✓ Hasta {{ p.max_sucursales ?? 'ilimitadas' }} sucursales</li>
-            <li>✓ {{ p.max_usuarios ? 'Hasta ' + p.max_usuarios + ' usuarios' : 'Usuarios ilimitados' }}</li>
-            <li>{{ p.permite_reportes_ia ? '✓' : '✕' }} Reportes con IA y analítica</li>
-            <li>{{ p.permite_offline ? '✓' : '✕' }} Operación offline</li>
+            <li class="flex items-center gap-1.5"><app-icono nombre="ok" /> Hasta {{ p.max_sucursales ?? 'ilimitadas' }} sucursales</li>
+            <li class="flex items-center gap-1.5"><app-icono nombre="ok" /> {{ p.max_usuarios ? 'Hasta ' + p.max_usuarios + ' usuarios' : 'Usuarios ilimitados' }}</li>
+            <li class="flex items-center gap-1.5"><app-icono [nombre]="p.permite_reportes_ia ? 'ok' : 'cerrar'" /> Reportes con IA y analítica</li>
+            <li class="flex items-center gap-1.5"><app-icono [nombre]="p.permite_offline ? 'ok' : 'cerrar'" /> Operación offline</li>
           </ul>
           <button type="button" (click)="editar(p)" class="mt-6 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50">Editar</button>
         </article>

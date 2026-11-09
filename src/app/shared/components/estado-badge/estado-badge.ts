@@ -1,12 +1,14 @@
 import { Component, computed, input } from '@angular/core';
+import { IconoComponent, NombreIcono } from '../../../shared/components/icono/icono';
 
 /** Insignia de estado con ícono + texto (no depende solo del color). */
 @Component({
   selector: 'app-estado-badge',
   standalone: true,
+  imports: [IconoComponent],
   template: `
     <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap" [class]="estilo().clase">
-      <span aria-hidden="true">{{ estilo().icono }}</span>{{ texto() }}
+      <app-icono [nombre]="estilo().icono" clase="h-3.5 w-3.5" />{{ texto() }}
     </span>
   `,
 })
@@ -30,7 +32,7 @@ export class EstadoBadgeComponent {
     return t[e] ?? e.charAt(0) + e.slice(1).toLowerCase().replace(/_/g, ' ');
   });
 
-  estilo = computed(() => {
+  estilo = computed((): { icono: NombreIcono; clase: string } => {
     switch (this.estado()) {
       case 'ACTIVA':
       case 'ACTIVO':
@@ -39,34 +41,34 @@ export class EstadoBadgeComponent {
       case 'CAMBIO_REALIZADO':
       case 'REEMBOLSADA':
       case 'CERRADA_CON_NOTA':
-        return { icono: '✓', clase: 'bg-green-100 text-green-800' };
+        return { icono: 'ok', clase: 'bg-green-100 text-green-800' };
       case 'EN_INSPECCION':
-        return { icono: '🔍', clase: 'bg-blue-100 text-blue-800' };
+        return { icono: 'buscar', clase: 'bg-blue-100 text-blue-800' };
       case 'INSPECCIONADA':
-        return { icono: '◷', clase: 'bg-indigo-100 text-indigo-800' };
+        return { icono: 'reloj', clase: 'bg-indigo-100 text-indigo-800' };
       case 'ABIERTA':
-        return { icono: '●', clase: 'bg-green-100 text-green-800' };
+        return { icono: 'punto', clase: 'bg-green-100 text-green-800' };
       case 'CERRADA':
-        return { icono: '■', clase: 'bg-gray-200 text-gray-800' };
+        return { icono: 'candado', clase: 'bg-gray-200 text-gray-800' };
       case 'PENDIENTE_AUTORIZACION':
       case 'PENDIENTE_STOCK':
-        return { icono: '⚠', clase: 'bg-amber-100 text-amber-900' };
+        return { icono: 'alerta', clase: 'bg-amber-100 text-amber-900' };
       case 'USADA':
-        return { icono: '■', clase: 'bg-gray-200 text-gray-700' };
+        return { icono: 'neutro', clase: 'bg-gray-200 text-gray-700' };
       case 'SUSPENDIDA':
       case 'VENCIDA':
       case 'RECHAZADA':
-        return { icono: '✕', clase: 'bg-red-100 text-red-800' };
+        return { icono: 'cerrar', clase: 'bg-red-100 text-red-800' };
       case 'CONFLICTO':
-        return { icono: '⚠', clase: 'bg-amber-100 text-amber-900' };
+        return { icono: 'alerta', clase: 'bg-amber-100 text-amber-900' };
       case 'LOCAL':
-        return { icono: '◷', clase: 'bg-gray-200 text-gray-800' };
+        return { icono: 'reloj', clase: 'bg-gray-200 text-gray-800' };
       case 'ENVIADA':
-        return { icono: '↑', clase: 'bg-blue-100 text-blue-800' };
+        return { icono: 'enviar', clase: 'bg-blue-100 text-blue-800' };
       case 'PROGRAMADA':
-        return { icono: '◷', clase: 'bg-blue-100 text-blue-800' };
+        return { icono: 'reloj', clase: 'bg-blue-100 text-blue-800' };
       default:
-        return { icono: '•', clase: 'bg-gray-100 text-gray-700' };
+        return { icono: 'punto', clase: 'bg-gray-100 text-gray-700' };
     }
   });
 }

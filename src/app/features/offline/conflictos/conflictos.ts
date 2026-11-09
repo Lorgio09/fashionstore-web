@@ -12,6 +12,7 @@ import { EmpresaService } from '../../../core/services/empresa.service';
 import { SucursalEmpresa } from '../../../core/models/saas';
 import { fechaHora } from '../../../shared/utils/fechas';
 import { numero } from '../../../shared/utils/formato';
+import { IconoComponent } from '../../../shared/components/icono/icono';
 
 interface EdicionConflicto {
   modo: 'NINGUNO' | 'AJUSTAR' | 'RECHAZAR';
@@ -24,7 +25,7 @@ interface EdicionConflicto {
 @Component({
   selector: 'app-conflictos',
   standalone: true,
-  imports: [FormsModule, EstadoBadgeComponent],
+  imports: [IconoComponent, FormsModule, EstadoBadgeComponent],
   templateUrl: './conflictos.html',
 })
 export class ConflictosComponent implements OnInit {

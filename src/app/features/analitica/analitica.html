@@ -42,7 +42,7 @@
   @if (datos(); as d) {
     @for (a of d.avisos; track a) {
       <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
-        <span aria-hidden="true" class="font-bold">⚠</span><span><span class="sr-only">Aviso: </span>{{ a }}</span>
+        <app-icono nombre="alerta" clase="mt-0.5 h-4 w-4" /><span><span class="sr-only">Aviso: </span>{{ a }}</span>
       </p>
     }
 
@@ -61,7 +61,7 @@
                 @if (variacion(ind); as v) {
                   <p class="mt-2 flex items-center gap-1 text-sm font-semibold"
                     [ngClass]="v.sube === true ? 'text-green-700' : v.sube === false ? 'text-red-700' : 'text-gray-500'">
-                    <span aria-hidden="true">{{ v.sube === true ? '▲' : v.sube === false ? '▼' : '■' }}</span>
+                    <app-icono [nombre]="v.sube === true ? 'subir' : v.sube === false ? 'bajar' : 'neutro'" />
                     <span class="sr-only">{{ v.sube === true ? 'Sube' : v.sube === false ? 'Baja' : 'Sin cambio' }}</span>
                     {{ v.texto }}
                   </p>
@@ -146,9 +146,9 @@
                       </td>
                       <td class="px-3 py-2">
                         @if (esCritico(a.alerta)) {
-                          <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800"><span aria-hidden="true">⛔</span> {{ a.alerta }}</span>
+                          <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-800"><app-icono nombre="bloqueo" /> {{ a.alerta }}</span>
                         } @else {
-                          <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900"><span aria-hidden="true">⚠</span> {{ a.alerta }}</span>
+                          <span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900"><app-icono nombre="alerta" /> {{ a.alerta }}</span>
                         }
                       </td>
                       <td class="px-3 py-2 text-right tabular-nums">{{ a.stock }}</td>
@@ -160,7 +160,7 @@
               </table>
             </div>
           } @else {
-            <p class="flex items-center gap-2 text-sm text-green-800"><span aria-hidden="true">✓</span> Ninguna variante se agotaría en los próximos 14 días.</p>
+            <p class="flex items-center gap-2 text-sm text-green-800"><app-icono nombre="ok" /> Ninguna variante se agotaría en los próximos 14 días.</p>
           }
         </section>
       </div>
@@ -192,7 +192,7 @@
           <div>
             <p class="text-xs font-bold uppercase tracking-wider text-indigo-700">Supervisado · Predicción de demanda</p>
             @if (m.error) {
-              <p class="mt-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> {{ m.error }}</p>
+              <p class="mt-2 text-sm text-amber-900"><app-icono nombre="alerta" /> {{ m.error }}</p>
             } @else {
               <h3 class="text-lg font-bold text-gray-900">{{ m.algoritmo }} <span class="text-sm font-normal text-gray-500">versión {{ m.version }}</span></h3>
               <p class="text-sm text-gray-500">
@@ -273,7 +273,7 @@
           <div>
             <p class="text-xs font-bold uppercase tracking-wider text-indigo-700">No supervisado · Segmentación de clientes</p>
             @if (m.error) {
-              <p class="mt-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> {{ m.error }}</p>
+              <p class="mt-2 text-sm text-amber-900"><app-icono nombre="alerta" /> {{ m.error }}</p>
             } @else {
               <h3 class="text-lg font-bold text-gray-900">{{ m.algoritmo }} <span class="text-sm font-normal text-gray-500">versión {{ m.version }}</span></h3>
               <p class="text-sm text-gray-500">

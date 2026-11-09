@@ -7,12 +7,13 @@ import { NotificacionService } from '../../core/services/notificacion.service';
 import { SucursalEmpresa } from '../../core/models/saas';
 import { EstadoBadgeComponent } from '../../shared/components/estado-badge/estado-badge';
 import { BarraUsoComponent } from '../../shared/components/barra-uso/barra-uso';
+import { IconoComponent } from '../../shared/components/icono/icono';
 
 /** Administrador de empresa: sucursales (activas e inactivas), alta y activar/desactivar según el plan. */
 @Component({
   selector: 'app-gestion-sucursales',
   standalone: true,
-  imports: [FormsModule, EstadoBadgeComponent, BarraUsoComponent],
+  imports: [IconoComponent, FormsModule, EstadoBadgeComponent, BarraUsoComponent],
   templateUrl: './gestion-sucursales.html'
 })
 export class GestionSucursalesComponent implements OnInit {
