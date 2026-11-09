@@ -20,6 +20,10 @@ export class EstadoBadgeComponent {
       PROGRAMADA: 'Programada', SIN_SUSCRIPCION: 'Sin suscripción', REEMPLAZADA: 'Reemplazada', CANCELADA: 'Cancelada',
       // Sincronización offline (§6)
       LOCAL: 'Pendiente', ENVIADA: 'Enviando', CONFIRMADA: 'Confirmada', RECHAZADA: 'Rechazada', CONFLICTO: 'Conflicto',
+      // Devoluciones y notas de crédito (§9)
+      EN_INSPECCION: 'En inspección', INSPECCIONADA: 'Inspeccionada', PENDIENTE_STOCK: 'Pendiente de stock',
+      CAMBIO_REALIZADO: 'Cambio realizado', REEMBOLSADA: 'Reembolsada', CERRADA_CON_NOTA: 'Cerrada con nota',
+      VIGENTE: 'Vigente', USADA: 'Usada',
     };
     return t[e] ?? e.charAt(0) + e.slice(1).toLowerCase().replace(/_/g, ' ');
   });
@@ -29,7 +33,19 @@ export class EstadoBadgeComponent {
       case 'ACTIVA':
       case 'ACTIVO':
       case 'CONFIRMADA':
+      case 'VIGENTE':
+      case 'CAMBIO_REALIZADO':
+      case 'REEMBOLSADA':
+      case 'CERRADA_CON_NOTA':
         return { icono: '✓', clase: 'bg-green-100 text-green-800' };
+      case 'EN_INSPECCION':
+        return { icono: '🔍', clase: 'bg-blue-100 text-blue-800' };
+      case 'INSPECCIONADA':
+        return { icono: '◷', clase: 'bg-indigo-100 text-indigo-800' };
+      case 'PENDIENTE_STOCK':
+        return { icono: '⚠', clase: 'bg-amber-100 text-amber-900' };
+      case 'USADA':
+        return { icono: '■', clase: 'bg-gray-200 text-gray-700' };
       case 'SUSPENDIDA':
       case 'VENCIDA':
       case 'RECHAZADA':

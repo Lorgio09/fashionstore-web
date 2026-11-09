@@ -1,0 +1,80 @@
+<div class="mx-auto max-w-4xl space-y-6">
+  <div class="border-b border-gray-200 pb-5">
+    <h1 class="text-2xl font-bold text-gray-900">Política de devoluciones</h1>
+    <p class="mt-1 text-sm text-gray-500">Reglas que el sistema aplica a cada solicitud de devolución o cambio, y el umbral de diferencia de caja.</p>
+  </div>
+
+  @if (politica(); as p) {
+    <form (ngSubmit)="guardar(p)" class="space-y-6">
+      @if (!p.personalizada) {
+        <p class="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-900"><span aria-hidden="true">i</span> Se usan los valores por defecto. Al guardar, quedan como política propia de la empresa.</p>
+      } @else if (p.vigente_desde) {
+        <p class="text-xs text-gray-500">Vigente desde {{ fechaHora(p.vigente_desde) }}.</p>
+      }
+
+      <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="mb-4 font-bold text-gray-900">Plazos</h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="text-sm"><span class="font-semibold text-gray-700">Plazo para cambios y devoluciones (días)</span>
+            <input type="number" name="plazo_cambio" min="1" max="365" required [(ngModel)]="p.plazo_cambio_dias" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+            <span class="text-xs text-gray-500">Desde la fecha de la venta.</span>
+          </label>
+          <label class="text-sm"><span class="font-semibold text-gray-700">Plazo de garantía por defecto (días)</span>
+            <input type="number" name="plazo_garantia" min="1" max="730" required [(ngModel)]="p.plazo_garantia_dias" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+            <span class="text-xs text-gray-500">Se usa cuando el motivo es «Defecto».</span>
+          </label>
+          <label class="text-sm"><span class="font-semibold text-gray-700">Fuera de plazo</span>
+            <select name="fuera_de_plazo" [(ngModel)]="p.fuera_de_plazo" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+              <option value="RECHAZAR">Rechazar la solicitud</option>
+              <option value="RECARGO">Aceptar con recargo</option>
+            </select>
+          </label>
+          @if (p.fuera_de_plazo === 'RECARGO') {
+            <label class="text-sm"><span class="font-semibold text-gray-700">Recargo (%)</span>
+              <input type="number" name="recargo" min="0" max="50" step="0.5" [(ngModel)]="p.recargo_pct" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+              <span class="text-xs text-gray-500">Se descuenta del monto a favor del cliente.</span>
+            </label>
+          }
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="mb-4 font-bold text-gray-900">Límites</h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="text-sm"><span class="font-semibold text-gray-700">Máximo de cambios por prenda</span>
+            <input type="number" name="max_cambios" min="0" max="10" required [(ngModel)]="p.max_cambios_por_prenda" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+          </label>
+          <label class="text-sm"><span class="font-semibold text-gray-700">Máximo de devoluciones por cliente al mes</span>
+            <input type="number" name="max_mes" min="1" max="50" required [(ngModel)]="p.max_devoluciones_mes_cliente" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+            <span class="text-xs text-gray-500">Si se supera, la solicitud necesita autorización del Encargado.</span>
+          </label>
+          <label class="text-sm"><span class="font-semibold text-gray-700">Vigencia de las notas de crédito (días)</span>
+            <input type="number" name="vigencia" min="7" max="730" required [(ngModel)]="p.vigencia_nota_credito_dias" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+          </label>
+          <label class="text-sm"><span class="font-semibold text-gray-700">Umbral de diferencia de caja (Bs)</span>
+            <input type="number" name="umbral" min="0" step="0.5" required [(ngModel)]="p.umbral_diferencia_caja" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+            <span class="text-xs text-gray-500">Si un Cajero cierra con una diferencia mayor, la caja espera autorización.</span>
+          </label>
+        </div>
+      </section>
+
+      <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="font-bold text-gray-900">Categorías no retornables</h2>
+        <p class="mb-3 text-sm text-gray-500">Solo se aceptan por defecto (por ejemplo, ropa interior).</p>
+        <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          @for (c of categorias(); track c.id) {
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" [checked]="noRetornable(p, c.id)" (change)="alternarCategoria(p, c.id)" class="rounded border-gray-300 text-black focus:ring-black" /> {{ c.nombre }}
+            </label>
+          }
+        </div>
+      </section>
+
+      <button type="submit" [disabled]="guardando()" class="rounded-lg bg-black px-6 py-2.5 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-50">
+        {{ guardando() ? 'Guardando…' : 'Guardar política' }}
+      </button>
+    </form>
+  } @else {
+    <p class="py-8 text-center text-gray-500" role="status">Cargando…</p>
+  }
+</div>

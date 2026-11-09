@@ -1,0 +1,281 @@
+<div class="mx-auto max-w-5xl space-y-6">
+  <a [routerLink]="volver()" class="text-sm text-gray-500 hover:text-black">← {{ esPersonal() ? 'Devoluciones' : 'Mi cuenta' }}</a>
+
+  @if (cargando() && !sol()) {
+    <p class="py-10 text-center text-gray-500" role="status">Cargando solicitud…</p>
+  }
+
+  @if (sol(); as s) {
+    <!-- CABECERA -->
+    <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-2xl font-bold text-gray-900">{{ s.codigo }}</h1>
+            <app-estado-badge [estado]="s.estado" />
+            <span class="rounded bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700">{{ etiquetaCanal(s.canal) }}</span>
+          </div>
+          <p class="mt-1 text-sm text-gray-600">
+            Venta #{{ s.orden_id }} · {{ s.sucursal.nombre }} · {{ s.cliente?.nombre ?? 'Cliente ocasional' }} · registrada {{ fechaHora(s.creado_en) }}
+          </p>
+          <p class="mt-1 text-sm text-gray-600">
+            <span class="font-semibold">Motivo:</span> {{ s.motivo_texto }} · <span class="font-semibold">Pidió:</span> {{ nombreResolucion(s.resolucion_pedida) }}
+            @if (s.resolucion) { · <span class="font-semibold">Resolución:</span> {{ nombreResolucion(s.resolucion) }} }
+          </p>
+          @if (s.observacion) { <p class="mt-1 text-sm text-gray-500">Observación: {{ s.observacion }}</p> }
+        </div>
+        <dl class="grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+          <dt class="text-gray-500">Valor devuelto</dt><dd class="text-right font-semibold tabular-nums">Bs {{ numero(s.valor_devuelto) }}</dd>
+          @if (s.recargo > 0) { <dt class="text-gray-500">Recargo</dt><dd class="text-right tabular-nums text-red-700">− Bs {{ numero(s.recargo) }}</dd> }
+          <dt class="text-gray-500">A favor del cliente</dt><dd class="text-right font-bold tabular-nums">Bs {{ numero(s.monto_a_favor) }}</dd>
+          @if (s.monto_cobrado > 0) { <dt class="text-gray-500">Cobrado ({{ s.forma_cobro }})</dt><dd class="text-right tabular-nums">Bs {{ numero(s.monto_cobrado) }}</dd> }
+          @if (s.monto_reembolsado > 0) { <dt class="text-gray-500">Reembolsado ({{ s.forma_reembolso }})</dt><dd class="text-right tabular-nums">Bs {{ numero(s.monto_reembolsado) }}</dd> }
+        </dl>
+      </div>
+
+      <div class="mt-3 space-y-2">
+        @if (s.requiere_autorizacion && !s.autorizada) {
+          <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> El cliente superó el máximo mensual de devoluciones: necesita autorización del Encargado o del Administrador.</p>
+        } @else if (s.requiere_autorizacion && s.autorizada) {
+          <p class="flex items-start gap-2 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-900"><span aria-hidden="true">✓</span> Autorizada (superaba el máximo mensual).</p>
+        }
+        @if (s.fuera_de_plazo) {
+          <p class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900"><span aria-hidden="true">⚠</span> Fuera de plazo: se aplicó un recargo de Bs {{ numero(s.recargo) }}.</p>
+        }
+        @if (s.reembolso_pendiente_procesador) {
+          <p class="flex items-start gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-900"><span aria-hidden="true">◷</span> Reembolso al medio original pendiente en el procesador de pagos (QR, tarjeta o Stripe).</p>
+        }
+        @if (s.nota_credito; as n) {
+          <p class="flex items-start gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm text-indigo-900">
+            <span aria-hidden="true">🧾</span>
+            <span>Nota de crédito <strong>{{ n.codigo }}</strong>: Bs {{ numero(n.monto) }} (saldo Bs {{ numero(n.saldo) }}), vence el {{ fechaCorta(n.vence_en) }}.</span>
+          </p>
+        }
+      </div>
+    </section>
+
+    <!-- PRENDAS -->
+    <section class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500">
+          <tr>
+            <th scope="col" class="px-5 py-2">Prenda devuelta</th>
+            <th scope="col" class="px-5 py-2 text-right">Cantidad</th>
+            <th scope="col" class="px-5 py-2 text-right">Precio pagado</th>
+            <th scope="col" class="px-5 py-2">Entregada a cambio</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (i of s.items; track i.id) {
+            <tr>
+              <td class="px-5 py-2">{{ i.prenda }} <span class="text-gray-500">({{ i.talla }} / {{ i.color }})</span></td>
+              <td class="px-5 py-2 text-right tabular-nums">{{ i.cantidad }}</td>
+              <td class="px-5 py-2 text-right tabular-nums">Bs {{ numero(i.precio_unitario) }}</td>
+              <td class="px-5 py-2">
+                @if (i.entregado; as e) { {{ e.prenda }} <span class="text-gray-500">({{ e.talla }} / {{ e.color }})</span> } @else { <span class="text-gray-400">—</span> }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      @if (s.entregas.length && s.resolucion === 'CAMBIO_PRODUCTO') {
+        <div class="border-t border-gray-100 px-5 py-3 text-sm text-gray-700">
+          <span class="font-semibold">Entregado:</span>
+          @for (e of s.entregas; track $index) {
+            <span class="ml-2">{{ e.cantidad }} × {{ e.prenda ?? 'Variante ' + e.variante_id }} ({{ e.talla }} / {{ e.color }}) Bs {{ numero(e.precio_unitario) }}</span>
+          }
+        </div>
+      }
+      @if (s.inspeccion) {
+        <p class="border-t border-gray-100 px-5 py-3 text-sm text-gray-700">
+          <span class="font-semibold">Inspección:</span> {{ s.inspeccion }} @if (s.inspeccionado_en) { · {{ fechaHora(s.inspeccionado_en) }} }
+        </p>
+      }
+    </section>
+
+    <!-- ACCIONES -->
+    @if (esPersonal()) {
+      @if (s.acciones.length) {
+        <section class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 class="mb-3 text-lg font-bold text-gray-900">Qué hacer ahora</h2>
+          <div class="flex flex-wrap gap-2">
+            @for (a of s.acciones; track a) {
+              <button type="button" (click)="abrir(a)" [attr.aria-expanded]="panel() === a"
+                [ngClass]="panel() === a ? 'bg-black text-white border-black' : 'border-gray-300 text-gray-800 hover:border-black'"
+                class="rounded-lg border px-4 py-2 text-sm font-semibold">{{ etiquetaAccion(a) }}</button>
+            }
+          </div>
+
+          <!-- AUTORIZAR -->
+          @if (panel() === 'AUTORIZAR') {
+            <div class="mt-4 rounded-lg bg-gray-50 p-4">
+              <p class="text-sm text-gray-700">El cliente superó el máximo de devoluciones del mes. Al autorizar, la solicitud pasa a inspección.</p>
+              <button type="button" (click)="autorizar()" [disabled]="enviando()" class="mt-3 rounded-lg bg-black px-5 py-2 text-sm font-bold text-white disabled:opacity-50">{{ enviando() ? 'Autorizando…' : 'Autorizar' }}</button>
+            </div>
+          }
+
+          <!-- INSPECCIONAR (CU-03) -->
+          @if (panel() === 'INSPECCIONAR') {
+            <form (ngSubmit)="inspeccionar()" class="mt-4 rounded-lg bg-gray-50 p-4">
+              <fieldset>
+                <legend class="text-sm font-semibold text-gray-700">Resultado de la inspección</legend>
+                <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  @for (r of resultadosInspeccion; track r.valor) {
+                    <label class="flex items-start gap-2 rounded-lg border border-gray-200 bg-white p-2 text-sm" [class.border-black]="inspeccion === r.valor">
+                      <input type="radio" name="inspeccion" [value]="r.valor" [(ngModel)]="inspeccion" class="mt-0.5 text-black focus:ring-black" />
+                      <span><span class="font-semibold">{{ r.nombre }}</span><br /><span class="text-xs text-gray-500">{{ r.ayuda }}</span></span>
+                    </label>
+                  }
+                </div>
+              </fieldset>
+              <label class="mt-3 block text-sm">
+                <span class="font-semibold text-gray-700">Observación {{ inspeccion === 'RECHAZAR' ? '(obligatoria)' : '(opcional)' }}</span>
+                <input type="text" name="obsInspeccion" [(ngModel)]="obsInspeccion" maxlength="255" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+              </label>
+              <button type="submit" [disabled]="enviando() || (inspeccion === 'RECHAZAR' && !obsInspeccion.trim())"
+                class="mt-3 rounded-lg bg-black px-5 py-2 text-sm font-bold text-white disabled:opacity-50">{{ enviando() ? 'Guardando…' : 'Registrar inspección' }}</button>
+            </form>
+          }
+
+          <!-- CAMBIO DE VARIANTE (CU-04) -->
+          @if (panel() === 'CAMBIO_VARIANTE') {
+            <form (ngSubmit)="cambioVariante()" class="mt-4 space-y-3 rounded-lg bg-gray-50 p-4">
+              <p class="text-sm text-gray-600">Elige la nueva talla o color del mismo modelo. El stock es el de {{ s.sucursal.nombre }}.</p>
+              @for (i of s.items; track i.id) {
+                <label class="block text-sm">
+                  <span class="font-semibold text-gray-700">{{ i.prenda }} ({{ i.talla }} / {{ i.color }}) → </span>
+                  <select [name]="'destino-' + i.id" [(ngModel)]="destinos[i.id]" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black sm:w-auto">
+                    <option [ngValue]="null" disabled>Elige talla y color</option>
+                    @for (o of opcionesVariante(i.variante_id); track o.variante_id) {
+                      <option [ngValue]="o.variante_id">{{ o.talla }} / {{ o.color }} — stock {{ o.stock }}{{ o.stock < i.cantidad ? ' (sin stock)' : '' }}</option>
+                    }
+                  </select>
+                </label>
+              }
+              @if (s.recargo > 0) {
+                <label class="block text-sm">
+                  <span class="font-semibold text-gray-700">Cobrar el recargo de Bs {{ numero(s.recargo) }} con</span>
+                  <select name="cobroVariante" [(ngModel)]="formaCobroVariante" class="mt-1 rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+                    <option [ngValue]="null" disabled>Forma de cobro</option>
+                    @for (f of formasPago; track f.valor) { <option [ngValue]="f.valor">{{ f.nombre }}</option> }
+                  </select>
+                </label>
+              }
+              <button type="submit" [disabled]="enviando() || !cambioVarianteValido" class="rounded-lg bg-black px-5 py-2 text-sm font-bold text-white disabled:opacity-50">{{ enviando() ? 'Procesando…' : 'Confirmar cambio' }}</button>
+            </form>
+          }
+
+          <!-- CAMBIO DE PRODUCTO (CU-05) -->
+          @if (panel() === 'CAMBIO_PRODUCTO') {
+            <form (ngSubmit)="cambioProducto()" class="mt-4 space-y-3 rounded-lg bg-gray-50 p-4">
+              <label class="block text-sm">
+                <span class="font-semibold text-gray-700">Buscar el producto a entregar</span>
+                <input type="search" name="buscarProducto" [(ngModel)]="buscarProducto" placeholder="Nombre, talla o color" autocomplete="off"
+                  class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+              </label>
+              @if (productosFiltrados.length) {
+                <ul class="max-h-48 divide-y divide-gray-100 overflow-y-auto rounded-lg border border-gray-200 bg-white">
+                  @for (v of productosFiltrados; track v.variante_id) {
+                    <li>
+                      <button type="button" (click)="agregarEntrega(v)" class="flex w-full justify-between px-3 py-2 text-left text-sm hover:bg-gray-50">
+                        <span>{{ v.prenda }} <span class="text-gray-500">({{ v.talla }} / {{ v.color }})</span></span>
+                        <span class="tabular-nums">Bs {{ numero(v.precio) }} <span aria-hidden="true">＋</span></span>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+              @if (entregas().length) {
+                <table class="min-w-full rounded-lg bg-white text-sm">
+                  <tbody class="divide-y divide-gray-100">
+                    @for (e of entregas(); track e.variante_id) {
+                      <tr>
+                        <td class="px-3 py-2">{{ e.prenda }} <span class="text-gray-500">({{ e.talla }} / {{ e.color }})</span></td>
+                        <td class="px-3 py-2 text-right">
+                          <input type="number" min="1" [ngModel]="e.cantidad" (ngModelChange)="cambiarCantidad(e.variante_id, $event)" [name]="'ent-' + e.variante_id"
+                            [attr.aria-label]="'Cantidad de ' + e.prenda" class="w-16 rounded border border-gray-300 px-2 py-1 text-right" />
+                        </td>
+                        <td class="px-3 py-2 text-right tabular-nums">Bs {{ numero(e.precio * e.cantidad) }}</td>
+                        <td class="px-3 py-2 text-right"><button type="button" (click)="quitarEntrega(e.variante_id)" class="text-xs text-red-700 hover:underline">Quitar</button></td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+                <p class="text-sm text-gray-700">
+                  Valor a entregar Bs {{ numero(valorEntregas()) }} − a favor Bs {{ numero(s.monto_a_favor) }} =
+                  @if (diferenciaProducto() > 0) {
+                    <strong>el cliente paga Bs {{ numero(diferenciaProducto()) }}</strong>
+                  } @else if (diferenciaProducto() < 0) {
+                    <strong>se emite una nota de crédito por Bs {{ numero(-diferenciaProducto()) }}</strong>
+                  } @else {
+                    <strong>sin diferencia</strong>
+                  }
+                </p>
+                @if (diferenciaProducto() > 0) {
+                  <label class="block text-sm">
+                    <span class="font-semibold text-gray-700">Forma de cobro de la diferencia</span>
+                    <select name="cobroProducto" [(ngModel)]="formaCobroProducto" class="mt-1 rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+                      <option [ngValue]="null" disabled>Elige</option>
+                      @for (f of formasPago; track f.valor) { <option [ngValue]="f.valor">{{ f.nombre }}</option> }
+                    </select>
+                  </label>
+                }
+              }
+              <button type="submit" [disabled]="enviando() || !cambioProductoValido" class="rounded-lg bg-black px-5 py-2 text-sm font-bold text-white disabled:opacity-50">{{ enviando() ? 'Procesando…' : 'Confirmar cambio' }}</button>
+            </form>
+          }
+
+          <!-- REEMBOLSO (CU-06) -->
+          @if (panel() === 'REEMBOLSO') {
+            <form (ngSubmit)="reembolsar()" class="mt-4 space-y-3 rounded-lg bg-gray-50 p-4">
+              <p class="text-sm text-gray-700">Se reembolsan <strong>Bs {{ numero(s.monto_a_favor) }}</strong>.</p>
+              <fieldset class="space-y-2 text-sm">
+                <legend class="sr-only">Forma de reembolso</legend>
+                <label class="flex items-start gap-2"><input type="radio" name="reembolso" value="EFECTIVO" [(ngModel)]="formaReembolso" class="mt-0.5 text-black focus:ring-black" /><span><span class="font-semibold">Efectivo</span> — sale de la caja del turno.</span></label>
+                <label class="flex items-start gap-2"><input type="radio" name="reembolso" value="MEDIO_ORIGINAL" [(ngModel)]="formaReembolso" class="mt-0.5 text-black focus:ring-black" /><span><span class="font-semibold">Medio de pago original</span> — si fue QR, tarjeta o Stripe queda pendiente en el procesador.</span></label>
+                <label class="flex items-start gap-2"><input type="radio" name="reembolso" value="NOTA_CREDITO" [(ngModel)]="formaReembolso" class="mt-0.5 text-black focus:ring-black" /><span><span class="font-semibold">Nota de crédito</span> — saldo para usar en otra compra.</span></label>
+              </fieldset>
+              <button type="submit" [disabled]="enviando()" class="rounded-lg bg-black px-5 py-2 text-sm font-bold text-white disabled:opacity-50">{{ enviando() ? 'Procesando…' : 'Confirmar reembolso' }}</button>
+            </form>
+          }
+
+          <!-- SIN STOCK (CU-08) -->
+          @if (panel() === 'SIN_STOCK') {
+            <div class="mt-4 space-y-3 rounded-lg bg-gray-50 p-4">
+              <p class="text-sm text-gray-700">No hay stock para entregar en esta sucursal. Disponibilidad del mismo modelo en las sucursales:</p>
+              @for (i of s.items; track i.id) {
+                @if (disponibilidad()[i.variante_id]; as d) {
+                  <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+                    <p class="px-3 pt-2 text-sm font-semibold">{{ i.prenda }}</p>
+                    <table class="min-w-full text-sm">
+                      <thead class="text-left text-xs uppercase text-gray-500"><tr><th class="px-3 py-1">Sucursal</th><th class="px-3 py-1">Talla / color</th><th class="px-3 py-1 text-right">Stock</th></tr></thead>
+                      <tbody class="divide-y divide-gray-100">
+                        @for (x of d.en_sucursales; track $index) {
+                          @if (x.stock > 0) {
+                            <tr [class.font-semibold]="x.variante_id === i.variante_id">
+                              <td class="px-3 py-1">{{ x.sucursal }}</td><td class="px-3 py-1">{{ x.talla }} / {{ x.color }}</td><td class="px-3 py-1 text-right tabular-nums">{{ x.stock }}</td>
+                            </tr>
+                          }
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <p class="text-sm text-gray-500">Consultando disponibilidad…</p>
+                }
+              }
+              <div class="flex flex-wrap gap-2">
+                <button type="button" (click)="sinStock('NOTA_CREDITO')" [disabled]="enviando()" class="rounded-lg bg-black px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Emitir nota de crédito (Bs {{ numero(s.monto_a_favor) }})</button>
+                @if (s.estado !== 'PENDIENTE_STOCK') {
+                  <button type="button" (click)="sinStock('ESPERAR_STOCK')" [disabled]="enviando()" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold hover:border-black disabled:opacity-50">Esperar a que llegue stock</button>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      } @else {
+        <p class="text-sm text-gray-500">Esta solicitud no tiene acciones pendientes para tu rol.</p>
+      }
+    }
+  }
+</div>

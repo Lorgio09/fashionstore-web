@@ -1,0 +1,102 @@
+<div class="mx-auto max-w-7xl space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-3 border-b border-gray-200 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Devoluciones y cambios</h1>
+      <p class="mt-1 text-sm text-gray-500">Solicitudes de devolución o cambio, su estado y lo que se resolvió.</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a routerLink="/admin/notas-credito" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold hover:border-black">Notas de crédito</a>
+      <a routerLink="/admin/devoluciones/nueva" class="rounded-lg bg-black px-4 py-2 text-sm font-bold text-white hover:bg-gray-800">+ Nueva solicitud</a>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <form (ngSubmit)="cargar()" class="grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-6">
+    <label class="text-sm"><span class="block text-xs font-semibold text-gray-600">Estado</span>
+      <select name="estado" [(ngModel)]="filtros.estado" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+        <option [ngValue]="null">Todos</option>
+        @for (e of estados; track e.valor) { <option [ngValue]="e.valor">{{ e.nombre }}</option> }
+      </select>
+    </label>
+    <label class="text-sm"><span class="block text-xs font-semibold text-gray-600">Motivo</span>
+      <select name="motivo" [(ngModel)]="filtros.motivo" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+        <option [ngValue]="null">Todos</option>
+        @for (m of motivos; track m.valor) { <option [ngValue]="m.valor">{{ m.nombre }}</option> }
+      </select>
+    </label>
+    @if (esAdmin()) {
+      <label class="text-sm"><span class="block text-xs font-semibold text-gray-600">Sucursal</span>
+        <select name="sucursal" [(ngModel)]="filtros.sucursal_id" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+          <option [ngValue]="null">Todas</option>
+          @for (s of sucursales(); track s.id) { <option [ngValue]="s.id">{{ s.nombre }}</option> }
+        </select>
+      </label>
+    }
+    <label class="text-sm"><span class="block text-xs font-semibold text-gray-600">Desde</span>
+      <input type="date" name="desde" [(ngModel)]="filtros.desde" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+    </label>
+    <label class="text-sm"><span class="block text-xs font-semibold text-gray-600">Hasta</span>
+      <input type="date" name="hasta" [(ngModel)]="filtros.hasta" class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+    </label>
+    <div class="flex items-end gap-2">
+      <button type="submit" [disabled]="cargando()" class="rounded-lg bg-black px-4 py-2 text-sm font-bold text-white disabled:opacity-50">Filtrar</button>
+      <button type="button" (click)="limpiar()" class="rounded-lg border border-gray-300 px-3 py-2 text-sm">Limpiar</button>
+    </div>
+  </form>
+
+  @if (datos(); as d) {
+    <!-- INDICADORES -->
+    <section class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"><p class="text-sm text-gray-500">Solicitudes</p><p class="text-2xl font-black tabular-nums">{{ d.totales.solicitudes }}</p></div>
+      <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"><p class="text-sm text-gray-500">Cambios realizados</p><p class="text-2xl font-black tabular-nums">{{ d.totales.cambios_realizados }}</p></div>
+      <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"><p class="text-sm text-gray-500">Monto reembolsado</p><p class="text-2xl font-black tabular-nums">Bs {{ numero(d.totales.monto_reembolsado) }}</p></div>
+      <div class="rounded-xl border border-gray-100 bg-white p-4 shadow-sm"><p class="text-sm text-gray-500">Notas de crédito emitidas</p><p class="text-2xl font-black tabular-nums">Bs {{ numero(d.totales.notas_credito_emitidas) }}</p></div>
+    </section>
+    @if (d.totales.por_motivo.length) {
+      <div class="flex flex-wrap gap-2 text-xs">
+        @for (m of d.totales.por_motivo; track m.motivo) {
+          <span class="rounded-full border border-gray-200 bg-white px-3 py-1 text-gray-700">{{ m.motivo_texto }}: <strong>{{ m.cantidad }}</strong></span>
+        }
+        @for (e of d.totales.por_estado | keyvalue; track e.key) {
+          <span class="rounded-full bg-gray-100 px-3 py-1 text-gray-700">{{ nombreEstado(e.key) }}: <strong>{{ e.value }}</strong></span>
+        }
+      </div>
+    }
+
+    <!-- TABLA -->
+    <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm" [class.opacity-60]="cargando()">
+      <table class="min-w-full text-sm">
+        <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500">
+          <tr>
+            <th scope="col" class="px-4 py-3">Código</th><th scope="col" class="px-4 py-3">Fecha</th>
+            <th scope="col" class="px-4 py-3">Venta</th><th scope="col" class="px-4 py-3">Cliente</th>
+            <th scope="col" class="px-4 py-3">Sucursal</th><th scope="col" class="px-4 py-3">Motivo</th>
+            <th scope="col" class="px-4 py-3">Canal</th><th scope="col" class="px-4 py-3">Estado</th>
+            <th scope="col" class="px-4 py-3 text-right">A favor</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @for (s of d.solicitudes; track s.codigo) {
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2"><a [routerLink]="['/admin/devoluciones', s.codigo]" class="font-semibold text-black underline-offset-2 hover:underline">{{ s.codigo }}</a></td>
+              <td class="px-4 py-2 whitespace-nowrap">{{ fechaHora(s.creado_en) }}</td>
+              <td class="px-4 py-2">#{{ s.orden_id }}</td>
+              <td class="px-4 py-2">{{ s.cliente?.nombre ?? 'Ocasional' }}</td>
+              <td class="px-4 py-2">{{ s.sucursal.nombre }}</td>
+              <td class="px-4 py-2">{{ s.motivo_texto }}</td>
+              <td class="px-4 py-2">
+                <span class="rounded px-1.5 py-0.5 text-xs font-semibold" [class]="s.canal === 'OFFLINE' ? 'bg-amber-100 text-amber-900' : 'bg-gray-100 text-gray-700'">
+                  @if (s.canal === 'OFFLINE') { <span aria-hidden="true">⚡</span> } {{ canal(s.canal) }}
+                </span>
+              </td>
+              <td class="px-4 py-2"><app-estado-badge [estado]="s.estado" /></td>
+              <td class="px-4 py-2 text-right tabular-nums">Bs {{ numero(s.monto_a_favor) }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="9" class="px-4 py-10 text-center text-gray-500">No hay solicitudes con estos filtros.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

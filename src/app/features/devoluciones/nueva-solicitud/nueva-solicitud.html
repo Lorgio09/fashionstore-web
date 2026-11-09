@@ -1,0 +1,59 @@
+<div class="mx-auto max-w-5xl space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-3 border-b border-gray-200 pb-5">
+    <div>
+      <a routerLink="/admin/devoluciones" class="text-sm text-gray-500 hover:text-black">← Devoluciones</a>
+      <h1 class="mt-1 text-2xl font-bold text-gray-900">Nueva solicitud de devolución o cambio</h1>
+      <p class="mt-1 text-sm text-gray-500">Busca la venta por número de comprobante o por el nombre, correo o teléfono del cliente.</p>
+    </div>
+  </div>
+
+  <form (ngSubmit)="buscar()" class="flex flex-col gap-3 sm:flex-row">
+    <label for="criterio" class="sr-only">Comprobante o cliente</label>
+    <input id="criterio" name="criterio" [(ngModel)]="criterio" autocomplete="off"
+      placeholder="Ej.: 3498 o Juan Pérez"
+      class="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-black focus:ring-black" />
+    <button type="submit" [disabled]="buscando() || !criterio.trim()"
+      class="rounded-lg bg-black px-6 py-2.5 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-50">
+      {{ buscando() ? 'Buscando…' : 'Buscar venta' }}
+    </button>
+  </form>
+
+  @if (resultados(); as lista) {
+    @if (!lista.length) {
+      <p class="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-500">No se encontraron ventas pagadas con ese dato.</p>
+    } @else if (lista.length > 1 || !elegida()) {
+      <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500">
+            <tr>
+              <th scope="col" class="px-4 py-2">Venta</th><th scope="col" class="px-4 py-2">Fecha</th>
+              <th scope="col" class="px-4 py-2">Cliente</th><th scope="col" class="px-4 py-2">Sucursal</th>
+              <th scope="col" class="px-4 py-2 text-right">Total</th><th scope="col" class="px-4 py-2 text-right">Prendas elegibles</th>
+              <th class="px-4 py-2"><span class="sr-only">Acción</span></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (v of lista; track v.orden_id) {
+              <tr [class.bg-gray-50]="elegida()?.orden_id === v.orden_id">
+                <td class="px-4 py-2 font-semibold">#{{ v.orden_id }}</td>
+                <td class="px-4 py-2">{{ fechaHora(v.fecha) }}</td>
+                <td class="px-4 py-2">{{ v.nombre_cliente }}</td>
+                <td class="px-4 py-2">{{ v.sucursal }}</td>
+                <td class="px-4 py-2 text-right tabular-nums">Bs {{ numero(v.total) }}</td>
+                <td class="px-4 py-2 text-right tabular-nums">{{ elegibles(v) }}</td>
+                <td class="px-4 py-2 text-right">
+                  <button type="button" (click)="elegida.set(v)" [disabled]="!elegibles(v)"
+                    class="rounded-md border border-gray-300 px-3 py-1 text-xs font-semibold hover:border-black disabled:opacity-40">Elegir</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+
+  @if (elegida(); as v) {
+    <app-formulario-solicitud [venta]="v" (creada)="creada($event)" (cancelar)="elegida.set(null)" />
+  }
+</div>

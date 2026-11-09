@@ -12,6 +12,8 @@ import { OperacionesOfflineService } from '../../../core/services/operaciones-of
 import { SelectorSucursalComponent } from '../../../shared/components/selector-sucursal/selector-sucursal';
 import { AvisoDatosOfflineComponent } from '../../../shared/components/aviso-datos-offline/aviso-datos-offline';
 import { numero } from '../../../shared/utils/formato';
+import { DevolucionesService } from '../../../core/services/devoluciones.service';
+import { NotaCredito } from '../../../core/models/devoluciones';
 
 export interface ItemCarrito {
   prenda_id: number;
@@ -38,6 +40,13 @@ export class PuntoVentaComponent implements OnInit {
   conexion = inject(ConexionService);
   catOffline = inject(CatalogoOfflineService);
   private opsOffline = inject(OperacionesOfflineService);
+  private devoluciones = inject(DevolucionesService);
+  readonly num = numero;
+
+  /** Nota de crédito usada como pago (§9.4): pago mixto con efectivo. */
+  codigoNota = '';
+  consultandoNota = false;
+  readonly notaAplicada = signal<NotaCredito | null>(null);
 
   productosDisponibles: ProductoPOS[] = [];
   busqueda = '';
@@ -65,6 +74,7 @@ export class PuntoVentaComponent implements OnInit {
         if (offline) {
           this.metodoPagoSeleccionado = 'EFECTIVO'; // sin red solo efectivo
           this.qrGenerado = null;
+          this.notaAplicada.set(null); // la nota de crédito necesita conexión
         }
         setTimeout(() => this.cargarProductosStock());
       }
@@ -164,6 +174,43 @@ export class PuntoVentaComponent implements OnInit {
     this.total = Math.round(this.carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0) * 100) / 100;
   }
 
+  /** Monto que cubre la nota (hasta el total) y lo que queda en efectivo. */
+  get montoNota(): number {
+    const n = this.notaAplicada();
+    return n ? Math.min(n.saldo, this.total) : 0;
+  }
+
+  get aPagarEfectivo(): number {
+    return Math.round((this.total - this.montoNota) * 100) / 100;
+  }
+
+  aplicarNota() {
+    const codigo = this.codigoNota.trim().toUpperCase();
+    if (!codigo || this.consultandoNota) return;
+    this.consultandoNota = true;
+    this.devoluciones.nota(codigo).subscribe({
+      next: (n) => {
+        this.consultandoNota = false;
+        if (n.estado !== 'VIGENTE') {
+          this.notif.error(`La nota de crédito ${n.codigo} está ${n.estado.toLowerCase()}.`);
+        } else {
+          this.notaAplicada.set(n);
+          this.codigoNota = '';
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.consultandoNota = false;
+        this.notif.errorHttp(err, err?.status === 404 ? 'No existe una nota de crédito con ese código.' : 'No se pudo consultar la nota de crédito.');
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  quitarNota() {
+    this.notaAplicada.set(null);
+  }
+
   seleccionarMetodo(metodo: string) {
     if (this.modoOffline() && metodo !== 'EFECTIVO') return;
     this.metodoPagoSeleccionado = metodo;
@@ -174,6 +221,7 @@ export class PuntoVentaComponent implements OnInit {
     this.carrito = [];
     this.calcularTotal();
     this.qrGenerado = null;
+    this.notaAplicada.set(null);
     this.cargarProductosStock();
   }
 
@@ -191,6 +239,7 @@ export class PuntoVentaComponent implements OnInit {
         sucursal_id: this.sucursalId,
         metodo_pago: 'EFECTIVO',
         total: this.total,
+        ...(this.notaAplicada() ? { nota_credito: this.notaAplicada()!.codigo } : {}),
         items: this.carrito.map(item => ({
           prenda_id: item.prenda_id,
           variante_id: item.variante_id,
@@ -199,9 +248,13 @@ export class PuntoVentaComponent implements OnInit {
         }))
       };
 
-      this.http.post(`${this.API_URL}/catalogo/checkout/presencial`, payloadEfectivo).subscribe({
-        next: () => {
-          this.notif.exito(`Venta en efectivo de Bs ${numero(this.total)} registrada.`);
+      this.http.post<any>(`${this.API_URL}/catalogo/checkout/presencial`, payloadEfectivo).subscribe({
+        next: (res) => {
+          const conNota = Number(res?.pagado_con_nota_credito ?? 0);
+          const comprobante = res?.orden_id ? `Venta #${res.orden_id}` : 'Venta';
+          this.notif.exito(conNota > 0
+            ? `${comprobante} de Bs ${numero(this.total)}: Bs ${numero(conNota)} con nota de crédito y Bs ${numero(Number(res?.a_pagar ?? 0))} en efectivo.`
+            : `${comprobante} en efectivo de Bs ${numero(this.total)} registrada.`);
           this.limpiarCaja();
           this.procesando = false;
           this.cdr.detectChanges();

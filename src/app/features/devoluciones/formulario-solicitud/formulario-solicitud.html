@@ -1,0 +1,93 @@
+@let v = venta();
+<form (ngSubmit)="enviar()" class="rounded-xl border border-gray-200 bg-white shadow-sm">
+  <header class="border-b border-gray-100 p-5">
+    <div class="flex flex-wrap items-baseline justify-between gap-2">
+      <h3 class="text-lg font-bold text-gray-900">Venta #{{ v.orden_id }}</h3>
+      <span class="text-sm text-gray-500">{{ fechaHora(v.fecha) }} · {{ v.canal }} · {{ v.metodo_pago }}</span>
+    </div>
+    <p class="text-sm text-gray-600">{{ v.sucursal }} · {{ v.nombre_cliente }} · total Bs {{ numero(v.total) }}</p>
+    <p class="mt-1 text-xs text-gray-500">Cambio hasta el {{ fechaCorta(v.limite_cambio) }} · garantía por defecto hasta el {{ fechaCorta(v.limite_garantia) }}</p>
+  </header>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase text-gray-500">
+        <tr>
+          <th scope="col" class="px-5 py-2">Prenda</th>
+          <th scope="col" class="px-5 py-2 text-right">Vendidas</th>
+          <th scope="col" class="px-5 py-2 text-right">Precio</th>
+          <th scope="col" class="px-5 py-2 text-right">Puede devolver</th>
+          <th scope="col" class="px-5 py-2 text-right">Devolver</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        @for (i of v.items; track i.detalle_orden_id) {
+          <tr [class.text-gray-400]="i.elegible === 0">
+            <td class="px-5 py-2">
+              {{ i.prenda }} <span class="text-gray-500">({{ i.talla }} / {{ i.color }})</span>
+              @if (!i.retornable) { <span class="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-900"><span aria-hidden="true">⚠</span> Solo por defecto</span> }
+              @if (i.devuelto > 0) { <span class="ml-1 text-xs text-gray-500">({{ i.devuelto }} ya devuelta{{ i.devuelto > 1 ? 's' : '' }})</span> }
+              @if (i.cambios_realizados > 0) { <span class="ml-1 text-xs text-gray-500">· {{ i.cambios_realizados }} cambio{{ i.cambios_realizados > 1 ? 's' : '' }}</span> }
+            </td>
+            <td class="px-5 py-2 text-right tabular-nums">{{ i.cantidad }}</td>
+            <td class="px-5 py-2 text-right tabular-nums">Bs {{ numero(i.precio_unitario) }}</td>
+            <td class="px-5 py-2 text-right tabular-nums">{{ i.elegible }}</td>
+            <td class="px-5 py-2 text-right">
+              <input type="number" min="0" [max]="i.elegible" step="1" [disabled]="i.elegible === 0"
+                [(ngModel)]="cantidades[i.detalle_orden_id]" [name]="'cant-' + i.detalle_orden_id"
+                [attr.aria-label]="'Cantidad a devolver de ' + i.prenda"
+                class="w-20 rounded border border-gray-300 px-2 py-1 text-right focus:border-black focus:ring-black disabled:bg-gray-100" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
+    <label class="block text-sm">
+      <span class="font-semibold text-gray-700">Motivo</span>
+      <select name="motivo" [(ngModel)]="motivo" required class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+        <option value="" disabled>Elige el motivo</option>
+        @for (m of motivos; track m.valor) { <option [value]="m.valor">{{ m.nombre }}</option> }
+      </select>
+    </label>
+    <label class="block text-sm">
+      <span class="font-semibold text-gray-700">Qué se pide</span>
+      <select name="resolucion" [(ngModel)]="resolucion" required class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+        <option value="" disabled>Elige una opción</option>
+        @for (r of resoluciones; track r.valor) { <option [value]="r.valor">{{ r.nombre }}</option> }
+      </select>
+    </label>
+    @if (esCliente()) {
+      <label class="block text-sm">
+        <span class="font-semibold text-gray-700">Sucursal donde entregarás la prenda</span>
+        <select name="sucursal" [(ngModel)]="sucursalId" required class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black">
+          <option [ngValue]="null" disabled>Elige la sucursal</option>
+          @for (s of sucursales(); track s.id) { <option [ngValue]="s.id">{{ s.nombre }}</option> }
+        </select>
+      </label>
+    }
+    <label class="block text-sm" [class.md:col-span-2]="!esCliente()">
+      <span class="font-semibold text-gray-700">Observación <span class="font-normal text-gray-500">(opcional)</span></span>
+      <input type="text" name="observacion" [(ngModel)]="observacion" maxlength="255"
+        class="mt-1 w-full rounded-lg border-gray-300 text-sm focus:border-black focus:ring-black" />
+    </label>
+  </div>
+
+  @if (avisoNoRetornable) {
+    <p class="mx-5 mb-3 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
+      <span aria-hidden="true">⚠</span> Hay prendas de una categoría no retornable: solo se aceptan por defecto.
+    </p>
+  }
+
+  <footer class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 p-5">
+    <p class="text-sm text-gray-600">Valor de lo seleccionado: <strong class="tabular-nums">Bs {{ numero(valorSeleccionado) }}</strong></p>
+    <div class="flex gap-2">
+      <button type="button" (click)="cancelar.emit()" class="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:border-black">Cancelar</button>
+      <button type="submit" [disabled]="!valido || enviando()" class="rounded-lg bg-black px-5 py-2 text-sm font-bold text-white hover:bg-gray-800 disabled:opacity-50">
+        {{ enviando() ? 'Registrando…' : 'Registrar solicitud' }}
+      </button>
+    </div>
+  </footer>
+</form>

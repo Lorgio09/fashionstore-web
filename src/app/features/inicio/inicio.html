@@ -31,6 +31,7 @@
             @if (auth.esPersonal()) {
               <a [routerLink]="auth.rutaInicio()" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">Ir al panel</a>
             } @else {
+              <a routerLink="/mi-cuenta" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">Mi cuenta</a>
               <a routerLink="/sincronizacion" class="text-sm font-medium text-gray-600 hover:text-black transition-colors">Sincronización</a>
             }
             <button (click)="cerrarSesion()" class="text-sm font-medium text-red-600 hover:text-red-800 transition-colors">

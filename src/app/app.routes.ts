@@ -37,6 +37,18 @@ export const routes: Routes = [
     // Modo offline y pendientes del cliente (el personal lo tiene dentro de /admin)
     { path: 'sincronizacion', component: SincronizacionComponent, canActivate: [rolGuard], data: { roles: [ROLES.CLIENTE] } },
 
+    // Área del cliente: compras, devoluciones y notas de crédito (§9)
+    {
+        path: 'mi-cuenta',
+        loadComponent: () => import('./features/mi-cuenta/mi-cuenta-layout').then(m => m.MiCuentaLayoutComponent),
+        canActivate: [rolGuard],
+        data: { roles: [ROLES.CLIENTE] },
+        children: [
+            { path: '', loadComponent: () => import('./features/mi-cuenta/mi-cuenta').then(m => m.MiCuentaComponent) },
+            { path: 'solicitudes/:codigo', loadComponent: () => import('./features/devoluciones/detalle-solicitud/detalle-solicitud').then(m => m.DetalleSolicitudComponent) },
+        ]
+    },
+
     // ZONA DEL ADMINISTRADOR Y EMPLEADOS
     {
         path: 'admin',
@@ -62,6 +74,37 @@ export const routes: Routes = [
                 component: PuntoVentaComponent,
                 canActivate: [rolGuard],
                 data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] } // Caja: Cajero, Encargado y Admin
+            },
+            // --- Posventa: devoluciones, cambios y notas de crédito (§9) ---
+            {
+                path: 'devoluciones',
+                loadComponent: () => import('./features/devoluciones/historial-devoluciones/historial-devoluciones').then(m => m.HistorialDevolucionesComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] }
+            },
+            {
+                path: 'devoluciones/nueva',
+                loadComponent: () => import('./features/devoluciones/nueva-solicitud/nueva-solicitud').then(m => m.NuevaSolicitudComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] }
+            },
+            {
+                path: 'devoluciones/:codigo',
+                loadComponent: () => import('./features/devoluciones/detalle-solicitud/detalle-solicitud').then(m => m.DetalleSolicitudComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] }
+            },
+            {
+                path: 'notas-credito',
+                loadComponent: () => import('./features/devoluciones/notas-credito/notas-credito').then(m => m.NotasCreditoComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN, ROLES.ENCARGADO, ROLES.CAJERO] }
+            },
+            {
+                path: 'politica-devoluciones',
+                loadComponent: () => import('./features/devoluciones/politica-devoluciones/politica-devoluciones').then(m => m.PoliticaDevolucionesComponent),
+                canActivate: [rolGuard],
+                data: { roles: [ROLES.ADMIN] }
             },
             {
                 path: 'analitica',
